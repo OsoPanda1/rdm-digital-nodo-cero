@@ -10,6 +10,12 @@ import Directorio from "./pages/Directorio";
 import Eventos from "./pages/Eventos";
 import Comunidad from "./pages/Comunidad";
 import Mapa from "./pages/Mapa";
+import Historia from "./pages/Historia";
+import Cultura from "./pages/Cultura";
+import Relatos from "./pages/Relatos";
+import Ecoturismo from "./pages/Ecoturismo";
+import Gastronomia from "./pages/Gastronomia";
+import Arte from "./pages/Arte";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +31,12 @@ const AnimatedRoutes = () => {
         <Route path="/directorio" element={<Directorio />} />
         <Route path="/eventos" element={<Eventos />} />
         <Route path="/comunidad" element={<Comunidad />} />
+        <Route path="/historia" element={<Historia />} />
+        <Route path="/cultura" element={<Cultura />} />
+        <Route path="/relatos" element={<Relatos />} />
+        <Route path="/ecoturismo" element={<Ecoturismo />} />
+        <Route path="/gastronomia" element={<Gastronomia />} />
+        <Route path="/arte" element={<Arte />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
