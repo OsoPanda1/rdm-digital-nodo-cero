@@ -1,5 +1,7 @@
 import { MapPin, Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
+import logoRdm from "@/assets/logo-rdm.png";
+import GradientSeparator from "@/components/GradientSeparator";
 
 const Footer = () => {
   return (
@@ -9,9 +11,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-full bg-gradient-warm flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-primary-foreground" />
-              </div>
+              <img src={logoRdm} alt="RDM Digital" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary-foreground/10" />
               <div>
                 <span className="font-serif text-lg font-bold text-primary-foreground">
                   RDM Digital
@@ -27,13 +27,19 @@ const Footer = () => {
           <div>
             <h4 className="font-serif font-semibold text-primary-foreground mb-4">Explorar</h4>
             <ul className="space-y-2">
-              {["Lugares", "Directorio", "Eventos", "Comunidad"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Mapa", path: "/mapa" },
+                { label: "Lugares", path: "/lugares" },
+                { label: "Directorio", path: "/directorio" },
+                { label: "Eventos", path: "/eventos" },
+                { label: "Comunidad", path: "/comunidad" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    to={`/${item.toLowerCase()}`}
-                    className="text-sm text-primary-foreground/50 hover:text-primary-foreground transition-colors"
+                    to={item.path}
+                    className="text-sm text-primary-foreground/50 hover:text-primary-foreground transition-colors duration-200"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -72,7 +78,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/10 mt-12 pt-8 text-center">
+        <div className="mt-12 pt-8 text-center" style={{ borderTop: "1px solid hsla(36, 60%, 96%, 0.08)" }}>
           <p className="text-xs text-primary-foreground/30">
             © 2026 RDM Digital. Hecho con ❤️ para Real del Monte, Pueblo Mágico.
           </p>

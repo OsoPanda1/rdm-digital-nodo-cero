@@ -17,7 +17,7 @@ const PlaceCard = ({ name, category, description, image, rating = 4.5, index = 0
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group relative overflow-hidden rounded-xl bg-card shadow-card hover:shadow-elevated transition-all duration-500 cursor-pointer"
+      className="group relative overflow-hidden rounded-2xl glass shadow-card hover:shadow-elevated transition-all duration-500 cursor-pointer hover:-translate-y-1"
     >
       {/* Image */}
       <div className="relative h-56 overflow-hidden">
@@ -28,16 +28,16 @@ const PlaceCard = ({ name, category, description, image, rating = 4.5, index = 0
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-card" />
-        
+
         {/* Category badge */}
         <div className="absolute top-3 left-3">
-          <span className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium tracking-wide uppercase">
+          <span className="px-3 py-1 rounded-full glass-dark text-primary-foreground text-xs font-medium tracking-wide uppercase">
             {category}
           </span>
         </div>
 
         {/* Rating */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm">
+        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full glass">
           <Star className="w-3 h-3 text-gold fill-gold" />
           <span className="text-xs font-medium text-foreground">{rating}</span>
         </div>
@@ -45,7 +45,7 @@ const PlaceCard = ({ name, category, description, image, rating = 4.5, index = 0
 
       {/* Content */}
       <div className="p-5">
-        <div className="flex items-start gap-1 mb-1">
+        <div className="flex items-start gap-1.5 mb-1">
           <MapPin className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
           <h3 className="font-serif text-lg font-semibold text-foreground leading-tight">
             {name}
