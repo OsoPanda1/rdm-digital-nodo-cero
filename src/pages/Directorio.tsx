@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
+import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 
 import pasteImg from "@/assets/paste.webp";
@@ -19,32 +20,25 @@ const businesses = [
 
 const DirectorioPage = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-24 pb-20">
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">
-              Directorio de Negocios
-            </h1>
-            <p className="text-muted-foreground max-w-lg">
-              Comercios, hoteles, restaurantes y servicios recomendados por la comunidad.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {businesses.map((biz, i) => (
-              <BusinessCard key={biz.name} {...biz} index={i} />
-            ))}
+    <PageTransition>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-24 pb-20">
+          <div className="container mx-auto px-4 md:px-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">Directorio de Negocios</h1>
+              <p className="text-muted-foreground max-w-lg">Comercios, hoteles, restaurantes y servicios recomendados por la comunidad.</p>
+            </motion.div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {businesses.map((biz, i) => (
+                <BusinessCard key={biz.name} {...biz} index={i} />
+              ))}
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </PageTransition>
   );
 };
 

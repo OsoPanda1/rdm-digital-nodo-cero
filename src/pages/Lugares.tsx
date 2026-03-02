@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PlaceCard from "@/components/PlaceCard";
-import SectionHeader from "@/components/SectionHeader";
+import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 
 import pasteImg from "@/assets/paste.webp";
@@ -22,32 +22,25 @@ const allPlaces = [
 
 const LugaresPage = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-24 pb-20">
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">
-              Lugares y Atractivos
-            </h1>
-            <p className="text-muted-foreground max-w-lg">
-              Descubre los rincones más emblemáticos de Real del Monte, desde minas históricas hasta bosques de niebla.
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allPlaces.map((place, i) => (
-              <PlaceCard key={place.name} {...place} index={i} />
-            ))}
+    <PageTransition>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-24 pb-20">
+          <div className="container mx-auto px-4 md:px-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">Lugares y Atractivos</h1>
+              <p className="text-muted-foreground max-w-lg">Descubre los rincones más emblemáticos de Real del Monte, desde minas históricas hasta bosques de niebla.</p>
+            </motion.div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allPlaces.map((place, i) => (
+                <PlaceCard key={place.name} {...place} index={i} />
+              ))}
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </PageTransition>
   );
 };
 

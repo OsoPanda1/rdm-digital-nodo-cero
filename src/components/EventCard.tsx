@@ -17,10 +17,10 @@ const EventCard = ({ name, date, time, location, description, index = 0 }: Event
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="flex gap-4 p-4 rounded-xl bg-card shadow-card hover:shadow-elevated transition-all duration-300 cursor-pointer"
+      className="flex gap-4 p-4 rounded-2xl glass shadow-card hover:shadow-elevated hover:-translate-y-1 transition-all duration-300 cursor-pointer"
     >
       {/* Date badge */}
-      <div className="shrink-0 w-16 h-16 rounded-xl bg-gradient-warm flex flex-col items-center justify-center text-primary-foreground">
+      <div className="shrink-0 w-16 h-16 rounded-xl bg-gradient-warm flex flex-col items-center justify-center text-primary-foreground shadow-warm">
         <span className="text-lg font-bold font-serif leading-none">
           {date.split(" ")[0]}
         </span>
@@ -36,11 +36,11 @@ const EventCard = ({ name, date, time, location, description, index = 0 }: Event
         </h3>
         <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{description}</p>
         <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted/60">
             <Clock className="w-3 h-3" />
             {time}
           </span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted/60">
             <MapPin className="w-3 h-3" />
             {location}
           </span>

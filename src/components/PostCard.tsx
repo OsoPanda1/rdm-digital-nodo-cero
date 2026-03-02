@@ -30,7 +30,7 @@ const PostCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-card rounded-xl shadow-card overflow-hidden"
+      className="glass rounded-2xl shadow-card overflow-hidden hover:shadow-elevated hover:-translate-y-1 transition-all duration-300"
     >
       {/* Image */}
       {image && (
@@ -48,7 +48,7 @@ const PostCard = ({
       <div className="p-4">
         {/* User info */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-warm flex items-center justify-center text-primary-foreground text-sm font-bold">
+          <div className="w-9 h-9 rounded-full bg-gradient-warm flex items-center justify-center text-primary-foreground text-sm font-bold shadow-warm">
             {userAvatar}
           </div>
           <div>
@@ -71,12 +71,13 @@ const PostCard = ({
         <p className="text-sm text-foreground leading-relaxed mb-3">{content}</p>
 
         {/* Actions */}
-        <div className="flex items-center gap-4 pt-3 border-t border-border">
-          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+        <div className="separator-gradient mb-3" />
+        <div className="flex items-center gap-4">
+          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-105">
             <Heart className="w-4 h-4" />
             <span className="text-xs font-medium">{likes}</span>
           </button>
-          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+          <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-all duration-200 hover:scale-105">
             <MessageCircle className="w-4 h-4" />
             <span className="text-xs font-medium">{comments}</span>
           </button>

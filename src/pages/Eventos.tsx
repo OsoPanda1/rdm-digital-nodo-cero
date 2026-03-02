@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
+import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
 
 const events = [
@@ -14,32 +15,25 @@ const events = [
 
 const EventosPage = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-24 pb-20">
-        <div className="container mx-auto px-4 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">
-              Eventos y Festivales
-            </h1>
-            <p className="text-muted-foreground max-w-lg">
-              Calendario de actividades culturales, festivales y temporadas especiales.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {events.map((event, i) => (
-              <EventCard key={event.name} {...event} index={i} />
-            ))}
+    <PageTransition>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-24 pb-20">
+          <div className="container mx-auto px-4 md:px-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-3">Eventos y Festivales</h1>
+              <p className="text-muted-foreground max-w-lg">Calendario de actividades culturales, festivales y temporadas especiales.</p>
+            </motion.div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {events.map((event, i) => (
+                <EventCard key={event.name} {...event} index={i} />
+              ))}
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </PageTransition>
   );
 };
 

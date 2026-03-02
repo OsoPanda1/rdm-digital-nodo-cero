@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Map, Compass, Utensils } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const routes = [
   {
@@ -9,7 +8,7 @@ const routes = [
     icon: Utensils,
     stops: 6,
     duration: "2-3 hrs",
-    color: "bg-primary",
+    color: "bg-gradient-warm",
   },
   {
     name: "Ruta Minas y Museos",
@@ -17,7 +16,7 @@ const routes = [
     icon: Compass,
     stops: 5,
     duration: "3-4 hrs",
-    color: "bg-accent",
+    color: "bg-gradient-forest",
   },
   {
     name: "Ruta Familiar",
@@ -31,7 +30,7 @@ const routes = [
 
 const RoutesSection = () => {
   return (
-    <section className="py-20 bg-muted/50">
+    <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,10 +54,10 @@ const RoutesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.15 }}
-              className="group bg-card rounded-xl p-6 shadow-card hover:shadow-elevated transition-all duration-300 cursor-pointer"
+              className="group glass rounded-2xl p-6 shadow-card hover:shadow-elevated hover:-translate-y-2 transition-all duration-300 cursor-pointer"
             >
               <div
-                className={`w-12 h-12 rounded-xl ${route.color} flex items-center justify-center mb-4`}
+                className={`w-12 h-12 rounded-xl ${route.color} flex items-center justify-center mb-4 shadow-warm group-hover:scale-110 transition-transform duration-300`}
               >
                 <route.icon className="w-6 h-6 text-primary-foreground" />
               </div>
@@ -68,9 +67,10 @@ const RoutesSection = () => {
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 {route.description}
               </p>
+              <div className="separator-gradient mb-4" />
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="px-2 py-1 rounded-md bg-muted">{route.stops} paradas</span>
-                <span className="px-2 py-1 rounded-md bg-muted">{route.duration}</span>
+                <span className="px-2 py-1 rounded-lg glass">{route.stops} paradas</span>
+                <span className="px-2 py-1 rounded-lg glass">{route.duration}</span>
               </div>
             </motion.div>
           ))}
