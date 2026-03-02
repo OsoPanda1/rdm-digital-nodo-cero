@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
 import { MapPin, ArrowDown } from "lucide-react";
-import heroImg from "@/assets/hero-real-del-monte.webp";
+import heroVideo from "@/assets/hero-video.mp4";
+import logoRdm from "@/assets/logo-rdm.png";
 
 const HeroSection = () => {
   return (
     <section className="relative h-screen min-h-[600px] w-full overflow-hidden">
-      {/* Background image */}
-      <img
-        src={heroImg}
-        alt="Vista aérea de Real del Monte, Pueblo Mágico de Hidalgo, México"
+      {/* Background video */}
+      <video
+        src={heroVideo}
+        autoPlay
+        muted
+        loop
+        playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
       />
 
       {/* Overlay gradient */}
@@ -18,6 +21,15 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col items-center justify-end pb-20 px-4 text-center">
+        <motion.img
+          src={logoRdm}
+          alt="RDM Digital logo"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover mb-6 shadow-elevated"
+        />
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

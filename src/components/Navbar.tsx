@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, MapPin } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import logoRdm from "@/assets/logo-rdm.png";
 
 const navItems = [
   { label: "Inicio", path: "/" },
@@ -21,9 +22,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full bg-gradient-warm flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img src={logoRdm} alt="RDM Digital logo" className="w-10 h-10 rounded-full object-cover" />
             <div className="flex flex-col">
               <span className="font-serif text-lg font-bold leading-tight text-foreground">
                 RDM Digital
