@@ -17,6 +17,7 @@ import Ecoturismo from "./pages/Ecoturismo";
 import Gastronomia from "./pages/Gastronomia";
 import Arte from "./pages/Arte";
 import NotFound from "./pages/NotFound";
+import RealitoChat from "./components/RealitoChat";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AnimatedRoutes />
+        <RealitoChat />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
