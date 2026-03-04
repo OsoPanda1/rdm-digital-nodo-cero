@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rdm-frontend
+  namespace: rdmdigital
+  labels:
+    app: rdm-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rdm-frontend
+  template:
+    metadata:
+      labels:
+        app: rdm-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/rdmdigital/rdm-digital-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: VITE_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rdm-config
+                  key: api_url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rdm-frontend
+  namespace: rdmdigital
+spec:
+  selector:
+    app: rdm-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rdm-frontend-ingress
+  namespace: rdmdigital
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  tls:
+    - hosts:
+        - rdmdigital.mx
+        - www.rdmdigital.mx
+      secretName: rdm-tls
+  rules:
+    - host: rdmdigital.mx
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rdm-frontend
+                port:
+                  number: 80

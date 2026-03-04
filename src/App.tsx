@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { NotificationProvider } from "@/components/NotificationSystem";
+import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Lugares from "./pages/Lugares";
 import Directorio from "./pages/Directorio";
@@ -20,6 +21,9 @@ import Arte from "./pages/Arte";
 import Rutas from "./pages/Rutas";
 import NotFound from "./pages/NotFound";
 import RealitoChat from "./components/RealitoChat";
+import Auth from "./pages/Auth";
+import Apoya from "./pages/Apoya";
+import Reglamento from "./pages/Reglamento";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +45,9 @@ const AnimatedRoutes = () => {
         <Route path="/gastronomia" element={<Gastronomia />} />
         <Route path="/arte" element={<Arte />} />
         <Route path="/rutas" element={<Rutas />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/apoya" element={<Apoya />} />
+        <Route path="/reglamento" element={<Reglamento />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
@@ -49,17 +56,19 @@ const AnimatedRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <NotificationProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnimatedRoutes />
-          <RealitoChat />
-        </BrowserRouter>
-      </TooltipProvider>
-    </NotificationProvider>
-  </QueryClientProvider>
+      <NotificationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AuthProvider>
+            <BrowserRouter>
+              <AnimatedRoutes />
+              <RealitoChat />
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </NotificationProvider>
+    </QueryClientProvider>
 );
 
 export default App;

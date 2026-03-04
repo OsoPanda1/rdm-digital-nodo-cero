@@ -19,6 +19,7 @@ import markerRoutes from "./routes/markers";
 import tipRoutes from "./routes/tips";
 import aiRoutes from "./routes/ai";
 import analyticsRoutes from "./routes/analytics";
+import newsletterRoutes from "./routes/newsletter";
 
 dotenv.config();
 
@@ -56,7 +57,20 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// API Routes
+// API Routes - v1
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/businesses", businessRoutes);
+app.use("/api/v1/posts", postRoutes);
+app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/routes", routeRoutes);
+app.use("/api/v1/markers", markerRoutes);
+app.use("/api/v1/tips", tipRoutes);
+app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/newsletter", newsletterRoutes);
+
+// Legacy routes for backwards compatibility
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/businesses", businessRoutes);
@@ -67,6 +81,7 @@ app.use("/api/markers", markerRoutes);
 app.use("/api/tips", tipRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -79,6 +94,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🔗 API v1: http://localhost:${PORT}/api/v1`);
 });
 
 export default app;

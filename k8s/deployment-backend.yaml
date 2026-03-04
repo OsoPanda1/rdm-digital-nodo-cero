@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rdm-backend
+  namespace: rdmdigital
+  labels:
+    app: rdm-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rdm-backend
+  template:
+    metadata:
+      labels:
+        app: rdm-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/rdmdigital/rdm-digital-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              name: http
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3001"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: database_url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: jwt_secret
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: stripe_secret_key
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: stripe_webhook_secret
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: openai_api_key
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rdm-config
+                  key: frontend_url
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rdm-backend
+  namespace: rdmdigital
+spec:
+  selector:
+    app: rdm-backend
+  ports:
+    - port: 3001
+      targetPort: 3001
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rdm-config
+  namespace: rdmdigital
+data:
+  api_url: "https://api.rdmdigital.mx"
+  frontend_url: "https://rdmdigital.mx"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rdm-secrets
+  namespace: rdmdigital
+type: Opaque
+stringData:
+  database_url: "postgresql://user:password@postgres:5432/rdm"
+  jwt_secret: "your-super-secret-jwt-key-change-in-production"
+  stripe_secret_key: "sk_test_..."
+  stripe_webhook_secret: "whsec_..."
+  openai_api_key: "sk-..."
