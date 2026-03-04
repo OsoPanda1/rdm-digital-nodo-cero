@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import { 
   MapPin, Clock, Footprints, Mountain, Trees, Camera, 
-  Utensils, Beer, History, Compass, Star, ChevronRight,
+  Utensils, Beer, History, Compass, Star, ChevronRight, Sparkles,
   Info, CheckCircle2, AlertCircle, Route, Map,
   Thermometer, Backpack, Droplets, Sun, Wind
 } from "lucide-react";

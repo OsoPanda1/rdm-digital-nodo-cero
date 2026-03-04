@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { 
   Utensils, ChefHat, Coffee, Wine, Star, Clock, MapPin, Flame,
   Heart, BookOpen, Leaf, Wheat, Beef, Fish, Apple, Croissant,
-  History, Users, Award, Sparkles, ArrowRight
+  History, Users, Award, Sparkles, ArrowRight, GlassWater
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -776,7 +776,7 @@ const GastronomiaPage = () => {
               </h2>
             </motion.div>
 
-            <ImageGallery images={gastronomyImages} />
+            <ImageGallery />
           </div>
         </section>
 

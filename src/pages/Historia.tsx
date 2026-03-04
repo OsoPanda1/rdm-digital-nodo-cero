@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { 
   Clock, Pickaxe, Flag, Users, Ship, Church, BookOpen, 
   Mountain, Gem, Crown, Scroll, Anchor, Compass, Flame,
-  Building2, Scale, Landmark, Sparkles
+  Building2, Scale, Landmark, Sparkles, MapPin
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -218,7 +218,7 @@ const historicalFigures = [
     role: "Empresario Minero",
     period: "1824-1860",
     description: "Conde de Regla y visionario empresario que modernizó la minería realmontense. Invirtió millones de pesos en tecnología de punta y mejoró las condiciones de los mineros.",
-    contribution: "Introdujo el sistema de "patentado" para distribuir ganancías entre los trabajadores"
+    contribution: 'Introdujo el sistema de "patentado" para distribuir ganancias entre los trabajadores'
   },
   {
     name: "John Rule",
@@ -637,11 +637,11 @@ const HistoriaPage = () => {
             <div className="grid lg:grid-cols-2 gap-12">
               <div>
                 <h3 className="font-serif text-2xl font-bold text-foreground mb-6">Galería de Imágenes</h3>
-                <ImageGallery images={historicalImages} />
+                <ImageGallery />
               </div>
               <div>
                 <h3 className="font-serif text-2xl font-bold text-foreground mb-6">Documentales y Videos</h3>
-                <VideoGallery videos={historicalVideos} />
+                <VideoGallery />
               </div>
             </div>
           </div>

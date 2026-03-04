@@ -8,7 +8,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
-import { TextReveal, ParallaxImage, StaggerContainer, StaggerItem, GlowCard } from "@/components/ui/glow-card";
+import { TextReveal, ParallaxImage, StaggerContainer, StaggerItem, GlowCard } from "@/components/VisualEffects";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -63,7 +63,7 @@ El 2 de noviembre culmina con el "Festival de las Luces", donde cientos de velas
       "Misa Anglicana Bilingüe",
       "Recorridos Nocturnos con Leyendas",
       "Ofrendas Biculturales",
-      "Concierto del Coro "Voices of the Mines"",
+      'Concierto del Coro "Voices of the Mines"',
       "Ceremonia Celta de Samhain",
       "Conteo de Historias Familiares",
       "Liberación de Faroles Flotantes"
@@ -160,13 +160,13 @@ const culturalExpressions = [
       },
       {
         title: "Coros Cornish",
-        description: "Los coros masculinos fueron introducidos por la comunidad inglesa. El Coro "Voices of the Mines" sigue activo y canta canciones tradicionales en inglés y español.",
+        description: 'Los coros masculinos fueron introducidos por la comunidad inglesa. El Coro "Voices of the Mines" sigue activo y canta canciones tradicionales en inglés y español.',
         significance: "Los coros eran parte esencial de la vida comunitaria británica y se mantuvieron como tradición única en Real del Monte."
       },
       {
         title: "Música Celta",
         description: "Grupos locales interpretan música tradicional de Cornualles, Gales e Irlanda, manteniendo viva la herencia musical de los inmigrantes.",
-        significance: "La música celta se ha fusionado con ritmos mexicanos creando un estilo único conocido como "Celta-Mex"."
+        significance: 'La música celta se ha fusionado con ritmos mexicanos creando un estilo único conocido como "Celta-Mex".'
       }
     ]
   },
@@ -186,7 +186,7 @@ const culturalExpressions = [
       },
       {
         title: "Bailes Celtas",
-        description: "Talleres regulares de danzas tradicionales cornish como el "Furry Dance" y el "Flora Day", preservados por descendientes de las familias originales.",
+        description: 'Talleres regulares de danzas tradicionales cornish como el "Furry Dance" y el "Flora Day", preservados por descendientes de las familias originales.',
         significance: "Real del Monte es el único lugar fuera de Cornualles donde estas danzas se practican regularmente."
       }
     ]
@@ -739,7 +739,7 @@ const CulturaPage = () => {
               </p>
             </motion.div>
 
-            <ImageGallery images={culturalImages} />
+            <ImageGallery />
           </div>
         </section>
 
