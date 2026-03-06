@@ -18,6 +18,10 @@ import { ImageGallery } from "@/components/ImageGallery";
 import pasteImg from "@/assets/paste.webp";
 import callesImg from "@/assets/calles-colonial.webp";
 import heroImg from "@/assets/hero-real-del-monte.webp";
+import rdm1 from "@/assets/rdm1.jpeg";
+import rdm2 from "@/assets/rdm2.jpeg";
+import rdm3 from "@/assets/rdm01.jpg";
+import rdm4 from "@/assets/rdm02.jpg";
 
 // Extended paste varieties
 const pasteVarieties = [

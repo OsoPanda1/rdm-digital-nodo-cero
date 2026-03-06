@@ -3,14 +3,18 @@ import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
 import PageTransition from "@/components/PageTransition";
 import { motion } from "framer-motion";
+import heroImg from "@/assets/hero-real-del-monte.webp";
+import rdm1 from "@/assets/rdm1.jpeg";
+import rdm2 from "@/assets/rdm2.jpeg";
+import rdm3 from "@/assets/rdm01.jpg";
 
 const events = [
-  { name: "Festival Internacional del Paste", date: "12 Oct", time: "10:00 - 20:00", location: "Plaza Principal", description: "El festival gastronómico más importante con más de 50 variedades de pastes." },
-  { name: "Día de Muertos en Real del Monte", date: "01 Nov", time: "18:00 - 23:00", location: "Panteón Inglés", description: "Celebración única que fusiona tradiciones mexicanas e inglesas." },
-  { name: "Carrera de Montaña RDM", date: "25 Nov", time: "07:00 - 14:00", location: "Peñas Cargadas", description: "Trail running por bosques y formaciones rocosas." },
-  { name: "Feria del Libro en la Montaña", date: "08 Dic", time: "09:00 - 18:00", location: "Casa de Cultura", description: "Encuentro literario con autores locales y nacionales." },
-  { name: "Noche de Leyendas", date: "20 Dic", time: "20:00 - 23:00", location: "Centro Histórico", description: "Recorrido nocturno narrando las leyendas más famosas del pueblo." },
-  { name: "Año Nuevo en la Montaña", date: "31 Dic", time: "21:00 - 01:00", location: "Plaza Principal", description: "Celebración comunitaria de fin de año con música en vivo." },
+  { name: "Festival Internacional del Paste", date: "12 Oct", time: "10:00 - 20:00", location: "Plaza Principal", description: "El festival gastronómico más importante con más de 50 variedades de pastes.", image: rdm1 },
+  { name: "Día de Muertos en Real del Monte", date: "01 Nov", time: "18:00 - 23:00", location: "Panteón Inglés", description: "Celebración única que fusiona tradiciones mexicanas e inglesas.", image: rdm2 },
+  { name: "Carrera de Montaña RDM", date: "25 Nov", time: "07:00 - 14:00", location: "Peñas Cargadas", description: "Trail running por bosques y formaciones rocosas.", image: rdm3 },
+  { name: "Feria del Libro en la Montaña", date: "08 Dic", time: "09:00 - 18:00", location: "Casa de Cultura", description: "Encuentro literario con autores locales y nacionales.", image: heroImg },
+  { name: "Noche de Leyendas", date: "20 Dic", time: "20:00 - 23:00", location: "Centro Histórico", description: "Recorrido nocturno narrando las leyendas más famosas del pueblo.", image: rdm1 },
+  { name: "Año Nuevo en la Montaña", date: "31 Dic", time: "21:00 - 01:00", location: "Plaza Principal", description: "Celebración comunitaria de fin de año con música en vivo.", image: rdm2 },
 ];
 
 const EventosPage = () => {

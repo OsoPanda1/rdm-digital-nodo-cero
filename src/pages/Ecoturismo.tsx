@@ -6,6 +6,10 @@ import PageTransition from "@/components/PageTransition";
 import penasImg from "@/assets/penas-cargadas.webp";
 import callesImg from "@/assets/calles-colonial.webp";
 import minaImg from "@/assets/mina-acosta.webp";
+import rdm1 from "@/assets/rdm1.jpeg";
+import rdm2 from "@/assets/rdm2.jpeg";
+import rdm3 from "@/assets/rdm01.jpg";
+import rdm4 from "@/assets/rdm02.jpg";
 
 const activities = [
   {

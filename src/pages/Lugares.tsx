@@ -10,6 +10,8 @@ import minaImg from "@/assets/mina-acosta.webp";
 import penasImg from "@/assets/penas-cargadas.webp";
 import callesImg from "@/assets/calles-colonial.webp";
 import heroImg from "@/assets/hero-real-del-monte.webp";
+import rdm1 from "@/assets/rdm1.jpeg";
+import rdm2 from "@/assets/rdm2.jpeg";
 
 const allPlaces = [
   { name: "Mina de Acosta", category: "Mina", description: "Desciende 450 metros bajo tierra en esta mina del siglo XVIII. Recorre los túneles donde mineros ingleses y mexicanos forjaron la historia de la plata.", image: minaImg, rating: 4.8 },
@@ -18,6 +20,8 @@ const allPlaces = [
   { name: "Callejones Coloniales", category: "Cultura", description: "Calles empedradas con fachadas coloridas, balcones con flores y tiendas artesanales.", image: callesImg, rating: 4.6 },
   { name: "Plaza Principal", category: "Cultura", description: "El corazón del pueblo mágico. Punto de encuentro con vista a la Parroquia y rodeada de negocios locales.", image: heroImg, rating: 4.5 },
   { name: "Museo del Paste", category: "Museo", description: "Conoce la historia del paste, su origen inglés y cómo se convirtió en el platillo emblemático de Real del Monte.", image: pasteImg, rating: 4.6 },
+  { name: "Parroquia de la Asunción", category: "Cultura", description: "Templo colonial del siglo XVIII con arquitectura barroca y vista panorámica del pueblo.", image: rdm1, rating: 4.4 },
+  { name: "Mirador La Cruz", category: "Naturaleza", description: "Punto de observación con vistas panorámicas de 360° del pueblo y la Sierra de Pachuca.", image: rdm2, rating: 4.5 },
 ];
 
 const LugaresPage = () => {

@@ -21,31 +21,41 @@ import minaImg from "@/assets/mina-acosta.webp";
 import penasImg from "@/assets/penas-cargadas.webp";
 import callesImg from "@/assets/calles-colonial.webp";
 import heroImg from "@/assets/hero-real-del-monte.webp";
+import rdm1 from "@/assets/rdm1.jpeg";
+import rdm2 from "@/assets/rdm2.jpeg";
+import rdm3 from "@/assets/rdm01.jpg";
+import rdm4 from "@/assets/rdm02.jpg";
 
 const places = [
   { name: "Mina de Acosta", category: "Mina", description: "Desciende 450 metros bajo tierra en esta mina del siglo XVIII. Recorre los túneles donde mineros ingleses y mexicanos forjaron la historia de la plata.", image: minaImg, rating: 4.8 },
   { name: "Panteón Inglés", category: "Museo", description: "Un cementerio único con cruces celtas entre pinos y neblina. Testimonio de la comunidad inglesa que llegó en el siglo XIX.", image: panteonImg, rating: 4.7 },
   { name: "Peñas Cargadas", category: "Naturaleza", description: "Formaciones rocosas gigantes en equilibrio imposible. Senderismo entre bosque de niebla con vistas panorámicas del valle.", image: penasImg, rating: 4.9 },
   { name: "Callejones Coloniales", category: "Cultura", description: "Calles empedradas con fachadas coloridas, balcones con flores y tiendas artesanales. El corazón vivo del pueblo mágico.", image: callesImg, rating: 4.6 },
+  { name: "Plaza Principal", category: "Cultura", description: "El corazón del pueblo mágico con la Parroquia de la Asunción y el Kiosco de la Independencia.", image: rdm1, rating: 4.5 },
+  { name: "Museo del Paste", category: "Museo", description: "Conoce la historia del paste, su origen inglés y cómo se convirtió en el platillo emblemático de Real del Monte.", image: rdm2, rating: 4.6 },
 ];
 
 const businesses = [
   { name: "Pastes El Portal", category: "Pastes", description: "Los pastes más tradicionales de Real del Monte desde 1985.", image: pasteImg, isPremium: true, rating: 4.9, phone: "771 123 4567" },
   { name: "Hotel Real de Minas", category: "Hospedaje", description: "Hotel boutique en casona colonial restaurada con vista a la montaña.", image: callesImg, isPremium: true, rating: 4.7, phone: "771 234 5678" },
   { name: "Tours Mineros RDM", category: "Tours", description: "Recorridos guiados por las minas históricas con expertos en historia local.", image: minaImg, isPremium: false, rating: 4.5 },
-  { name: "Café La Neblina", category: "Restaurante", description: "Café artesanal de altura con los mejores postres y vista al bosque.", image: panteonImg, isPremium: false, rating: 4.4 },
+  { name: "Café La Neblina", category: "Restaurante", description: "Café artesanal de altura con los mejores postres y vista al bosque.", image: rdm3, isPremium: false, rating: 4.4 },
+  { name: "La Casa del Paste", category: "Pastes", description: "Variedades únicas de paste incluyendo mole, barbacoa y opciones dulces.", image: rdm4, isPremium: true, rating: 4.8 },
+  { name: "Hostal Colonial", category: "Hospedaje", description: "Alojamiento económico en el centro histórico con ambiente acogedor.", image: rdm1, isPremium: false, rating: 4.3 },
 ];
 
 const posts = [
   { userName: "María García", userAvatar: "MG", content: "¡Increíble visita a la Mina de Acosta! Bajar 450 metros bajo tierra fue una experiencia única. 🏔️⛏️", image: minaImg, placeName: "Mina de Acosta", likes: 24, comments: 5, timeAgo: "Hace 2 horas" },
   { userName: "Carlos Hernández", userAvatar: "CH", content: "Los mejores pastes que he probado en mi vida. El de mole es una obra maestra. 🥟❤️", image: pasteImg, placeName: "Pastes El Portal", likes: 18, comments: 3, timeAgo: "Hace 5 horas" },
   { userName: "Ana López", userAvatar: "AL", content: "Peñas Cargadas entre la niebla es mágico. Las formaciones rocosas parecen de otro planeta. 🌫️🪨", image: penasImg, placeName: "Peñas Cargadas", likes: 31, comments: 8, timeAgo: "Ayer" },
+  { userName: "Roberto Díaz", userAvatar: "RD", content: "El Panteón Inglés al atardecer es una experiencia que no puedes perderte. Tan histórico y hermoso. 🌅", image: panteonImg, placeName: "Panteón Inglés", likes: 22, comments: 4, timeAgo: "Ayer" },
 ];
 
 const events = [
   { name: "Festival Internacional del Paste", date: "12 Oct", time: "10:00 - 20:00", location: "Plaza Principal", description: "El festival gastronómico más importante del pueblo con más de 50 variedades de pastes." },
   { name: "Día de Muertos en Real del Monte", date: "01 Nov", time: "18:00 - 23:00", location: "Panteón Inglés", description: "Celebración única que fusiona tradiciones mexicanas e inglesas en el panteón histórico." },
   { name: "Carrera de Montaña RDM", date: "25 Nov", time: "07:00 - 14:00", location: "Peñas Cargadas", description: "Carrera de trail running por los bosques y formaciones rocosas del pueblo mágico." },
+  { name: "Noche de Rábanos", date: "23 Dic", time: "16:00 - 22:00", location: "Plaza Principal", description: "Tradicional competencia de sculpture en rábanos illuminados." },
 ];
 
 const Index = () => {
