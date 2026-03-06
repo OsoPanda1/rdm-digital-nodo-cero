@@ -27,7 +27,9 @@ router.get('/', async (req, res, next) => {
   try {
     const { placeName, search, limit = '20', offset = '0' } = req.query;
 
-    const where: any = {};
+    const where: any = {
+      isHidden: false  // Only show non-hidden posts by default
+    };
 
     if (placeName) {
       where.placeName = { contains: placeName as string, mode: 'insensitive' };
@@ -61,7 +63,10 @@ router.get('/', async (req, res, next) => {
             }
           }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          { isFeatured: 'desc' },
+          { createdAt: 'desc' }
+        ],
         take: parseInt(limit as string),
         skip: parseInt(offset as string)
       }),
@@ -431,6 +436,169 @@ router.delete('/:id/comments/:commentId', requireAuth, async (req: AuthRequest, 
     res.json({
       success: true,
       message: 'Comment deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ==================== ADMIN MODERATION ====================
+
+// GET /api/posts/admin/all - Get all posts including hidden (admin)
+router.get('/admin/all', requireAuth, requireRole('admin'), async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { isHidden, isFeatured, isModerated, limit = '50', offset = '0' } = req.query;
+
+    const where: any = {};
+
+    if (isHidden !== undefined) {
+      where.isHidden = isHidden === 'true';
+    }
+
+    if (isFeatured !== undefined) {
+      where.isFeatured = isFeatured === 'true';
+    }
+
+    if (isModerated !== undefined) {
+      where.isModerated = isModerated === 'true';
+    }
+
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: parseInt(limit as string),
+        skip: parseInt(offset as string)
+      }),
+      prisma.post.count({ where })
+    ]);
+
+    res.json({
+      success: true,
+      data: posts,
+      pagination: {
+        total,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /api/posts/:id/moderate - Moderate a post (admin)
+router.put('/:id/moderate', requireAuth, requireRole('admin'), async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { id } = req.params;
+    const { isHidden, isFeatured, isModerated } = req.body;
+
+    const post = await prisma.post.findUnique({
+      where: { id }
+    });
+
+    if (!post) {
+      throw new AppError('Post not found', 404);
+    }
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        isHidden: isHidden ?? post.isHidden,
+        isFeatured: isFeatured ?? post.isFeatured,
+        isModerated: isModerated ?? post.isModerated,
+        moderatedAt: new Date(),
+        moderatedBy: req.user!.id
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      data: updated
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /api/posts/:id/feature - Toggle featured status (admin)
+router.put('/:id/feature', requireAuth, requireRole('admin'), async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { id } = req.params;
+    const { isFeatured } = req.body;
+
+    const post = await prisma.post.findUnique({
+      where: { id }
+    });
+
+    if (!post) {
+      throw new AppError('Post not found', 404);
+    }
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: { isFeatured: isFeatured ?? !post.isFeatured }
+    });
+
+    res.json({
+      success: true,
+      data: updated
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /api/posts/:id/hide - Hide/show post (admin)
+router.put('/:id/hide', requireAuth, requireRole('admin'), async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { id } = req.params;
+    const { isHidden } = req.body;
+
+    const post = await prisma.post.findUnique({
+      where: { id }
+    });
+
+    if (!post) {
+      throw new AppError('Post not found', 404);
+    }
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        isHidden: isHidden ?? !post.isHidden,
+        moderatedAt: new Date(),
+        moderatedBy: req.user!.id
+      }
+    });
+
+    res.json({
+      success: true,
+      data: updated
     });
   } catch (error) {
     next(error);

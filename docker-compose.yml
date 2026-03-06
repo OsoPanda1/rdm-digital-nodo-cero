@@ -24,3 +24,43 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - rdm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Database
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=rdm_user
+      - POSTGRES_PASSWORD=rdm_password
+      - POSTGRES_DB=rdm_digital
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rdm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rdm_user -d rdm_digital"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  rdm-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
