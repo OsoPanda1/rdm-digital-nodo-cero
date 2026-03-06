@@ -72,29 +72,66 @@ enum TravelStyle {
 // ==================== BUSINESSES ====================
 
 model Business {
-  id             String   @id @default(uuid())
-  ownerId        String   @unique @map("owner_id")
-  name           String
-  category       String
-  description    String
-  phone          String?
-  address        String?
-  imageUrl       String?  @map("image_url")
-  website        String?
-  email          String?
-  isPremium      Boolean  @default(false) @map("is_premium")
-  premiumUntil   DateTime? @map("premium_until")
-  latitude       Float?
-  longitude      Float?
-  isActive       Boolean  @default(true) @map("is_active")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id                   String   @id @default(uuid())
+  ownerId              String   @unique @map("owner_id")
+  name                 String
+  category             String
+  description          String
+  phone                String?
+  address              String?
+  imageUrl             String?  @map("image_url")
+  website              String?
+  email                String?
+  isPremium            Boolean  @default(false) @map("is_premium")
+  premiumUntil         DateTime? @map("premium_until")
+  subscriptionStatus   SubscriptionStatus @default(NONE) @map("subscription_status")
+  subscriptionExpiresAt DateTime? @map("subscription_expires_at")
+  latitude             Float?
+  longitude            Float?
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   // Relations
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  tipsReceived Tip[] @relation("TipsToBusiness")
+  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tipsReceived   Tip[]         @relation("TipsToBusiness")
+  donations      Donation[]
 
   @@map("businesses")
+}
+
+enum SubscriptionStatus {
+  NONE
+  PENDING
+  ACTIVE
+  EXPIRED
+}
+
+// ==================== DICHOS MINEROS ====================
+
+model DichosMiner {
+  id          String   @id @default(uuid())
+  texto       String
+  significado String?  @map("significado")
+  categoria   DichosCategoria @default(GENERAL) @map("categoria")
+  fuente      String?
+  tags        String[] @default([])
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("dichos_mineros")
+}
+
+enum DichosCategoria {
+  GENERAL
+  BRINDIS
+  HUMOR
+  FAMILIA
+  COMIDA_BEBIDA
+  TRABAJO
+  VIDA_COTIDIANA
+  MINERIA
 }
 
 // ==================== NEWSLETTER ====================
@@ -409,4 +446,30 @@ model AiMessage {
 enum Sender {
   user
   realito
+}
+
+// ==================== KNOWLEDGE BASE ====================
+
+model KnowledgeDocument {
+  id          String            @id @default(uuid())
+  type        KnowledgeType     @map("knowledge_type")
+  source      String            @default("CMS")
+  title       String
+  content     String
+  metadata    Json?
+  isActive    Boolean           @default(true) @map("is_active")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("knowledge_documents")
+}
+
+enum KnowledgeType {
+  DICHO
+  HISTORIA
+  CULTURA
+  RUTA
+  EVENTO
+  LUGAR
+  NEGOCIO
 }

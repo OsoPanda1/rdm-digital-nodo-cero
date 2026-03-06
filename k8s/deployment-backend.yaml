@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,12 +36,16 @@ spec:
               port: 3001
             initialDelaySeconds: 15
             periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 3001
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           env:
             - name: NODE_ENV
               value: "production"
@@ -56,6 +61,11 @@ spec:
                 secretKeyRef:
                   name: rdm-secrets
                   key: jwt_secret
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: rdm-secrets
+                  key: jwt_refresh_secret
             - name: STRIPE_SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -76,6 +86,11 @@ spec:
                 configMapKeyRef:
                   name: rdm-config
                   key: frontend_url
+            - name: SUPABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rdm-config
+                  key: supabase_url
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -105,6 +120,7 @@ metadata:
 data:
   api_url: "https://api.rdmdigital.mx"
   frontend_url: "https://rdmdigital.mx"
+  supabase_url: "https://xxxxx.supabase.co"
 ---
 apiVersion: v1
 kind: Secret
@@ -115,6 +131,51 @@ type: Opaque
 stringData:
   database_url: "postgresql://user:password@postgres:5432/rdm"
   jwt_secret: "your-super-secret-jwt-key-change-in-production"
+  jwt_refresh_secret: "your-refresh-secret-key-change-in-production"
   stripe_secret_key: "sk_test_..."
   stripe_webhook_secret: "whsec_..."
   openai_api_key: "sk-..."
+  supabase_service_key: ""
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rdm-backend-hpa
+  namespace: rdmdigital
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rdm-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max

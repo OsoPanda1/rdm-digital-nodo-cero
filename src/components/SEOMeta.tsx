@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface SEOMetaProps {
   title?: string;
   description?: string;
   image?: string;
   url?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'business' | 'event' | 'place';
+  jsonLd?: Record<string, any>;
   publishedTime?: string;
   author?: string;
 }
@@ -15,6 +16,7 @@ const DEFAULT_META = {
   description: 'Explora Real del Monte, Hidalgo: historia, cultura, ecoturismo, gastronomía y más. Descubre los mejores lugares, eventos y rutas turísticas.',
   image: '/og-image.jpg',
   siteName: 'RDM Digital',
+  siteUrl: 'https://real-del-monte.com',
 };
 
 export function SEOMeta({
@@ -23,61 +25,88 @@ export function SEOMeta({
   image,
   url,
   type = 'website',
+  jsonLd,
   publishedTime,
   author,
 }: SEOMetaProps) {
   const fullTitle = title ? `${title} | ${DEFAULT_META.siteName}` : DEFAULT_META.title;
   const metaDescription = description || DEFAULT_META.description;
   const metaImage = image || DEFAULT_META.image;
-  const canonicalUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const canonicalUrl = url || (typeof window !== 'undefined' ? window.location.href : DEFAULT_META.siteUrl);
 
   useEffect(() => {
     // Update document title
     document.title = fullTitle;
 
-    // Update meta tags
-    const metaTags = [
-      { name: 'description', content: metaDescription },
-      { name: 'keywords', content: 'Real del Monte, Pueblo Mágico, Hidalgo, turismo, ecoturismo, lugares turísticos, eventos, rutas, historia, cultura' },
-      { property: 'og:title', content: fullTitle },
-      { property: 'og:description', content: metaDescription },
-      { property: 'og:image', content: metaImage },
-      { property: 'og:type', content: type },
-      { property: 'og:url', content: canonicalUrl },
-      { property: 'og:site_name', content: DEFAULT_META.siteName },
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: fullTitle },
-      { name: 'twitter:description', content: metaDescription },
-      { name: 'twitter:image', content: metaImage },
-    ];
-
-    // Remove existing meta tags and add new ones
-    metaTags.forEach(tag => {
-      // Check if tag already exists
-      let element: HTMLMetaElement | null = null;
+    // Helper function to get or create meta element
+    const getOrCreateMeta = (name: string, isProperty = false): HTMLMetaElement => {
+      const selector = isProperty 
+        ? `meta[property="${name}"]` 
+        : `meta[name="${name}"]`;
       
-      if (tag.name) {
-        element = document.querySelector(`meta[name="${tag.name}"]`);
-        if (!element) {
-          element = document.createElement('meta');
-          element.name = tag.name;
-          document.head.appendChild(element);
-        }
-      } else if (tag.property) {
-        element = document.querySelector(`meta[property="${tag.property}"]`);
-        if (!element) {
-          element = document.createElement('meta');
-          element.setProperty('property', tag.property);
-          document.head.appendChild(element);
-        }
-      }
+      let element = document.querySelector(selector) as HTMLMetaElement;
       
-      if (element) {
-        element.content = tag.content;
+      if (!element) {
+        element = document.createElement('meta');
+        if (isProperty) {
+          element.setAttribute('property', name);
+        } else {
+          element.setAttribute('name', name);
+        }
+        document.head.appendChild(element);
       }
-    });
+      return element;
+    };
 
-    // Add canonical URL
+    // Set basic meta tags
+    const descriptionMeta = getOrCreateMeta('description');
+    descriptionMeta.content = metaDescription;
+
+    // Open Graph tags
+    const ogTitle = getOrCreateMeta('og:title', true);
+    ogTitle.content = fullTitle;
+
+    const ogDescription = getOrCreateMeta('og:description', true);
+    ogDescription.content = metaDescription;
+
+    const ogImage = getOrCreateMeta('og:image', true);
+    ogImage.content = metaImage;
+
+    const ogType = getOrCreateMeta('og:type', true);
+    ogType.content = type;
+
+    const ogUrl = getOrCreateMeta('og:url', true);
+    ogUrl.content = canonicalUrl;
+
+    const ogSiteName = getOrCreateMeta('og:site_name', true);
+    ogSiteName.content = DEFAULT_META.siteName;
+
+    // Twitter Card tags
+    const twitterCard = getOrCreateMeta('twitter:card');
+    twitterCard.content = 'summary_large_image';
+
+    const twitterTitle = getOrCreateMeta('twitter:title');
+    twitterTitle.content = fullTitle;
+
+    const twitterDescription = getOrCreateMeta('twitter:description');
+    twitterDescription.content = metaDescription;
+
+    const twitterImage = getOrCreateMeta('twitter:image');
+    twitterImage.content = metaImage;
+
+    // Article specific tags
+    if (type === 'article') {
+      if (publishedTime) {
+        const ogPublishedTime = getOrCreateMeta('article:published_time', true);
+        ogPublishedTime.content = publishedTime;
+      }
+      if (author) {
+        const ogAuthor = getOrCreateMeta('article:author', true);
+        ogAuthor.content = author;
+      }
+    }
+
+    // Canonical URL
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -86,41 +115,45 @@ export function SEOMeta({
     }
     canonicalLink.href = canonicalUrl;
 
-    // Add JSON-LD structured data for organization
-    const jsonLd = {
+    // JSON-LD structured data
+    const defaultJsonLd: Record<string, any> = {
       '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'RDM Digital',
+      '@type': 'WebSite',
+      name: DEFAULT_META.siteName,
       description: metaDescription,
       url: canonicalUrl,
-      logo: metaImage,
-      sameAs: [
-        'https://facebook.com/rdmdigital',
-        'https://instagram.com/rdmdigital',
-        'https://twitter.com/rdmdigital',
-      ],
-      contactPoint: {
-        '@type': 'ContactPoint',
-        telephone: '+52-771-000-0000',
-        contactType: 'customer service',
-        areaServed: 'MX',
-        availableLanguage: 'Spanish',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${canonicalUrl}/buscar?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: DEFAULT_META.siteName,
+        logo: {
+          '@type': 'ImageObject',
+          url: metaImage,
+        },
       },
     };
 
-    let scriptEl = document.querySelector('script[type="application/ld+json"]');
+    // Merge with custom JSON-LD if provided
+    const finalJsonLd = jsonLd ? { ...defaultJsonLd, ...jsonLd } : defaultJsonLd;
+
+    let scriptEl = document.querySelector('script[id="schema-org-jsonld"]') as HTMLScriptElement;
     if (!scriptEl) {
       scriptEl = document.createElement('script');
+      scriptEl.id = 'schema-org-jsonld';
       scriptEl.type = 'application/ld+json';
       document.head.appendChild(scriptEl);
     }
-    scriptEl.textContent = JSON.stringify(jsonLd);
+    scriptEl.textContent = JSON.stringify(finalJsonLd);
 
-    // Cleanup function
-    return () => {
-      // We don't remove elements on unmount as they're part of the SPA
-    };
-  }, [fullTitle, metaDescription, metaImage, canonicalUrl, type]);
+    // Cleanup is handled by React - we don't remove elements on unmount in SPA
+  }, [fullTitle, metaDescription, metaImage, canonicalUrl, type, jsonLd, publishedTime, author]);
 
   return null;
 }
@@ -182,6 +215,10 @@ export const PAGE_SEO = {
   reglamento: {
     title: 'Reglamento - Normas de la Comunidad',
     description: 'Normas y políticas de la comunidad RDM Digital. Participación respetuosa.',
+  },
+  apoyanews: {
+    title: 'Apoya RDM Digital',
+    description: 'Apoya el desarrollo de la plataforma turística de Real del Monte con tu donación.',
   },
 };
 
