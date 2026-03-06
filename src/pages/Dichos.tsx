@@ -22,7 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 // Categories of dichos
 const CATEGORIES = [
   { id: "all", label: "Todos", icon: "✨" },
-  { id: "GENERAL", label: "Generales", icon: "💬" },
+  { id: "PERSONAJES", label: "Personajes", icon: "👤" },
   { id: "BRINDIS", label: "Brindis", icon: "🍻" },
   { id: "HUMOR", label: "Humor", icon: "😂" },
   { id: "FAMILIA", label: "Familia", icon: "👨‍👩‍👧‍👦" },
@@ -32,142 +32,430 @@ const CATEGORIES = [
   { id: "MINERIA", label: "Minería", icon: "💎" },
 ];
 
-// Sample dichos with Real del Monte context
+// Complete list of traditional dichos from Real del Monte
 const DICHOS = [
   {
     id: "1",
-    texto: "¡Ándale, no seas mole!",
-    significado: "Expresión para motivar a alguien a actuar, no quedarse pasivo. El mole representa algo retrasoso o lento.",
-    categoria: "BRINDIS",
-    fuente: "Tradición pastelesa",
-    tags: ["motivación", "acción"],
+    personaje: "Agustín Hernández",
+    texto: "Estás Agustín Hernández",
+    significado: "Estás débil",
+    jergaOriginal: "Estás Agustín Hernández",
+    categoria: "VIDA_COTIDIANA",
     likes: 156
   },
   {
     id: "2",
-    texto: "Más tieso que la neblina del lunes",
-    significado: "Algo muy tieso o tiesa. Se dice cuando alguien está muy erguido o formal, comparándolo con la niebla espesa que baja los lunes.",
-    categoria: "HUMOR",
-    fuente: "Dichos locales",
-    tags: ["formal", "lunes"],
+    personaje: "Alberto Rivera",
+    texto: "Vamos a hacer los Alberto Rivera",
+    significado: "Vamos a hacer los ejercicios",
+    jergaOriginal: "Vamos a hacer los Alberto Rivera",
+    categoria: "TRABAJO",
     likes: 89
   },
   {
     id: "3",
-    texto: "Trabajar como mineral en la mina",
-    significado: "Trabajar intensamente, sin descanso. Referencia al duro trabajo en las minas de plata.",
-    categoria: "TRABAJO",
-    fuente: "Herencia minera",
-    tags: ["trabajo", "esfuerzo"],
+    personaje: "Amalia",
+    texto: "Andas Amalia",
+    significado: "Andas caliente",
+    jergaOriginal: "Andas Amalia",
+    categoria: "HUMOR",
     likes: 234
   },
   {
     id: "4",
-    texto: "Echar más carburo que máquina de vapor",
-    significado: "Poner mucho esfuerzo, trabajar duro. Comparación con las antiguas máquinas de vapor usadas en las minas.",
-    categoria: "TRABAJO",
-    fuente: "Historia minera",
-    tags: ["esfuerzo", "máquinas"],
+    personaje: "Aurelia Melgarejo",
+    texto: "Ya estamos todas las Aurelia Melgarejo",
+    significado: "Ya estamos todas las muchachas (usado para viejitas)",
+    jergaOriginal: "Ya estamos todas las Aurelia Melgarejo",
+    categoria: "FAMILIA",
     likes: 178
   },
   {
     id: "5",
-    texto: "Estar más largo que la veta madre",
-    significado: "Algo o alguien muy largo. La veta madre era la veta principal de plata en las minas.",
-    categoria: "GENERAL",
-    fuente: "Historia minera",
-    tags: ["largo", "mina"],
+    personaje: "Braulia Rutas",
+    texto: "Ponme para mi Braulia Rutas",
+    significado: "Ponme para mi desayuno",
+    jergaOriginal: "Ponme para mi Braulia Rutas",
+    categoria: "COMIDA_BEBIDA",
     likes: 145
   },
   {
     id: "6",
-    texto: "Más profundo que la Mina de Acosta",
-    significado: "Algo muy profundo, ya sea literal o figuradamente. La Mina de Acosta tiene 460 metros de profundidad.",
-    categoria: "MINERIA",
-    fuente: "Lugares emblemáticos",
-    tags: ["profundo", "Acosta"],
+    personaje: "Carmelito",
+    texto: "Me voy a Carmelito",
+    significado: "Me voy a descansar",
+    jergaOriginal: "Me voy a Carmelito",
+    categoria: "VIDA_COTIDIANA",
     likes: 267
   },
   {
     id: "7",
-    texto: "Comer como si fuera festival del paste",
-    significado: "Comer con mucho apetito y enjoyment. Referencia al famoso Festival Internacional del Paste.",
-    categoria: "COMIDA_BEBIDA",
-    fuente: "Gastronomía local",
-    tags: ["comida", "festival"],
+    personaje: "Chucho Colunga",
+    texto: "Viene con sus Chucho Colunga",
+    significado: "Viene con sus mejores garritas (ropa elegante)",
+    jergaOriginal: "Viene con sus Chucho Colunga",
+    categoria: "HUMOR",
     likes: 198
   },
   {
     id: "8",
-    texto: "Subir más alto que Peñas Cargadas",
-    significado: "Alcanzar gran altura, ya sea física o metafórica. Las Peñas Cargadas son formaciones rocosas icónicas.",
-    categoria: "GENERAL",
-    fuente: "Naturaleza local",
-    tags: ["altura", "Peñas Cargadas"],
+    personaje: "Chucho Pérez",
+    texto: "Perdóname la Chucho Pérez",
+    significado: "Perdóname la vida",
+    jergaOriginal: "Perdóname la Chucho Pérez",
+    categoria: "BRINDIS",
     likes: 156
   },
   {
     id: "9",
-    texto: "Brindar con mezcal del bueno",
-    significado: "Celebrar algo especial. El mezcal es parte de la tradición local.",
-    categoria: "BRINDIS",
-    fuente: "Tradición",
-    tags: ["celebración", "mezcal"],
+    personaje: "Chuco Bolio",
+    texto: "Habrá un Chuco Bolio",
+    significado: "Habrá una tocada (fiesta/evento musical)",
+    jergaOriginal: "Habrá un Chuco Bolio",
+    categoria: "PERSONAJES",
     likes: 312
   },
   {
     id: "10",
-    texto: "Más blanco que la neblina del Panteón Inglés",
-    significado: "Algo muy blanco. La niebla del Panteón Inglés es legendaria por su blancura.",
-    categoria: "GENERAL",
-    fuente: "Lugares icónicos",
-    tags: ["blanco", "Panteón"],
+    personaje: "Ciro Arellano",
+    texto: "Ya me duelen las Ciro Arellano",
+    significado: "Ya me duelen las sentaderas",
+    jergaOriginal: "Ya me duelen las Ciro Arellano",
+    categoria: "HUMOR",
     likes: 87
   },
   {
     id: "11",
-    texto: "Tener más capas que un paste de varios ingredientes",
-    significado: "Ser complejo, tener muchas facetas. Los pastes pueden tener múltiples rellenos.",
-    categoria: "COMIDA_BEBIDA",
-    fuente: "Gastronomía",
-    tags: ["complejo", "paste"],
+    personaje: "Ciro Hernández",
+    texto: "Cuidado con la Ciro Hernández",
+    significado: "Cuidado con la pulmonía",
+    jergaOriginal: "Cuidado con la Ciro Hernández",
+    categoria: "VIDA_COTIDIANA",
     likes: 134
   },
   {
     id: "12",
-    texto: "Vivir entre la neblina",
-    significado: "Estar en un estado de confusión o no entender algo claramente.",
-    categoria: "VIDA_COTIDIANA",
-    fuente: "Clima local",
-    tags: ["confusión", "neblina"],
+    personaje: "Conrado Arista",
+    texto: "Cómo eres Conrado Arista",
+    significado: "Qué bruto eres",
+    jergaOriginal: "Cómo eres Conrado Arista",
+    categoria: "HUMOR",
     likes: 178
   },
   {
     id: "13",
-    texto: "Conocerse como las calles empedradas",
-    significado: "Conocerse muy bien, saber todos los rincones. Las calles empedradas son un patrimonio del pueblo.",
-    categoria: "FAMILIA",
-    fuente: "Arquitectura colonial",
-    tags: ["conocimiento", "calles"],
+    personaje: "Domingo Rivera",
+    texto: "No te vaya a caer un Domingo Rivera",
+    significado: "No te vaya a caer un rayo",
+    jergaOriginal: "No te vaya a caer un Domingo Rivera",
+    categoria: "MINERIA",
     likes: 156
   },
   {
     id: "14",
-    texto: "Más valioso que la plata de Real",
-    significado: "Algo muy valioso. La plata fue la fuente de riqueza del pueblo.",
-    categoria: "MINERIA",
-    fuente: "Historia",
-    tags: ["valioso", "plata"],
+    personaje: "El Agrarista",
+    texto: "¡Como dijo el Agrarista! Salud chinga",
+    significado: "Brindis rudo minero",
+    jergaOriginal: "¡Como dijo el Agrarista! Salud chinga",
+    categoria: "BRINDIS",
     likes: 289
   },
   {
     id: "15",
-    texto: "Bajar como agua de manantial",
-    significado: "Hacer algo con facilidad y fluidez. Los manantiales son abundantes en la región.",
-    categoria: "GENERAL",
-    fuente: "Naturaleza",
-    tags: ["fluidez", "agua"],
+    personaje: "Félix Castañeda",
+    texto: "De a Félix Castañeda",
+    significado: "De a momento (rápido/provisional)",
+    jergaOriginal: "De a Félix Castañeda",
+    categoria: "VIDA_COTIDIANA",
     likes: 98
+  },
+  {
+    id: "16",
+    personaje: "Gonzalo Meras",
+    texto: "Anda de Gonzalo Meras",
+    significado: "Anda de cusco (coqueto/malicioso)",
+    jergaOriginal: "Anda de Gonzalo Meras",
+    categoria: "HUMOR",
+    likes: 145
+  },
+  {
+    id: "17",
+    personaje: "Horacio Meneses",
+    texto: "Ya me echo la Horacio Meneses",
+    significado: "Ya me echo la penúltima (copa)",
+    jergaOriginal: "Ya me echo la Horacio Meneses",
+    categoria: "BRINDIS",
+    likes: 267
+  },
+  {
+    id: "18",
+    personaje: "José García",
+    texto: "No te José García",
+    significado: "No te recargues (no te apoyes/no abuses)",
+    jergaOriginal: "No te José García",
+    categoria: "TRABAJO",
+    likes: 198
+  },
+  {
+    id: "19",
+    personaje: "José Luis Fernández",
+    texto: "Estás muy José Luis Fernández",
+    significado: "Estás muy chulo",
+    jergaOriginal: "Estás muy José Luis Fernández",
+    categoria: "HUMOR",
+    likes: 156
+  },
+  {
+    id: "20",
+    personaje: "José Roa",
+    texto: "¿Cómo está la José Roa?",
+    significado: "¿Cómo está la raza?",
+    jergaOriginal: "¿Cómo está la José Roa?",
+    categoria: "PERSONAJES",
+    likes: 312
+  },
+  {
+    id: "21",
+    personaje: "Kiko García",
+    texto: "Yo uso puro Kiko García",
+    significado: "Puro billete tosco (dinero en efectivo/grande)",
+    jergaOriginal: "Yo uso puro Kiko García",
+    categoria: "COMIDA_BEBIDA",
+    likes: 87
+  },
+  {
+    id: "22",
+    personaje: "Lolita Carrera",
+    texto: "Te veo muy Lolita Carrera",
+    significado: "Te veo muy mortificado/preocupado",
+    jergaOriginal: "Te veo muy Lolita Carrera",
+    categoria: "VIDA_COTIDIANA",
+    likes: 134
+  },
+  {
+    id: "23",
+    personaje: "Luis Campero",
+    texto: "¡Salud mulas apartando a mis compadres!",
+    significado: "Brindis tradicional de cantina",
+    jergaOriginal: "¡Salud mulas apartando a mis compadres!",
+    categoria: "BRINDIS",
+    likes: 178
+  },
+  {
+    id: "24",
+    personaje: "Mamá del Bolillo",
+    texto: "Vienes como la mamá del Bolillo",
+    significado: "Vienes con tu carota (de mal humor)",
+    jergaOriginal: "Vienes como la mamá del Bolillo",
+    categoria: "HUMOR",
+    likes: 156
+  },
+  {
+    id: "25",
+    personaje: "Manuel Negrón",
+    texto: "Andas todo Manuel Negrón",
+    significado: "Andas todo lambrijo (flaco/hambriento)",
+    jergaOriginal: "Andas todo Manuel Negrón",
+    categoria: "HUMOR",
+    likes: 289
+  },
+  {
+    id: "26",
+    personaje: "Mario Hernández",
+    texto: "Andas todo Mario Hernández",
+    significado: "Andas todo roido (desgastado)",
+    jergaOriginal: "Andas todo Mario Hernández",
+    categoria: "VIDA_COTIDIANA",
+    likes: 98
+  },
+  {
+    id: "27",
+    personaje: "Martín López",
+    texto: "Me dejaste Martín López",
+    significado: "Me dejaste picadito (con ganas de más)",
+    jergaOriginal: "Me dejaste Martín López",
+    categoria: "COMIDA_BEBIDA",
+    likes: 145
+  },
+  {
+    id: "28",
+    personaje: "Martín Pérez",
+    texto: "Para echarme mis Martín Pérez",
+    significado: "Para echarme mis sagrados alimentos",
+    jergaOriginal: "Para echarme mis Martín Pérez",
+    categoria: "COMIDA_BEBIDA",
+    likes: 267
+  },
+  {
+    id: "29",
+    personaje: "Moisés Escamilla",
+    texto: "No seas Moisés Escamilla",
+    significado: "No seas ladinito (astuto/ventajoso)",
+    jergaOriginal: "No seas Moisés Escamilla",
+    categoria: "HUMOR",
+    likes: 198
+  },
+  {
+    id: "30",
+    personaje: "Mundo Oliver",
+    texto: "Andas todo Mundo Oliver",
+    significado: "Andas todo menso",
+    jergaOriginal: "Andas todo Mundo Oliver",
+    categoria: "HUMOR",
+    likes: 156
+  },
+  {
+    id: "31",
+    personaje: "Narciso Trejo",
+    texto: "No te hagas Narciso Trejo",
+    significado: "No te hagas pendejo",
+    jergaOriginal: "No te hagas Narciso Trejo",
+    categoria: "HUMOR",
+    likes: 312
+  },
+  {
+    id: "32",
+    personaje: "Nicolás Ordaz",
+    texto: "Parecen Nicolás Ordaz",
+    significado: "Parecen Judas (traidores/criticones)",
+    jergaOriginal: "Parecen Nicolás Ordaz",
+    categoria: "HUMOR",
+    likes: 87
+  },
+  {
+    id: "33",
+    personaje: "Nicolás Tejeda",
+    texto: "Échate un Nicolás Tejeda",
+    significado: "Échate un finfonazo (un trago de alcohol)",
+    jergaOriginal: "Échate un Nicolás Tejeda",
+    categoria: "BRINDIS",
+    likes: 134
+  },
+  {
+    id: "34",
+    personaje: "Padre Heredia",
+    texto: "Échale copal al santo, no le hace que...",
+    significado: "Hacer algo con exageración sin importar daños",
+    jergaOriginal: "Échale copal al santo, no le hace que...",
+    categoria: "PERSONAJES",
+    likes: 178
+  },
+  {
+    id: "35",
+    personaje: "Pancho Soto",
+    texto: "Con todo Pancho Soto",
+    significado: "Con todo respeto",
+    jergaOriginal: "Con todo Pancho Soto",
+    categoria: "PERSONAJES",
+    likes: 156
+  },
+  {
+    id: "36",
+    personaje: "Pánfilo Soto",
+    texto: "Vete a tu Pánfilo Soto",
+    significado: "Vete a tu casita",
+    jergaOriginal: "Vete a tu Pánfilo Soto",
+    categoria: "FAMILIA",
+    likes: 289
+  },
+  {
+    id: "37",
+    personaje: "Pepe Terán",
+    texto: "Te pega la Pepe Terán",
+    significado: "Te pega la vieja (la esposa)",
+    jergaOriginal: "Te pega la Pepe Terán",
+    categoria: "FAMILIA",
+    likes: 98
+  },
+  {
+    id: "38",
+    personaje: "Plutarco García",
+    texto: "Mis Plutarco García se pusieron malos",
+    significado: "Mis mijitos (hijos) se enfermaron",
+    jergaOriginal: "Mis Plutarco García se pusieron malos",
+    categoria: "FAMILIA",
+    likes: 145
+  },
+  {
+    id: "39",
+    personaje: "Pompero Rivera",
+    texto: "Veo a puro Pompero Rivera",
+    significado: "Pura mula loca (gente alborotada)",
+    jergaOriginal: "Veo a puro Pompero Rivera",
+    categoria: "HUMOR",
+    likes: 267
+  },
+  {
+    id: "40",
+    personaje: "Ramón Hernández",
+    texto: "Con mi Ramón Hernández",
+    significado: "Con mi sagrada esposa",
+    jergaOriginal: "Con mi Ramón Hernández",
+    categoria: "FAMILIA",
+    likes: 198
+  },
+  {
+    id: "41",
+    personaje: "Ramón Razo",
+    texto: "Vengo de la Ramón Razo",
+    significado: "Vengo de la nube gris (Ciudad de México)",
+    jergaOriginal: "Vengo de la Ramón Razo",
+    categoria: "PERSONAJES",
+    likes: 156
+  },
+  {
+    id: "42",
+    personaje: "Refugio Fragoso",
+    texto: "Verás como Refugio Fragoso",
+    significado: "Verás como no pasa nada",
+    jergaOriginal: "Verás como Refugio Fragoso",
+    categoria: "PERSONAJES",
+    likes: 312
+  },
+  {
+    id: "43",
+    personaje: "Roberto Arista",
+    texto: "Llegaste Roberto Arista",
+    significado: "Llegaste un poquito tarde",
+    jergaOriginal: "Llegaste Roberto Arista",
+    categoria: "VIDA_COTIDIANA",
+    likes: 87
+  },
+  {
+    id: "44",
+    personaje: "Roberto Martínez",
+    texto: "Vienes como Roberto Martínez",
+    significado: "Vienes como el diablo (enojado)",
+    jergaOriginal: "Vienes como Roberto Martínez",
+    categoria: "HUMOR",
+    likes: 134
+  },
+  {
+    id: "45",
+    personaje: "Ruberta García",
+    texto: "Te traes a la Ruberta García",
+    significado: "Te traes a la descendencia (a la familia)",
+    jergaOriginal: "Te traes a la Ruberta García",
+    categoria: "FAMILIA",
+    likes: 178
+  },
+  {
+    id: "46",
+    personaje: "Sergio Pérez",
+    texto: "Están muy Sergio Pérez",
+    significado: "Están muy chirris (pequeños/débiles)",
+    jergaOriginal: "Están muy Sergio Pérez",
+    categoria: "HUMOR",
+    likes: 156
+  },
+  {
+    id: "47",
+    personaje: "Simón Guerrero",
+    texto: "Mi Simón Guerrero no me dejaba",
+    significado: "Mi fiera (esposa/pareja) no me dejaba",
+    jergaOriginal: "Mi Simón Guerrero no me dejaba",
+    categoria: "FAMILIA",
+    likes: 289
   }
 ];
 
@@ -181,7 +469,9 @@ const DichosPage = () => {
   // Filter dichos
   const filteredDichos = DICHOS.filter(dicho => {
     const matchesCategory = selectedCategory === "all" || dicho.categoria === selectedCategory;
-    const matchesSearch = dicho.texto.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = 
+      dicho.texto.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dicho.personaje.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dicho.significado.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -199,8 +489,8 @@ const DichosPage = () => {
     });
   };
 
-  // Get random category for featured section
-  const featuredDichos = DICHOS.slice(0, 3);
+  // Get featured (top liked)
+  const featuredDichos = [...DICHOS].sort((a, b) => b.likes - a.likes).slice(0, 3);
 
   return (
     <PageTransition>
@@ -220,20 +510,21 @@ const DichosPage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Badge variant="outline" className="border-amber-500 text-amber-500">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  Patrimonio Cultural
+                  Archivo Histórico
                 </Badge>
               </div>
               
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-                Dichos del{" "}
+                Dichos{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">
-                  Pueblo
+                  Personificados
                 </span>
               </h1>
               
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                Descubre las expresiones, dichos y frases típicas que han marcado la identidad 
-                de Real del Monte a lo largo de más de 200 años de historia minera y cultural.
+                Descubre las expresiones tradicionales de Real del Monte. 
+                47 personajes históricos conforman el rico vocabulario característico de este 
+                Pueblo Mágico hidalguense.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -252,7 +543,7 @@ const DichosPage = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar dichos..."
+                placeholder="Buscar por personaje, expresión o significado..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -277,7 +568,7 @@ const DichosPage = () => {
             <section className="mb-12">
               <h2 className="font-serif text-2xl font-bold mb-6 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500" />
-                Dichos Destacados
+                Dichos Más Populares
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
                 {featuredDichos.map((dicho, index) => (
@@ -289,15 +580,20 @@ const DichosPage = () => {
                   >
                     <Card className="h-full bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200/50">
                       <CardContent className="p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                            {dicho.personaje}
+                          </Badge>
+                        </div>
                         <Quote className="w-8 h-8 text-amber-500/30 mb-4" />
-                        <p className="font-serif text-xl font-bold text-foreground mb-3">
+                        <p className="font-serif text-lg font-bold text-foreground mb-3">
                           "{dicho.texto}"
                         </p>
                         <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                           {dicho.significado}
                         </p>
                         <div className="flex items-center justify-between">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="outline" className="text-xs">
                             {CATEGORIES.find(c => c.id === dicho.categoria)?.icon} {dicho.categoria.replace("_", " ")}
                           </Badge>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -319,7 +615,7 @@ const DichosPage = () => {
               <Card className="bg-muted/30">
                 <CardContent className="p-4 text-center">
                   <p className="text-3xl font-bold text-amber-600">{DICHOS.length}</p>
-                  <p className="text-sm text-muted-foreground">Dichos Registrados</p>
+                  <p className="text-sm text-muted-foreground">Personajes Registrados</p>
                 </CardContent>
               </Card>
               <Card className="bg-muted/30">
@@ -336,8 +632,8 @@ const DichosPage = () => {
               </Card>
               <Card className="bg-muted/30">
                 <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-amber-600">15+</p>
-                  <p className="text-sm text-muted-foreground">Etiquetas</p>
+                  <p className="text-3xl font-bold text-amber-600">47</p>
+                  <p className="text-sm text-muted-foreground">Dichos Únicos</p>
                 </CardContent>
               </Card>
             </div>
@@ -347,7 +643,7 @@ const DichosPage = () => {
           <section>
             <h2 className="font-serif text-2xl font-bold mb-6">
               {selectedCategory === "all" 
-                ? "Todos los Dichos" 
+                ? "Índice Alfabético de Dichos Realmontenses" 
                 : CATEGORIES.find(c => c.id === selectedCategory)?.icon + " " + CATEGORIES.find(c => c.id === selectedCategory)?.label
               }
             </h2>
@@ -383,6 +679,12 @@ const DichosPage = () => {
                             </Badge>
                           </div>
                           
+                          <div className="mb-2">
+                            <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                              {dicho.personaje}
+                            </Badge>
+                          </div>
+
                           <h3 className="font-serif text-lg font-bold text-foreground mb-2">
                             "{dicho.texto}"
                           </h3>
@@ -395,21 +697,18 @@ const DichosPage = () => {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
+                                <div className="bg-muted/30 p-3 rounded-lg mt-3">
+                                  <p className="text-xs text-muted-foreground mb-1">Jerga Original:</p>
+                                  <p className="font-mono text-sm italic text-foreground mb-2">
+                                    "{dicho.jergaOriginal}"
+                                  </p>
+                                </div>
                                 <p className="text-sm text-muted-foreground mt-3 pt-3 border-t">
                                   <strong>Significado:</strong> {dicho.significado}
                                 </p>
-                                {dicho.fuente && (
-                                  <p className="text-xs text-muted-foreground mt-2">
-                                    <strong>Fuente:</strong> {dicho.fuente}
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap gap-1 mt-3">
-                                  {dicho.tags.map(tag => (
-                                    <Badge key={tag} variant="secondary" className="text-xs">
-                                      #{tag}
-                                    </Badge>
-                                  ))}
-                                </div>
+                                <Badge variant="outline" className="mt-3">
+                                  {CATEGORIES.find(c => c.id === dicho.categoria)?.icon} {dicho.categoria.replace("_", " ")}
+                                </Badge>
                               </motion.div>
                             )}
                           </AnimatePresence>
