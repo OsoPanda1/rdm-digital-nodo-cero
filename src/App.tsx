@@ -23,6 +23,8 @@ import RealitoChat from "./components/RealitoChat";
 import Auth from "./pages/Auth";
 import Apoya from "./pages/Apoya";
 import Reglamento from "./pages/Reglamento";
+import AdminDashboard from "./pages/admin/Dashboard";
+import Dichos from "./pages/Dichos";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const AnimatedRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/apoya" element={<Apoya />} />
         <Route path="/reglamento" element={<Reglamento />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/dichos" element={<Dichos />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

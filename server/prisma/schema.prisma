@@ -73,31 +73,98 @@ enum TravelStyle {
 
 model Business {
   id                   String   @id @default(uuid())
-  ownerId              String   @unique @map("owner_id")
+  ownerId              String?  @unique @map("owner_id")
   name                 String
-  category             String
-  description          String
+  category             BusinessCategory @map("business_category")
+  subcategory          String?  @map("subcategory")
+  description          String   @db.Text
+  shortDescription     String?  @map("short_description") // Max 500 chars for display
+  
+  // Contact info
   phone                String?
-  address              String?
-  imageUrl             String?  @map("image_url")
-  website              String?
+  whatsapp             String?
   email                String?
+  website              String?
+  
+  // Address
+  address              String?
+  addressReference     String?  @map("address_reference") // For directions
+  latitude             Float?
+  longitude            Float?
+  
+  // Media - Up to 3 images, 1 video
+  imageUrl             String?  @map("image_url")
+  imageUrl2            String?  @map("image_url_2")
+  imageUrl3            String?  @map("image_url_3")
+  videoUrl             String?  @map("video_url")
+  videoDuration        Int?     @map("video_duration_seconds") // Max 60 seconds
+  
+  // Schedule
+  schedule             Json?    // { monday: {open: "09:00", close: "18:00", closed: false}, ... }
+  scheduleDisplay      String?  @map("schedule_display") // Human readable
+  
+  // Social media
+  facebook             String?
+  instagram            String?
+  tiktok               String?
+  twitter              String?
+  youtube              String?
+  
+  // Business details
+  priceRange          PriceRange? @map("price_range")
+  acceptsReservations  Boolean  @default(false) @map("accepts_reservations")
+  hasParking          Boolean  @default(false) @map("has_parking")
+  isAccessible        Boolean  @default(false) @map("is_accessible")
+  paymentMethods       String[] @default([]) @map("payment_methods")
+  languages           String[] @default(["es"]) @map("languages")
+  
+  // Status
   isPremium            Boolean  @default(false) @map("is_premium")
   premiumUntil         DateTime? @map("premium_until")
   subscriptionStatus   SubscriptionStatus @default(NONE) @map("subscription_status")
   subscriptionExpiresAt DateTime? @map("subscription_expires_at")
-  latitude             Float?
-  longitude            Float?
+  isFeatured          Boolean  @default(false) @map("is_featured")
   isActive             Boolean  @default(true) @map("is_active")
+  isVerified           Boolean  @default(false) @map("is_verified")
+  
+  // Admin fields
+  approvedAt          DateTime? @map("approved_at")
+  approvedBy          String?   @map("approved_by")
+  rejectionReason      String?  @map("rejection_reason")
+  
+  // Stats
+  viewsCount          Int      @default(0) @map("views_count")
+  rating              Float?   @default(0)
+  reviewsCount        Int      @default(0) @map("reviews_count")
+  
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   // Relations
-  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner           User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   tipsReceived   Tip[]         @relation("TipsToBusiness")
   donations      Donation[]
 
   @@map("businesses")
+}
+
+enum BusinessCategory {
+  GASTRONOMIA  // Restaurants, cafes, bars
+  HOSPEDAJE    // Hotels, hostels, cabañas
+  ARTESANIA    // Crafts, jewelry
+  PLATERIA     // Silver work
+  BAR          // Bars, cantinas
+  COMERCIO     // Shops, stores
+  SERVICIOS    // Services (guides, rentals, etc.)
+  TURISMO      // Tour operators
+  OTROS        // Other categories
+}
+
+enum PriceRange {
+  ECONOMICO
+  MODERADO
+  CARO
+  LUJO
 }
 
 enum SubscriptionStatus {

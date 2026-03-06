@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Map, BookOpen, Utensils, Palette, TreePine, Ghost, Clock } from "lucide-react";
+import { Menu, X, ChevronDown, Map, BookOpen, Utensils, Palette, TreePine, Ghost, Clock, Quote } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoRdm from "@/assets/logo-rdm.png";
 
@@ -13,6 +13,7 @@ const discoverItems = [
   { label: "Historia", path: "/historia", icon: Clock, desc: "460 años de minería" },
   { label: "Cultura", path: "/cultura", icon: BookOpen, desc: "Tradiciones vivas" },
   { label: "Relatos", path: "/relatos", icon: Ghost, desc: "Leyendas del pueblo" },
+  { label: "Dichos", path: "/dichos", icon: Quote, desc: "Expresiones típicas" },
 ];
 
 const experienceItems = [
