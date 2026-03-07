@@ -310,7 +310,7 @@ const AdminDashboard = () => {
       // Update existing
       setBusinesses(prev => prev.map(b => 
         b.id === selectedBusiness.id 
-          ? { ...b, ...formData } as typeof b
+          ? { ...b, ...formData } as unknown as typeof b
           : b
       ));
       toast({

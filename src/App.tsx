@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { NotificationProvider } from "@/components/NotificationSystem";
+import CinematicIntro from "@/components/CinematicIntro";
 import Index from "./pages/Index";
 import Lugares from "./pages/Lugares";
 import Directorio from "./pages/Directorio";
@@ -25,6 +27,7 @@ import Apoya from "./pages/Apoya";
 import Reglamento from "./pages/Reglamento";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Dichos from "./pages/Dichos";
+import DichosMineros from "./pages/DichosMineros";
 
 const queryClient = new QueryClient();
 
@@ -51,18 +54,31 @@ const AnimatedRoutes = () => {
         <Route path="/reglamento" element={<Reglamento />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/dichos" element={<Dichos />} />
+        <Route path="/dichos-mineros" element={<DichosMineros />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  const [introComplete, setIntroComplete] = useState(false);
+  const handleIntroComplete = useCallback(() => setIntroComplete(true), []);
+
+  // Only show intro once per session
+  const [showIntro] = useState(() => {
+    if (sessionStorage.getItem('rdm_intro_shown')) return false;
+    sessionStorage.setItem('rdm_intro_shown', 'true');
+    return true;
+  });
+
+  return (
+    <QueryClientProvider client={queryClient}>
       <NotificationProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {showIntro && !introComplete && <CinematicIntro onComplete={handleIntroComplete} />}
           <BrowserRouter>
             <AnimatedRoutes />
             <RealitoChat />
@@ -70,6 +86,7 @@ const App = () => (
         </TooltipProvider>
       </NotificationProvider>
     </QueryClientProvider>
-);
+  );
+};
 
 export default App;
