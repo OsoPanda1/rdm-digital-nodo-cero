@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, queryKeys } from '@/lib/apiClient';
 
-// Types
 export interface Event {
   id: string;
   title: string;
@@ -25,87 +24,73 @@ export interface EventFilters {
   offset?: number;
 }
 
-// Hooks
 export function useEvents(filters: EventFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.events.list(filters),
-    queryFn: () => apiClient.get<{ data: Event[]; pagination: any }>(`/events`, filters),
-    select: (response) => response?.data || [],
+    queryKey: queryKeys.events.list(filters as Record<string, any>),
+    queryFn: () => apiClient.get<{ success: boolean; data: Event[]; pagination: any }>(`/events`, filters as Record<string, any>),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useFeaturedEvents() {
   return useQuery({
     queryKey: queryKeys.events.featured(),
-    queryFn: () => apiClient.get<Event[]>(`/events/featured`),
-    select: (response) => response?.data || [],
+    queryFn: () => apiClient.get<{ success: boolean; data: Event[] }>(`/events/featured`),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useUpcomingEvents() {
   return useQuery({
     queryKey: queryKeys.events.upcoming(),
-    queryFn: () => apiClient.get<Event[]>(`/events/upcoming`),
-    select: (response) => response?.data || [],
+    queryFn: () => apiClient.get<{ success: boolean; data: Event[] }>(`/events/upcoming`),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useEvent(id: string) {
   return useQuery({
     queryKey: queryKeys.events.detail(id),
-    queryFn: () => apiClient.get<Event>(`/events/${id}`),
+    queryFn: () => apiClient.get<{ success: boolean; data: Event }>(`/events/${id}`),
     enabled: !!id,
+    select: (res) => res?.data,
   });
 }
 
 export function useCreateEvent() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Event>) => 
-      apiClient.post<Event>(`/events`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
-    },
+    mutationFn: (data: Partial<Event>) => apiClient.post<Event>(`/events`, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.events.all }); },
   });
 }
 
 export function useUpdateEvent() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Event> }) =>
-      apiClient.put<Event>(`/events/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Event> }) => apiClient.put<Event>(`/events/${id}`, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
+      qc.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.events.all });
     },
   });
 }
 
 export function useDeleteEvent() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/events/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.events.all }); },
   });
 }
 
 export function useFeatureEvent() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) =>
-      apiClient.put<Event>(`/events/${id}/feature`, { isFeatured }),
+    mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) => apiClient.put<Event>(`/events/${id}/feature`, { isFeatured }),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
+      qc.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.events.all });
     },
   });
 }
-
-// Export page component
-export { default as EventsPage } from './EventsPage';

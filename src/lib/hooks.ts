@@ -30,72 +30,60 @@ export interface PostFilters {
 
 export function useCommunityPosts(filters: PostFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.posts.list(filters),
-    queryFn: () => apiClient.get<{ data: Post[]; pagination: any }>('/posts', filters),
-    select: (response) => response?.data || [],
+    queryKey: queryKeys.posts.list(filters as Record<string, any>),
+    queryFn: () => apiClient.get<{ success: boolean; data: Post[]; pagination: any }>('/posts', filters as Record<string, any>),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useFeaturedPosts() {
   return useQuery({
     queryKey: queryKeys.posts.featured(),
-    queryFn: () => apiClient.get<Post[]>('/posts/featured'),
-    select: (response) => response?.data || [],
+    queryFn: () => apiClient.get<{ success: boolean; data: Post[] }>('/posts/featured'),
+    select: (res) => res?.data || [],
   });
 }
 
 export function usePost(id: string) {
   return useQuery({
     queryKey: queryKeys.posts.detail(id),
-    queryFn: () => apiClient.get<Post>(`/posts/${id}`),
+    queryFn: () => apiClient.get<{ success: boolean; data: Post }>(`/posts/${id}`),
     enabled: !!id,
   });
 }
 
 export function useCreatePost() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Post>) => 
-      apiClient.post<Post>('/posts', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
-    },
+    mutationFn: (data: Partial<Post>) => apiClient.post<Post>('/posts', data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.posts.all }); },
   });
 }
 
 export function useUpdatePost() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Post> }) =>
-      apiClient.put<Post>(`/posts/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Post> }) => apiClient.put<Post>(`/posts/${id}`, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      qc.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.posts.all });
     },
   });
 }
 
 export function useDeletePost() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/posts/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.posts.all }); },
   });
 }
 
 export function useLikePost() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.post<void>(`/posts/${id}/like`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.posts.all }); },
   });
 }
 
@@ -124,40 +112,33 @@ export interface DichosFilters {
 
 export function useDichos(filters: DichosFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.dichos.list(filters),
-    queryFn: () => apiClient.get<{ data: Dichos[]; pagination: any }>('/dichos', filters),
-    select: (response) => response?.data || [],
+    queryKey: queryKeys.dichos.list(filters as Record<string, any>),
+    queryFn: () => apiClient.get<{ success: boolean; data: Dichos[]; pagination: any }>('/dichos', filters as Record<string, any>),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useDichosById(id: string) {
   return useQuery({
     queryKey: queryKeys.dichos.detail(id),
-    queryFn: () => apiClient.get<Dichos>(`/dichos/${id}`),
+    queryFn: () => apiClient.get<{ success: boolean; data: Dichos }>(`/dichos/${id}`),
     enabled: !!id,
   });
 }
 
 export function useCreateDichos() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Dichos>) => 
-      apiClient.post<Dichos>('/dichos', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dichos.all });
-    },
+    mutationFn: (data: Partial<Dichos>) => apiClient.post<Dichos>('/dichos', data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.dichos.all }); },
   });
 }
 
 export function useLikeDichos() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.post<void>(`/dichos/${id}/like`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dichos.all });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.dichos.all }); },
   });
 }
 
@@ -166,21 +147,16 @@ export function useLikeDichos() {
 // ============================================
 
 export function useNewsletterSubscribe() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (email: string) => 
-      apiClient.post<{ success: boolean; message: string }>('/newsletter/subscribe', { email }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.newsletter.subscribers() });
-    },
+    mutationFn: (email: string) => apiClient.post<{ success: boolean; message: string }>('/newsletter/subscribe', { email }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.newsletter.subscribers() }); },
   });
 }
 
 export function useNewsletterUnsubscribe() {
   return useMutation({
-    mutationFn: (email: string) => 
-      apiClient.post<{ success: boolean; message: string }>('/newsletter/unsubscribe', { email }),
+    mutationFn: (email: string) => apiClient.post<{ success: boolean; message: string }>('/newsletter/unsubscribe', { email }),
   });
 }
 
@@ -188,27 +164,17 @@ export function useNewsletterUnsubscribe() {
 // PAYMENTS HOOKS
 // ============================================
 
-export interface DonationSession {
-  sessionId: string;
-  url: string;
-}
-
-export interface BusinessUpgradeSession {
-  sessionId: string;
-  url: string;
-}
-
 export function useDonationCheckout() {
   return useMutation({
     mutationFn: (data: { amount: number; isMonthly: boolean; message?: string }) =>
-      apiClient.post<DonationSession>('/payments/donations/checkout', data),
+      apiClient.post<{ sessionId: string; url: string }>('/payments/donations/checkout', data),
   });
 }
 
 export function useBusinessPremiumCheckout() {
   return useMutation({
     mutationFn: ({ businessId, plan }: { businessId: string; plan: 'monthly' | 'yearly' }) =>
-      apiClient.post<BusinessUpgradeSession>(`/payments/businesses/${businessId}/checkout`, { plan }),
+      apiClient.post<{ sessionId: string; url: string }>(`/payments/businesses/${businessId}/checkout`, { plan }),
   });
 }
 
@@ -243,58 +209,51 @@ export function useAdminStats() {
 export function useAdminBusinesses(filters: AdminFilters = {}) {
   return useQuery({
     queryKey: [...queryKeys.admin.businesses(), filters],
-    queryFn: () => apiClient.get<{ data: any[]; pagination: any }>('/admin/businesses', filters),
-    select: (response) => response?.data || [],
+    queryFn: () => apiClient.get<{ success: boolean; data: any[]; pagination: any }>('/admin/businesses', filters as Record<string, any>),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useApproveBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => 
-      apiClient.post<{ success: boolean }>(`/admin/businesses/${id}/approve`),
+    mutationFn: (id: string) => apiClient.post<{ success: boolean }>(`/admin/businesses/${id}/approve`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }
 
 export function useRejectBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiClient.post<{ success: boolean }>(`/admin/businesses/${id}/reject`, { reason }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }
 
 export function useFeatureBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) =>
       apiClient.post<{ success: boolean }>(`/admin/businesses/${id}/feature`, { isFeatured }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() }); },
   });
 }
 
 export function useModeratePost() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'hidden' | 'visible' | 'featured' }) =>
       apiClient.patch<{ success: boolean }>(`/admin/posts/${id}/status`, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.posts() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.posts() });
+      qc.invalidateQueries({ queryKey: queryKeys.posts.all });
     },
   });
 }
@@ -327,67 +286,60 @@ export interface BusinessInput {
   priceRange?: string;
 }
 
-export function useCreateBusiness() {
-  const queryClient = useQueryClient();
-  
+export function useCreateBusinessAdmin() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: BusinessInput) =>
-      apiClient.post<{ success: boolean; id: string }>('/admin/businesses', data),
+    mutationFn: (data: BusinessInput) => apiClient.post<{ success: boolean; id: string }>('/admin/businesses', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }
 
-export function useUpdateBusiness() {
-  const queryClient = useQueryClient();
-  
+export function useUpdateBusinessAdmin() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<BusinessInput> }) =>
       apiClient.put<{ success: boolean }>(`/admin/businesses/${id}`, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.business(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.business(id) });
     },
   });
 }
 
-export function useDeleteBusiness() {
-  const queryClient = useQueryClient();
-  
+export function useDeleteBusinessAdmin() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiClient.delete<{ success: boolean }>(`/admin/businesses/${id}`),
+    mutationFn: (id: string) => apiClient.delete<{ success: boolean }>(`/admin/businesses/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }
 
 export function useToggleBusinessStatus() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       apiClient.patch<{ success: boolean }>(`/admin/businesses/${id}/status`, { isActive }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }
 
 export function useToggleBusinessPremium() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, isPremium }: { id: string; isPremium: boolean }) =>
       apiClient.patch<{ success: boolean }>(`/admin/businesses/${id}/premium`, { isPremium }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.stats() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.businesses() });
+      qc.invalidateQueries({ queryKey: queryKeys.admin.stats() });
     },
   });
 }

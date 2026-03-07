@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, queryKeys } from '@/lib/apiClient';
 
-// Types
 export interface AIMessage {
   id: string;
   sender: 'user' | 'realito';
@@ -24,62 +23,32 @@ export interface AIInfo {
   role: string;
   description: string;
   capabilities: string[];
-  knowledgeBase: {
-    places: number;
-    routes: number;
-    events: number;
-    nearby: number;
-  };
+  knowledgeBase: { places: number; routes: number; events: number; nearby: number };
 }
 
-// Hooks
 export function useAIInfo() {
   return useQuery({
     queryKey: queryKeys.ai.info(),
     queryFn: () => apiClient.get<AIInfo>('/ai/info'),
-    staleTime: Infinity, // AI info rarely changes
+    staleTime: Infinity,
   });
 }
 
 export function useAIChat() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ message, history }: { message: string; history?: any[] }) =>
-      apiClient.post<{ data: { message: string; actions?: any[]; context?: any } }>('/ai/chat', {
-        message,
-        history,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ai.sessions() });
-    },
+      apiClient.post<{ data: { message: string; actions?: any[]; context?: any } }>('/ai/chat', { message, history }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.ai.sessions() }); },
   });
 }
 
 export function useAIQuery() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ message, sessionId, context }: { 
-      message: string; 
-      sessionId?: string; 
-      context?: Record<string, any> 
-    }) =>
-      apiClient.post<{ 
-        data: { 
-          sessionId: string; 
-          message: AIMessage; 
-          actions?: any[]; 
-          knowledgeBase?: any 
-        } 
-      }>('/ai/query', {
-        message,
-        sessionId,
-        context,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ai.sessions() });
-    },
+    mutationFn: ({ message, sessionId, context }: { message: string; sessionId?: string; context?: Record<string, any> }) =>
+      apiClient.post<{ data: { sessionId: string; message: AIMessage; actions?: any[]; knowledgeBase?: any } }>('/ai/query', { message, sessionId, context }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.ai.sessions() }); },
   });
 }
 
@@ -99,15 +68,9 @@ export function useAIConversation(id: string) {
 }
 
 export function useDeleteAIConversation() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/ai/sessions/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ai.sessions() });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.ai.sessions() }); },
   });
 }
-
-// Export chat component
-export { default as RealitoChat } from './RealitoChat';

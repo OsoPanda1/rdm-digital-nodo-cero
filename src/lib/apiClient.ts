@@ -99,7 +99,7 @@ async function apiRequest<T>(
 
 // Typed API methods
 export const apiClient = {
-  get: <T>(endpoint: string, params?: Record<string, string | number | boolean | undefined>) => {
+  get: <T>(endpoint: string, params?: Record<string, any>) => {
     const searchParams = params 
       ? '?' + new URLSearchParams(params as any).toString() 
       : '';

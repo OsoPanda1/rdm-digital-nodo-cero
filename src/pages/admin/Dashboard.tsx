@@ -65,9 +65,11 @@ const sampleBusinesses = [
     imageUrl: "/assets/paste.webp",
     imageUrl2: "/assets/rdm1.jpeg",
     imageUrl3: "/assets/rdm2.jpeg",
+    videoUrl: "",
     scheduleDisplay: "Lun-Dom: 9:00 - 20:00",
     facebook: "pastelesportal",
     instagram: "@pastelesportal",
+    tiktok: "",
     isPremium: true,
     isVerified: true,
     isFeatured: true,
@@ -90,11 +92,13 @@ const sampleBusinesses = [
     latitude: 20.1402,
     longitude: -98.6712,
     imageUrl: "/assets/calles-colonial.webp",
-    imageUrl2: null,
-    imageUrl3: null,
+    imageUrl2: "",
+    imageUrl3: "",
+    videoUrl: "",
     scheduleDisplay: "Check-in: 15:00, Check-out: 12:00",
     facebook: "hotelrealdeminash",
     instagram: "@hotelrealdeminash",
+    tiktok: "",
     isPremium: true,
     isVerified: true,
     isFeatured: false,
@@ -112,15 +116,18 @@ const sampleBusinesses = [
     phone: "771 345 6789",
     whatsapp: "527713456789",
     email: "ventas@platerialoshermanos.com",
+    website: "",
     address: "Calle Artesanal #78",
     latitude: 20.1395,
     longitude: -98.6705,
     imageUrl: "/assets/mina-acosta.webp",
-    imageUrl2: null,
-    imageUrl3: null,
+    imageUrl2: "",
+    imageUrl3: "",
+    videoUrl: "",
     scheduleDisplay: "Lun-Sáb: 10:00 - 19:00",
     facebook: "platerialoshermanos",
     instagram: "@platerialoshermanos",
+    tiktok: "",
     isPremium: false,
     isVerified: true,
     isFeatured: false,
@@ -144,10 +151,12 @@ const sampleBusinesses = [
     longitude: -98.6720,
     imageUrl: "/assets/penas-cargadas.webp",
     imageUrl2: "/assets/rdm01.jpg",
-    imageUrl3: null,
+    imageUrl3: "",
+    videoUrl: "",
     scheduleDisplay: "Mar-Dom: 8:00 - 18:00",
     facebook: "neblinacafe",
     instagram: "@neblinacafe",
+    tiktok: "",
     isPremium: false,
     isVerified: false,
     isFeatured: false,
@@ -301,7 +310,7 @@ const AdminDashboard = () => {
       // Update existing
       setBusinesses(prev => prev.map(b => 
         b.id === selectedBusiness.id 
-          ? { ...b, ...formData } as typeof b
+          ? { ...b, ...formData } as unknown as typeof b
           : b
       ));
       toast({
@@ -322,7 +331,7 @@ const AdminDashboard = () => {
         latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
         longitude: formData.longitude ? parseFloat(formData.longitude) : undefined
       };
-      setBusinesses(prev => [...prev, newBusiness as typeof sampleBusinesses[0]]);
+      setBusinesses(prev => [...prev, newBusiness as unknown as typeof sampleBusinesses[0]]);
       toast({
         title: "Éxito",
         description: "Negocio creado correctamente"

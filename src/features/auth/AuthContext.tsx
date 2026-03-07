@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiClient, queryKeys } from '@/lib/apiClient';
 import { useQueryClient } from '@tanstack/react-query';
+import { authApi } from '@/lib/api';
 
 // Types
 export type UserRole = 'tourist' | 'business_owner' | 'admin';
@@ -45,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const queryClient = useQueryClient();
 
-  // Load user on mount
   useEffect(() => {
     const token = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
     if (token) {
@@ -57,75 +56,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUser = async () => {
     try {
-      const response = await apiClient.get<{ data: User }>('/auth/me');
+      const response = await authApi.me();
       if (response.success && response.data) {
         setState({
-          user: response.data,
+          user: response.data as User,
           isAuthenticated: true,
           isLoading: false,
         });
       }
-    } catch (error) {
-      // Token invalid, clear storage
+    } catch {
       sessionStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
-      setState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
+      setState({ user: null, isAuthenticated: false, isLoading: false });
     }
   };
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await apiClient.post<{ 
-      data: { user: User; token: string; refreshToken?: string } 
-    }>('/auth/login', { email, password });
-
+    const response = await authApi.login({ email, password });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Login failed');
+      throw new Error('Login failed');
     }
-
     const { user, token, refreshToken } = response.data;
-    
-    // Store tokens
     sessionStorage.setItem(TOKEN_KEY, token);
-    if (refreshToken) {
-      sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    }
-
-    setState({
-      user,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    if (refreshToken) sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    setState({ user: user as User, isAuthenticated: true, isLoading: false });
   }, []);
 
   const register = useCallback(async (
-    name: string, 
-    email: string, 
-    password: string, 
-    role: UserRole = 'tourist'
+    name: string, email: string, password: string, role: UserRole = 'tourist'
   ) => {
-    const response = await apiClient.post<{ 
-      data: { user: User; token: string } 
-    }>('/auth/signup', { name, email, password, role });
-
+    const response = await authApi.signup({ name, email, password, role });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Registration failed');
+      throw new Error('Registration failed');
     }
-
     const { user, token } = response.data;
-    
     sessionStorage.setItem(TOKEN_KEY, token);
-
-    setState({
-      user,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    setState({ user: user as User, isAuthenticated: true, isLoading: false });
   }, []);
 
   const logout = useCallback(() => {
@@ -133,66 +101,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
-    
-    setState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
-    
-    // Clear React Query cache
+    setState({ user: null, isAuthenticated: false, isLoading: false });
     queryClient.clear();
   }, [queryClient]);
 
-  const refreshToken = useCallback(async () => {
-    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!refreshToken) {
-      throw new Error('No refresh token');
-    }
-
-    const response = await apiClient.post<{
-      data: { token: string; refreshToken: string; user: User };
-    }>('/auth/refresh', { refreshToken });
-
+  const refreshTokenFn = useCallback(async () => {
+    const rt = sessionStorage.getItem(REFRESH_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!rt) throw new Error('No refresh token');
+    const response = await authApi.refresh(rt);
     if (!response.success || !response.data) {
       logout();
-      throw new Error(response.error?.message || 'Token refresh failed');
+      throw new Error('Token refresh failed');
     }
-
-    const { token, refreshToken: newRefreshToken } = response.data;
-    sessionStorage.setItem(TOKEN_KEY, token);
-    sessionStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-    
-    setState(prev => ({
-      ...prev,
-      user: response.data!.user,
-    }));
+    sessionStorage.setItem(TOKEN_KEY, response.data.token);
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, response.data.refreshToken);
+    setState(prev => ({ ...prev, user: response.data!.user as User }));
   }, [logout]);
 
   const requestPasswordReset = useCallback(async (email: string) => {
-    const response = await apiClient.post('/auth/forgot-password', { email });
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to request password reset');
-    }
+    const response = await authApi.forgotPassword(email);
+    if (!response.success) throw new Error('Failed to request password reset');
   }, []);
 
   const resetPassword = useCallback(async (token: string, password: string) => {
-    const response = await apiClient.post('/auth/reset-password', { token, password });
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to reset password');
-    }
+    const response = await authApi.resetPassword(token, password);
+    if (!response.success) throw new Error('Failed to reset password');
   }, []);
 
   const updateProfile = useCallback(async (data: Partial<User>) => {
-    const response = await apiClient.put<{ data: User }>('/auth/profile', data);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to update profile');
-    }
-    
-    setState(prev => ({
-      ...prev,
-      user: response.data!,
-    }));
+    const response = await authApi.updateProfile(data as any);
+    if (!response.success || !response.data) throw new Error('Failed to update profile');
+    setState(prev => ({ ...prev, user: response.data as User }));
   }, []);
 
   const hasRole = useCallback((roles: UserRole | UserRole[]): boolean => {
@@ -206,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
-    refreshToken,
+    refreshToken: refreshTokenFn,
     requestPasswordReset,
     resetPassword,
     updateProfile,
@@ -214,51 +153,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAdmin: state.user?.role === 'admin',
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
 
-// Protected Route component
 export function ProtectedRoute({ 
-  children, 
-  roles,
-  fallback = '/auth' 
-}: { 
-  children: ReactNode;
-  roles?: UserRole[];
-  fallback?: string;
-}) {
+  children, roles, fallback = '/auth' 
+}: { children: ReactNode; roles?: UserRole[]; fallback?: string }) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    window.location.href = fallback;
-    return null;
-  }
-
-  if (roles && user && !roles.includes(user.role)) {
-    window.location.href = '/';
-    return null;
-  }
-
+  if (!isAuthenticated) { window.location.href = fallback; return null; }
+  if (roles && user && !roles.includes(user.role)) { window.location.href = '/'; return null; }
   return <>{children}</>;
 }
 

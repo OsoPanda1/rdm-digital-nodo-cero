@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, queryKeys } from '@/lib/apiClient';
 
-// Types
 export interface Business {
   id: string;
   ownerId: string;
@@ -20,11 +19,7 @@ export interface Business {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  owner?: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  owner?: { id: string; name: string; email: string };
 }
 
 export interface BusinessFilters {
@@ -35,81 +30,63 @@ export interface BusinessFilters {
   offset?: number;
 }
 
-// Hooks
 export function useBusinesses(filters: BusinessFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.businesses.list(filters),
-    queryFn: () => apiClient.get<{ data: Business[]; pagination: any }>(`/businesses`, filters),
-    select: (response) => response?.data || [],
+    queryKey: queryKeys.businesses.list(filters as Record<string, any>),
+    queryFn: () => apiClient.get<{ success: boolean; data: Business[]; pagination: any }>(`/businesses`, filters as Record<string, any>),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useBusiness(id: string) {
   return useQuery({
     queryKey: queryKeys.businesses.detail(id),
-    queryFn: () => apiClient.get<Business>(`/businesses/${id}`),
+    queryFn: () => apiClient.get<{ success: boolean; data: Business }>(`/businesses/${id}`),
     enabled: !!id,
+    select: (res) => res?.data,
   });
 }
 
 export function useBusinessCategories() {
   return useQuery({
     queryKey: queryKeys.businesses.categories(),
-    queryFn: () => apiClient.get<string[]>(`/businesses/categories`),
-    select: (response) => response?.data || [],
+    queryFn: () => apiClient.get<{ success: boolean; data: string[] }>(`/businesses/categories`),
+    select: (res) => res?.data || [],
   });
 }
 
 export function useCreateBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Business>) => 
-      apiClient.post<Business>(`/businesses`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.all });
-    },
+    mutationFn: (data: Partial<Business>) => apiClient.post<Business>(`/businesses`, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
   });
 }
 
 export function useUpdateBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Business> }) =>
-      apiClient.put<Business>(`/businesses/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Business> }) => apiClient.put<Business>(`/businesses/${id}`, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.all });
+      qc.invalidateQueries({ queryKey: queryKeys.businesses.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.businesses.all });
     },
   });
 }
 
 export function useDeleteBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/businesses/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.all });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
   });
 }
 
 export function useUpgradeBusiness() {
-  const queryClient = useQueryClient();
-  
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ businessId, plan }: { businessId: string; plan: 'monthly' | 'yearly' }) =>
-      apiClient.post<{ sessionId: string; url: string }>(`/payments/business/checkout`, { 
-        businessId, 
-        plan 
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.all });
-    },
+      apiClient.post<{ sessionId: string; url: string }>(`/payments/business/checkout`, { businessId, plan }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
   });
 }
-
-// Export page component
-export { default as BusinessesPage } from './BusinessesPage';
