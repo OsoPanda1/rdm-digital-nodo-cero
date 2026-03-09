@@ -40,7 +40,6 @@ const Index = () => {
       <SEOMeta 
         title="Inicio"
         description="Descubre Real del Monte, Pueblo Mágico de Hidalgo. Guía turística digital con mapa interactivo, rutas, gastronomía y eventos culturales."
-        keywords="Real del Monte, Pueblo Mágico, Hidalgo, turismo, paste, minas, historia"
       />
       <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden">
         <Navbar />
