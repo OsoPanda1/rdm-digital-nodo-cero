@@ -80,10 +80,31 @@ const shortStories = [
 ];
 
 const RelatosPage = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
+        
+        {/* Hidden Audio Element */}
+        <audio 
+          ref={audioRef} 
+          src={leyendaAudio} 
+          onEnded={() => setIsPlaying(false)}
+        />
         
         {/* Hero */}
         <div className="relative h-[60vh] min-h-[500px] overflow-hidden">
@@ -99,17 +120,38 @@ const RelatosPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-600 text-sm font-medium mb-4">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-medium mb-4">
                   <Ghost className="w-4 h-4" />
                   Misterio y Tradición Oral
                 </span>
                 <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4">
                   Relatos y Leyendas
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl">
+                <p className="text-lg text-muted-foreground max-w-2xl mb-6">
                   Historias que se cuentan al calor de la chimenea, entre la neblina de la montaña, 
                   transmitidas de generación en generación.
                 </p>
+                
+                {/* Audio Player Button */}
+                <motion.button
+                  onClick={toggleAudio}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-electric to-gold text-navy font-semibold shadow-lg hover:shadow-electric/30 transition-all"
+                >
+                  {isPlaying ? (
+                    <>
+                      <Pause className="w-5 h-5" />
+                      <span>Pausar Narración</span>
+                      <Volume2 className="w-4 h-4 animate-pulse" />
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      <span>Escuchar Leyenda</span>
+                    </>
+                  )}
+                </motion.button>
               </motion.div>
             </div>
           </div>
