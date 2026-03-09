@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Ghost, Heart, Moon, Star, TreePine, Scroll, Play, Pause, Volume2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
