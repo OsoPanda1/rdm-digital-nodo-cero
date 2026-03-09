@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Ghost, Heart, Moon, Star, TreePine, Scroll, Play, Pause, Volume2 } from "lucide-react";
+import { BookOpen, Ghost, Heart, Moon, Star, TreePine, Scroll, Play, Pause, Volume2, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
 import panteonImg from "@/assets/panteon-ingles.webp";
 import penasImg from "@/assets/penas-cargadas.webp";
 import minaImg from "@/assets/mina-acosta.webp";
-import leyendaAudio from "@/assets/leyenda1.mp3";
+import leyendaVideo from "@/assets/leyenda1.mp4";
 
 const legends = [
   {
@@ -80,71 +80,39 @@ const shortStories = [
 ];
 
 const RelatosPage = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const echoInitialized = useRef(false);
+  const [showVideo, setShowVideo] = useState(false);
 
-  const initEcho = useCallback(() => {
-    if (echoInitialized.current || !audioRef.current) return;
-    const ctx = new AudioContext();
-    const source = ctx.createMediaElementSource(audioRef.current);
-
-    // Echo: delay + feedback loop
-    const delay = ctx.createDelay(1.0);
-    delay.delayTime.value = 0.35;
-
-    const feedback = ctx.createGain();
-    feedback.gain.value = 0.3;
-
-    const wetGain = ctx.createGain();
-    wetGain.gain.value = 0.25;
-
-    // dry signal
-    source.connect(ctx.destination);
-
-    // wet (echo) signal: source → delay → wetGain → destination
-    source.connect(delay);
-    delay.connect(feedback);
-    feedback.connect(delay); // feedback loop
-    delay.connect(wetGain);
-    wetGain.connect(ctx.destination);
-
-    audioCtxRef.current = ctx;
-    echoInitialized.current = true;
-  }, []);
-
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    initEcho();
-    if (audioCtxRef.current?.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  useEffect(() => {
-    return () => {
-      audioCtxRef.current?.close();
-    };
-  }, []);
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
         
-        {/* Hidden Audio Element */}
-        <audio 
-          ref={audioRef} 
-          src={leyendaAudio} 
-          onEnded={() => setIsPlaying(false)}
-        />
+        {/* Video Modal */}
+        {showVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowVideo(false)}
+          >
+            <div className="relative w-full max-w-3xl mx-4" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowVideo(false)}
+                className="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <video
+                src={leyendaVideo}
+                controls
+                autoPlay
+                className="w-full rounded-2xl shadow-2xl"
+              />
+            </div>
+          </motion.div>
+        )}
         
         {/* Hero */}
         <div className="relative h-[60vh] min-h-[500px] overflow-hidden">
@@ -160,7 +128,7 @@ const RelatosPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-medium mb-4">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent-foreground text-sm font-medium mb-4">
                   <Ghost className="w-4 h-4" />
                   Misterio y Tradición Oral
                 </span>
@@ -172,25 +140,15 @@ const RelatosPage = () => {
                   transmitidas de generación en generación.
                 </p>
                 
-                {/* Audio Player Button */}
+                {/* Video Button */}
                 <motion.button
-                  onClick={toggleAudio}
+                  onClick={() => setShowVideo(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-electric to-gold text-navy font-semibold shadow-lg hover:shadow-electric/30 transition-all"
                 >
-                  {isPlaying ? (
-                    <>
-                      <Pause className="w-5 h-5" />
-                      <span>Pausar Narración</span>
-                      <Volume2 className="w-4 h-4 animate-pulse" />
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-5 h-5" />
-                      <span>Escuchar Leyenda</span>
-                    </>
-                  )}
+                  <Play className="w-5 h-5" />
+                  <span>Ver Leyenda en Video</span>
                 </motion.button>
               </motion.div>
             </div>
