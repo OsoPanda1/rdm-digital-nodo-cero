@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Ghost, Heart, Moon, Star, TreePine, Scroll, Play, Pause, Volume2, X } from "lucide-react";
+import { BookOpen, Ghost, Heart, Moon, Star, TreePine, Scroll, Play, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { SEOMeta } from "@/components/SEOMeta";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
 import panteonImg from "@/assets/panteon-ingles.webp";
