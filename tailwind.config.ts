@@ -14,8 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['"Montserrat"', 'system-ui', 'sans-serif'],
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        body: ['"Montserrat"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,25 +53,43 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // RDM Digital 2026 Brand Colors
         gold: {
           DEFAULT: "hsl(var(--gold))",
-          foreground: "hsl(var(--gold-foreground))",
+          light: "hsl(var(--gold-light))",
+          dark: "hsl(var(--gold-dark))",
         },
-        stone: {
-          DEFAULT: "hsl(var(--stone))",
-          foreground: "hsl(var(--stone-foreground))",
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          light: "hsl(var(--navy-light))",
+          dark: "hsl(var(--navy-dark))",
         },
-        forest: {
-          DEFAULT: "hsl(var(--forest))",
-          foreground: "hsl(var(--forest-foreground))",
+        platinum: {
+          DEFAULT: "hsl(var(--platinum))",
+          light: "hsl(var(--platinum-light))",
+        },
+        electric: {
+          DEFAULT: "hsl(var(--electric))",
+          light: "hsl(var(--electric-light))",
         },
         terracotta: {
           DEFAULT: "hsl(var(--terracotta))",
           light: "hsl(var(--terracotta-light))",
         },
+        charcoal: {
+          DEFAULT: "hsl(var(--charcoal))",
+        },
+        slate: {
+          DEFAULT: "hsl(var(--slate))",
+        },
         cream: {
           DEFAULT: "hsl(var(--cream))",
-          dark: "hsl(var(--cream-dark))",
+        },
+        forest: {
+          DEFAULT: "hsl(var(--forest))",
+        },
+        copper: {
+          DEFAULT: "hsl(var(--copper))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -104,12 +124,30 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 20px -5px hsla(210, 100%, 55%, 0.3)" },
+          "50%": { boxShadow: "0 0 40px -5px hsla(210, 100%, 55%, 0.6)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-up": "fade-up 0.6s ease-out forwards",
         "fade-in": "fade-in 0.5s ease-out forwards",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        "float": "float 6s ease-in-out infinite",
+      },
+      boxShadow: {
+        "soft": "0 2px 20px -4px hsla(220, 45%, 18%, 0.08)",
+        "medium": "0 4px 30px -6px hsla(220, 45%, 18%, 0.12)",
+        "elevated": "0 8px 40px -8px hsla(220, 45%, 18%, 0.18)",
+        "gold": "0 4px 20px -4px hsla(43, 80%, 55%, 0.35)",
+        "electric": "0 4px 25px -4px hsla(210, 100%, 55%, 0.4)",
+        "glow": "0 0 40px -10px hsla(210, 100%, 55%, 0.5)",
       },
     },
   },
