@@ -334,6 +334,16 @@ const CinematicIntro = ({ onComplete }: CinematicIntroProps) => {
 
           {started && (
             <>
+              {/* Background Video */}
+              <video
+                src={introVideo}
+                autoPlay
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover opacity-30 z-0"
+                style={{ filter: "saturate(0.6) contrast(1.2)" }}
+              />
+
               {/* Particles */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {[...Array(60)].map((_, i) => (
