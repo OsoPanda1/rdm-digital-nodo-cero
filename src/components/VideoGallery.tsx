@@ -1,12 +1,24 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX, Maximize, X } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, X } from "lucide-react";
+
+import heroVideo from "@/assets/hero-video.mp4";
+import ctaVideo from "@/assets/RDM Digital_Call To Action_2_2026-03-03 05_52_52.mp4";
+import leyendaVideo from "@/assets/leyenda1.mp4";
+
+import minaImg from "@/assets/mina-acosta.webp";
+import panteonImg from "@/assets/panteon-ingles.webp";
+import callesImg from "@/assets/calles-colonial.webp";
+import heroImg from "@/assets/hero-real-del-monte.webp";
+import penasImg from "@/assets/penas-cargadas.webp";
+import pasteImg from "@/assets/paste.webp";
 
 interface Video {
   id: string;
   title: string;
   description: string;
   thumbnail: string;
+  videoSrc: string;
   duration: string;
   category: string;
 }
@@ -14,58 +26,63 @@ interface Video {
 const videos: Video[] = [
   {
     id: "1",
-    title: "Bienvenidos a Real del Monte",
-    description: "Descubre la magia de nuestro Pueblo Mágico",
-    thumbnail: "/assets/hero-real-del-monte.webp",
+    title: "Real del Monte — Pueblo Mágico",
+    description: "Vuelo cinematográfico por las calles y paisajes del pueblo minero",
+    thumbnail: heroImg,
+    videoSrc: heroVideo,
     duration: "2:30",
     category: "Introducción"
   },
   {
     id: "2",
-    title: "Tour por la Mina de Acosta",
-    description: "Descenso a 450 metros bajo tierra",
-    thumbnail: "/assets/mina-acosta.webp",
-    duration: "5:45",
-    category: "Aventura"
+    title: "RDM Digital — Innovación Turística 2026",
+    description: "Presentación oficial de la plataforma digital de Real del Monte",
+    thumbnail: callesImg,
+    videoSrc: ctaVideo,
+    duration: "1:15",
+    category: "Tecnología"
   },
   {
     id: "3",
-    title: "El Panteón Inglés",
-    description: "Historia y leyendas del cementerio más alto del mundo",
-    thumbnail: "/assets/panteon-ingles.webp",
+    title: "Leyendas de la Mina",
+    description: "Relatos y misterios de los túneles que guardan 460 años de historia",
+    thumbnail: minaImg,
+    videoSrc: leyendaVideo,
     duration: "4:20",
     category: "Historia"
   },
   {
     id: "4",
-    title: "Peñas Cargadas",
-    description: "Senderismo entre formaciones rocosas únicas",
-    thumbnail: "/assets/penas-cargadas.webp",
-    duration: "3:15",
-    category: "Naturaleza"
+    title: "Tour por la Mina de Acosta",
+    description: "Descenso a 460 metros bajo tierra con guía especializado",
+    thumbnail: minaImg,
+    videoSrc: heroVideo,
+    duration: "5:45",
+    category: "Aventura"
   },
   {
     id: "5",
-    title: "Festival del Paste",
-    description: "Celebración gastronómica anual",
-    thumbnail: "/assets/paste.webp",
-    duration: "6:00",
-    category: "Cultura"
+    title: "Panteón Inglés al Atardecer",
+    description: "El cementerio anglicano más alto del mundo bañado en luz dorada",
+    thumbnail: panteonImg,
+    videoSrc: heroVideo,
+    duration: "3:15",
+    category: "Historia"
   },
   {
     id: "6",
-    title: "Calles Coloniales",
-    description: "Paseo por el centro histórico",
-    thumbnail: "/assets/calles-colonial.webp",
-    duration: "3:45",
-    category: "Arquitectura"
-  }
+    title: "Peñas Cargadas — Senderismo",
+    description: "Recorrido por las formaciones rocosas más impresionantes de la sierra",
+    thumbnail: penasImg,
+    videoSrc: heroVideo,
+    duration: "4:00",
+    category: "Naturaleza"
+  },
 ];
 
 export const VideoCard = ({ video, onClick }: { video: Video; onClick: () => void }) => {
   return (
     <motion.div
-      layoutId={`video-${video.id}`}
       className="group cursor-pointer"
       onClick={onClick}
       whileHover={{ y: -8 }}
@@ -76,13 +93,13 @@ export const VideoCard = ({ video, onClick }: { video: Video; onClick: () => voi
           src={video.thumbnail} 
           alt={video.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
         
-        {/* Play Button */}
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.div 
-            className="w-16 h-16 rounded-full bg-[hsl(43,65%,52%)]/90 flex items-center justify-center backdrop-blur-sm"
+            className="w-16 h-16 rounded-full bg-amber-500/90 flex items-center justify-center backdrop-blur-sm"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -90,23 +107,20 @@ export const VideoCard = ({ video, onClick }: { video: Video; onClick: () => voi
           </motion.div>
         </div>
         
-        {/* Duration Badge */}
         <div className="absolute bottom-3 right-3 px-2 py-1 rounded-lg bg-black/70 text-white text-xs font-medium">
           {video.duration}
         </div>
         
-        {/* Category Badge */}
-        <div className="absolute top-3 left-3 px-3 py-1 rounded-full glass text-xs font-medium">
+        <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
           {video.category}
         </div>
         
-        {/* Shimmer Effect */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </div>
       </div>
       
-      <h3 className="font-display text-lg font-semibold text-foreground mb-1 group-hover:text-[hsl(43,65%,52%)] transition-colors">
+      <h3 className="font-serif text-lg font-semibold text-foreground mb-1 group-hover:text-amber-500 transition-colors">
         {video.title}
       </h3>
       <p className="text-sm text-muted-foreground line-clamp-2">{video.description}</p>
@@ -129,86 +143,66 @@ export const VideoPlayer = ({ video, onClose }: { video: Video; onClose: () => v
       onClick={onClose}
     >
       <motion.div
-        layoutId={`video-${video.id}`}
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
         className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <video
           ref={videoRef}
-          src="/assets/hero-video.mp4"
+          src={video.videoSrc}
           poster={video.thumbnail}
           autoPlay
           className="w-full h-full object-cover"
           onTimeUpdate={(e) => {
-            const video = e.target as HTMLVideoElement;
-            setProgress((video.currentTime / video.duration) * 100);
+            const vid = e.target as HTMLVideoElement;
+            setProgress((vid.currentTime / vid.duration) * 100);
           }}
         />
         
-        {/* Controls Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
-          {/* Close Button */}
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-white/20 transition-colors"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
           >
             <X className="w-5 h-5 text-white" />
           </button>
           
-          {/* Title */}
           <div className="absolute top-4 left-4">
-            <h3 className="text-white font-display text-xl">{video.title}</h3>
+            <h3 className="text-white font-serif text-xl">{video.title}</h3>
             <p className="text-white/70 text-sm">{video.description}</p>
           </div>
           
-          {/* Bottom Controls */}
           <div className="absolute bottom-0 left-0 right-0 p-6">
-            {/* Progress Bar */}
             <div className="w-full h-1 bg-white/20 rounded-full mb-4 cursor-pointer">
-              <div 
-                className="h-full bg-[hsl(43,65%,52%)] rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => {
-                    if (videoRef.current) {
-                      if (isPlaying) videoRef.current.pause();
-                      else videoRef.current.play();
-                      setIsPlaying(!isPlaying);
-                    }
-                  }}
-                  className="w-12 h-12 rounded-full bg-[hsl(43,65%,52%)] flex items-center justify-center hover:bg-[hsl(43,65%,52%)]/80 transition-colors"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-5 h-5 text-white" fill="white" />
-                  ) : (
-                    <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
-                  )}
-                </button>
-                
-                <button 
-                  onClick={() => {
-                    if (videoRef.current) {
-                      videoRef.current.muted = !isMuted;
-                      setIsMuted(!isMuted);
-                    }
-                  }}
-                  className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-white/20 transition-colors"
-                >
-                  {isMuted ? (
-                    <VolumeX className="w-4 h-4 text-white" />
-                  ) : (
-                    <Volume2 className="w-4 h-4 text-white" />
-                  )}
-                </button>
-              </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => {
+                  if (videoRef.current) {
+                    if (isPlaying) videoRef.current.pause();
+                    else videoRef.current.play();
+                    setIsPlaying(!isPlaying);
+                  }
+                }}
+                className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center hover:bg-amber-600 transition-colors"
+              >
+                {isPlaying ? <Pause className="w-5 h-5 text-white" fill="white" /> : <Play className="w-5 h-5 text-white ml-0.5" fill="white" />}
+              </button>
               
-              <button className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-white/20 transition-colors">
-                <Maximize className="w-4 h-4 text-white" />
+              <button 
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.muted = !isMuted;
+                    setIsMuted(!isMuted);
+                  }
+                }}
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
               </button>
             </div>
           </div>
@@ -231,14 +225,14 @@ export const VideoGallery = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="inline-block px-4 py-1.5 rounded-full glass text-xs font-medium text-[hsl(43,65%,52%)] mb-4">
-              Experiencias Visuales
+            <span className="inline-block px-4 py-1.5 rounded-full glass text-xs font-medium text-amber-500 mb-4">
+              🎬 Videos Reales
             </span>
-            <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Galería de Videos
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Galería Audiovisual
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Sumérgete en la magia de Real del Monte a través de nuestras producciones audiovisuales
+              Videos reales filmados en Real del Monte — experimenta la magia del Pueblo Mágico
             </p>
           </motion.div>
 
