@@ -466,7 +466,7 @@ const CinematicIntro = ({ onComplete }: CinematicIntroProps) => {
                 </motion.p>
               </motion.div>
 
-              {/* ── Audio Equalizer Visualizer ── */}
+              {/* ── Audio Equalizer & Waveform Visualizer ── */}
               <motion.div
                 initial={{ opacity: 0, scaleY: 0.3 }}
                 animate={phase >= 2 ? { opacity: 1, scaleY: 1 } : {}}
@@ -474,12 +474,13 @@ const CinematicIntro = ({ onComplete }: CinematicIntroProps) => {
                 className="relative z-10 mb-4 flex flex-col items-center gap-1"
               >
                 <AudioEqualizer analyser={analyser} />
+                <AudioWaveform analyser={analyser} />
                 {/* Label */}
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={phase >= 2 ? { opacity: 0.45 } : {}}
                   transition={{ delay: 1.2, duration: 0.6 }}
-                  className="text-[9px] tracking-[0.35em] uppercase"
+                  className="text-[9px] tracking-[0.35em] uppercase mt-2"
                   style={{ color: "hsl(210 40% 55%)" }}
                 >
                   ▶ Reproduciendo
