@@ -31,6 +31,7 @@ const LugaresPage = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
+        <SEOMeta {...PAGE_SEO.lugares} />
         <Navbar />
         <div className="pt-24 pb-20">
           <div className="container mx-auto px-4 md:px-8">

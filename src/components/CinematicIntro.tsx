@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoRdm from "@/assets/logo-rdm-digital.png";
 import introAudio from "@/assets/intro_off.mp3";
+import introVideo from "@/assets/RDM Digital_Call To Action_2_2026-03-03 05_52_52.mp4";
 
 interface CinematicIntroProps {
   onComplete: () => void;

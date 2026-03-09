@@ -65,6 +65,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/dichos" element={<Dichos />} />
         <Route path="/dichos-mineros" element={<Dichos />} />
+        <Route path="/catalogo" element={<Catalogo />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
