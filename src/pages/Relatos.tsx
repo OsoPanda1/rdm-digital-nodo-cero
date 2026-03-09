@@ -80,59 +80,8 @@ const shortStories = [
 ];
 
 const RelatosPage = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const echoInitialized = useRef(false);
+  const [showVideo, setShowVideo] = useState(false);
 
-  const initEcho = useCallback(() => {
-    if (echoInitialized.current || !audioRef.current) return;
-    const ctx = new AudioContext();
-    const source = ctx.createMediaElementSource(audioRef.current);
-
-    // Echo: delay + feedback loop
-    const delay = ctx.createDelay(1.0);
-    delay.delayTime.value = 0.35;
-
-    const feedback = ctx.createGain();
-    feedback.gain.value = 0.3;
-
-    const wetGain = ctx.createGain();
-    wetGain.gain.value = 0.25;
-
-    // dry signal
-    source.connect(ctx.destination);
-
-    // wet (echo) signal: source → delay → wetGain → destination
-    source.connect(delay);
-    delay.connect(feedback);
-    feedback.connect(delay); // feedback loop
-    delay.connect(wetGain);
-    wetGain.connect(ctx.destination);
-
-    audioCtxRef.current = ctx;
-    echoInitialized.current = true;
-  }, []);
-
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    initEcho();
-    if (audioCtxRef.current?.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  useEffect(() => {
-    return () => {
-      audioCtxRef.current?.close();
-    };
-  }, []);
 
   return (
     <PageTransition>
