@@ -148,9 +148,11 @@ const RelatosPage = () => {
                 <X className="w-6 h-6" />
               </button>
               <video
+                ref={videoRef}
                 src={leyendaVideo}
                 controls
                 autoPlay
+                onPlay={initEcho}
                 className="w-full rounded-2xl shadow-2xl"
               />
             </div>
