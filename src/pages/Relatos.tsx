@@ -129,8 +129,8 @@ const RelatosPage = () => {
 
   return (
     <PageTransition>
+      <SEOMeta title="Relatos y Leyendas" description="Leyendas, misterios y relatos de tradición oral de Real del Monte, Pueblo Mágico." />
       <div className="min-h-screen bg-background">
-        <Navbar />
         
         {/* Video Modal */}
         {showVideo && (
