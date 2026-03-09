@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Map, BookOpen, Utensils, Palette, TreePine, Ghost, Clock, Quote, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,25 +33,43 @@ const communityItems = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Track scroll for enhanced navbar styling
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-dark border-b" style={{ borderColor: "hsla(210,100%,55%,0.15)" }}>
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? "glass-dark shadow-elevated" : "glass-dark"
+      }`}
+      style={{ borderBottom: `1px solid hsla(210,100%,55%,${scrolled ? 0.2 : 0.1})` }}
+    >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
               <div 
-                className="absolute -inset-1 rounded-full blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-300"
+                className="absolute -inset-1 rounded-full blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500"
                 style={{ background: "hsla(210,100%,55%,0.3)" }}
               />
               <img
                 src={logoRdm}
                 alt="RDM Digital"
-                className="relative w-12 h-12 object-contain"
+                className="relative w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-105"
                 style={{ filter: "drop-shadow(0 0 8px hsla(210,100%,55%,0.3))" }}
               />
             </div>
@@ -85,7 +103,7 @@ const Navbar = () => {
               >
                 {isActive(item.path) && (
                   <motion.div
-                    layoutId="nav-active"
+                    layoutId="desktop-nav-active"
                     className="absolute inset-0 rounded-xl"
                     style={{ 
                       background: "linear-gradient(135deg, hsl(210,100%,55%), hsl(210,100%,45%))",
@@ -109,19 +127,20 @@ const Navbar = () => {
             >
               <button className="flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">
                 Descubre
-                <ChevronDown className={`w-4 h-4 transition-transform ${activeDropdown === "discover" ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeDropdown === "discover" ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
                 {activeDropdown === "discover" && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute top-full left-0 mt-2 w-64 rounded-2xl overflow-hidden"
                     style={{
-                      background: "hsl(220,45%,12%)",
+                      background: "hsl(220,45%,10%)",
                       border: "1px solid hsla(210,100%,55%,0.2)",
-                      boxShadow: "0 10px 40px -10px hsla(0,0%,0%,0.5)"
+                      boxShadow: "0 20px 60px -15px hsla(0,0%,0%,0.6)"
                     }}
                   >
                     {discoverItems.map((item) => (
@@ -137,7 +156,7 @@ const Navbar = () => {
                           <item.icon className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <div className="font-medium text-white">{item.label}</div>
+                          <div className="font-medium text-white text-sm">{item.label}</div>
                           <div className="text-xs text-white/50">{item.desc}</div>
                         </div>
                       </Link>
@@ -155,19 +174,20 @@ const Navbar = () => {
             >
               <button className="flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">
                 Experiencias
-                <ChevronDown className={`w-4 h-4 transition-transform ${activeDropdown === "experience" ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeDropdown === "experience" ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
                 {activeDropdown === "experience" && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute top-full left-0 mt-2 w-64 rounded-2xl overflow-hidden"
                     style={{
-                      background: "hsl(220,45%,12%)",
+                      background: "hsl(220,45%,10%)",
                       border: "1px solid hsla(43,80%,55%,0.2)",
-                      boxShadow: "0 10px 40px -10px hsla(0,0%,0%,0.5)"
+                      boxShadow: "0 20px 60px -15px hsla(0,0%,0%,0.6)"
                     }}
                   >
                     {experienceItems.map((item) => (
@@ -183,7 +203,7 @@ const Navbar = () => {
                           <item.icon className="w-5 h-5" style={{ color: "hsl(220,45%,15%)" }} />
                         </div>
                         <div>
-                          <div className="font-medium text-white">{item.label}</div>
+                          <div className="font-medium text-white text-sm">{item.label}</div>
                           <div className="text-xs text-white/50">{item.desc}</div>
                         </div>
                       </Link>
@@ -206,7 +226,7 @@ const Navbar = () => {
               >
                 {isActive(item.path) && (
                   <motion.div
-                    layoutId="nav-active"
+                    layoutId="desktop-nav-community"
                     className="absolute inset-0 rounded-xl"
                     style={{ 
                       background: "linear-gradient(135deg, hsl(210,100%,55%), hsl(210,100%,45%))",
@@ -224,8 +244,19 @@ const Navbar = () => {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
           >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <AnimatePresence mode="wait">
+              {isOpen ? (
+                <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <X className="w-5 h-5" />
+                </motion.div>
+              ) : (
+                <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <Menu className="w-5 h-5" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
         </div>
       </div>
@@ -237,15 +268,16 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            style={{ background: "hsl(220,45%,10%)", borderTop: "1px solid hsla(210,100%,55%,0.1)" }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            style={{ background: "hsl(220,45%,8%)", borderTop: "1px solid hsla(210,100%,55%,0.1)" }}
+            className="overflow-hidden"
           >
-            <div className="container mx-auto px-4 py-4 space-y-4">
+            <div className="container mx-auto px-4 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive(item.path) 
                       ? "text-white" 
                       : "text-white/60 hover:text-white hover:bg-white/5"
@@ -265,8 +297,7 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                       isActive(item.path) 
                         ? "text-white" 
                         : "text-white/60 hover:text-white hover:bg-white/5"
@@ -276,7 +307,10 @@ const Navbar = () => {
                     } : {}}
                   >
                     <item.icon className="w-5 h-5" />
-                    {item.label}
+                    <div>
+                      <span>{item.label}</span>
+                      <span className="block text-[10px] text-white/30">{item.desc}</span>
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -287,8 +321,7 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                       isActive(item.path) 
                         ? "text-white" 
                         : "text-white/60 hover:text-white hover:bg-white/5"
@@ -298,7 +331,10 @@ const Navbar = () => {
                     } : {}}
                   >
                     <item.icon className="w-5 h-5" />
-                    {item.label}
+                    <div>
+                      <span>{item.label}</span>
+                      <span className="block text-[10px] text-white/30">{item.desc}</span>
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -309,8 +345,7 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-3 rounded-xl ${
+                    className={`block px-4 py-3 rounded-xl transition-all ${
                       isActive(item.path) 
                         ? "text-white" 
                         : "text-white/60 hover:text-white hover:bg-white/5"
