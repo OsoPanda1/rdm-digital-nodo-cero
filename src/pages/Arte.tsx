@@ -94,6 +94,7 @@ const ArtePage = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
+        <SEOMeta {...PAGE_SEO.arte} />
         <Navbar />
         
         {/* Hero */}

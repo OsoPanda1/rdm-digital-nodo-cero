@@ -103,6 +103,7 @@ const EcoturismoPage = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
+        <SEOMeta {...PAGE_SEO.ecoturismo} />
         <Navbar />
         
         {/* Hero */}

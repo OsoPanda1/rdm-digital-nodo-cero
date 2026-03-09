@@ -105,6 +105,7 @@ const MapaPage = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-slate-950 text-slate-200">
+        <SEOMeta {...PAGE_SEO.mapa} />
         <Navbar />
         <div className="pt-24 pb-20">
           <div className="container mx-auto px-4 md:px-8">

@@ -332,6 +332,7 @@ const CulturaPage = () => {
   return (
     <PageTransition>
       <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden">
+        <SEOMeta {...PAGE_SEO.cultura} />
         <Navbar />
         
         {/* Hero Section */}
