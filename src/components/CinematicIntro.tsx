@@ -33,7 +33,6 @@ const AudioEqualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
       const gap = (w / BAR_COUNT) * 0.4;
 
       for (let i = 0; i < BAR_COUNT; i++) {
-        // Sample frequency bins — weight towards mids
         const binIndex = Math.floor((i / BAR_COUNT) * (analyser.frequencyBinCount * 0.75));
         const rawVal = dataArr[binIndex] / 255;
         const barH = Math.max(4, rawVal * h * 0.9);
@@ -41,7 +40,6 @@ const AudioEqualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
         const x = i * (barW + gap);
         const y = h - barH;
 
-        // Gradient per bar: gold bottom → blue top
         const grad = ctx.createLinearGradient(x, h, x, y);
         grad.addColorStop(0, `hsla(43, 90%, 55%, ${0.5 + rawVal * 0.5})`);
         grad.addColorStop(0.5, `hsla(210, 80%, 65%, ${0.5 + rawVal * 0.4})`);
@@ -51,7 +49,6 @@ const AudioEqualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
         ctx.shadowBlur = rawVal > 0.5 ? 12 : 4;
         ctx.shadowColor = `hsla(210, 100%, 65%, ${rawVal * 0.8})`;
 
-        // Rounded top bar
         const radius = Math.min(barW / 2, 3);
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
@@ -64,7 +61,6 @@ const AudioEqualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
         ctx.closePath();
         ctx.fill();
 
-        // Reflection (mirror, dimmed)
         ctx.globalAlpha = 0.15;
         ctx.save();
         ctx.scale(1, -0.4);
@@ -95,6 +91,75 @@ const AudioEqualizer = ({ analyser }: { analyser: AnalyserNode | null }) => {
       width={480}
       height={72}
       className="w-[280px] md:w-[420px] h-[50px] md:h-[72px]"
+    />
+  );
+};
+
+// Animated waveform oscilloscope
+const AudioWaveform = ({ analyser }: { analyser: AnalyserNode | null }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!analyser || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dataArr = new Uint8Array(analyser.frequencyBinCount);
+
+    const draw = () => {
+      rafRef.current = requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(dataArr);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "hsla(210, 100%, 75%, 0.8)";
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "hsla(210, 100%, 65%, 0.8)";
+
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width * 1.0 / analyser.frequencyBinCount;
+      let x = 0;
+
+      for (let i = 0; i < analyser.frequencyBinCount; i++) {
+        const v = dataArr[i] / 128.0;
+        const y = (v * canvas.height) / 2;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+      }
+
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+      
+      // Draw grid
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = "hsla(210, 100%, 50%, 0.1)";
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    };
+
+    draw();
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [analyser]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={480}
+      height={40}
+      className="w-[280px] md:w-[420px] h-[30px] md:h-[40px] opacity-70"
     />
   );
 };
