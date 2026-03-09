@@ -81,7 +81,50 @@ const shortStories = [
 
 const RelatosPage = () => {
   const [showVideo, setShowVideo] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
+  const initEcho = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || audioCtxRef.current) return;
+
+    const ctx = new AudioContext();
+    audioCtxRef.current = ctx;
+
+    const source = ctx.createMediaElementSource(video);
+    sourceRef.current = source;
+
+    // Echo chain: delay -> feedback gain -> delay (loop), mixed with dry signal
+    const delay = ctx.createDelay(1.0);
+    delay.delayTime.value = 0.35;
+
+    const feedback = ctx.createGain();
+    feedback.gain.value = 0.3;
+
+    const wetGain = ctx.createGain();
+    wetGain.gain.value = 0.25;
+
+    // Dry path
+    source.connect(ctx.destination);
+
+    // Wet path with feedback loop
+    source.connect(delay);
+    delay.connect(feedback);
+    feedback.connect(delay); // feedback loop
+    delay.connect(wetGain);
+    wetGain.connect(ctx.destination);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+        sourceRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <PageTransition>
@@ -105,9 +148,11 @@ const RelatosPage = () => {
                 <X className="w-6 h-6" />
               </button>
               <video
+                ref={videoRef}
                 src={leyendaVideo}
                 controls
                 autoPlay
+                onPlay={initEcho}
                 className="w-full rounded-2xl shadow-2xl"
               />
             </div>
