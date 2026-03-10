@@ -44,13 +44,13 @@
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.5",
     "@types/uuid": "^9.0.7",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
     "eslint": "^8.56.0",
     "prisma": "^5.7.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.1.0"
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=18.0.0"
