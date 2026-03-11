@@ -28,6 +28,7 @@ import Reglamento from "./pages/Reglamento";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Dichos from "./pages/Dichos";
 import Catalogo from "./pages/Catalogo";
+import NegociosPortal from "./pages/NegociosPortal";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -54,6 +55,7 @@ const AnimatedRoutes = () => {
         <Route path="/dichos" element={<Dichos />} />
         <Route path="/dichos-mineros" element={<Dichos />} />
         <Route path="/catalogo" element={<Catalogo />} />
+        <Route path="/negocios" element={<NegociosPortal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
