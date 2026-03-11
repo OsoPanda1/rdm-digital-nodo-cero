@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { NotificationProvider } from "@/components/NotificationSystem";
@@ -29,17 +28,6 @@ import Reglamento from "./pages/Reglamento";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Dichos from "./pages/Dichos";
 import Catalogo from "./pages/Catalogo";
-
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -72,34 +60,43 @@ const AnimatedRoutes = () => {
   );
 };
 
-const App = () => {
+const AppInner = () => {
   const [introComplete, setIntroComplete] = useState(false);
-  const handleIntroComplete = useCallback(() => setIntroComplete(true), []);
+
+  const handleIntroComplete = useCallback(() => {
+    setIntroComplete(true);
+  }, []);
 
   const [showIntro] = useState(() => {
-    if (sessionStorage.getItem('rdm_intro_shown')) return false;
-    sessionStorage.setItem('rdm_intro_shown', 'true');
+    if (sessionStorage.getItem("rdm_intro_shown")) return false;
+    sessionStorage.setItem("rdm_intro_shown", "true");
     return true;
   });
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <NotificationProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            {showIntro && !introComplete && <CinematicIntro onComplete={handleIntroComplete} />}
-            <BrowserRouter>
-              <ErrorBoundary>
-                <AnimatedRoutes />
-              </ErrorBoundary>
-              <RealitoChat />
-            </BrowserRouter>
-          </TooltipProvider>
-        </NotificationProvider>
-      </QueryClientProvider>
+      <NotificationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {showIntro && !introComplete && (
+            <CinematicIntro onComplete={handleIntroComplete} />
+          )}
+          {(!showIntro || introComplete) && (
+            <AnimatedRoutes />
+          )}
+          <RealitoChat />
+        </TooltipProvider>
+      </NotificationProvider>
     </ErrorBoundary>
+  );
+};
+
+const App = () => {
+  return (
+    <BrowserRouter>
+      <AppInner />
+    </BrowserRouter>
   );
 };
 
