@@ -236,6 +236,9 @@ const Auth = () => {
             <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
               Explorar sin cuenta
             </Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/negocios')}>
+              Soy comercio / negocio
+            </Button>
           </CardFooter>
         </Card>
       </div>

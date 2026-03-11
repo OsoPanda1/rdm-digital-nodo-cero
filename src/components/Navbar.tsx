@@ -28,6 +28,7 @@ const communityItems = [
   { label: "Directorio", path: "/directorio" },
   { label: "Eventos", path: "/eventos" },
   { label: "Comunidad", path: "/comunidad" },
+  { label: "Negocios", path: "/negocios" },
 ];
 
 const Navbar = () => {
