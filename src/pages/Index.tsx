@@ -16,6 +16,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import GradientSeparator from "@/components/GradientSeparator";
 import PageTransition from "@/components/PageTransition";
+import ExperienceHub from "@/components/ExperienceHub";
+import MapaView from "@/components/MapaView";
 
 import { usePlaces } from "@/features/places";
 import { useBusinesses } from "@/features/businesses";
@@ -71,6 +73,22 @@ const Index = () => {
 
         <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
         <RoutesSection />
+        <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
+
+        <section className="py-24">
+          <div className="container mx-auto px-4 md:px-8">
+            <ExperienceHub />
+          </div>
+        </section>
+
+        <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
+
+        <section className="py-24">
+          <div className="container mx-auto px-4 md:px-8">
+            <MapaView />
+          </div>
+        </section>
+
         <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
         <VideoGallery />
         <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
