@@ -80,6 +80,15 @@ export default function MapaPage() {
   const [selected, setSelected] = useState<MapMarkerData | null>(markers[0]);
   const [query, setQuery] = useState("");
 
+  const handleFilterChange = (nextFilter: MarkerType | "all") => {
+    setFilter(nextFilter);
+    setSelected((current) => {
+      if (!current) return null;
+      if (nextFilter === "all") return current;
+      return current.type === nextFilter ? current : null;
+    });
+  };
+
   const filtered = useMemo(
     () =>
       markers.filter((item) => {
@@ -176,7 +185,7 @@ export default function MapaPage() {
                   ].map((item) => (
                     <button
                       key={item.key}
-                      onClick={() => setFilter(item.key as "all" | MarkerType)}
+                      onClick={() => handleFilterChange(item.key as "all" | MarkerType)}
                       className={`rounded-full border px-3 py-2 text-xs ${
                         filter === item.key
                           ? "border-gold-500 bg-gold-500/20 text-gold-300"

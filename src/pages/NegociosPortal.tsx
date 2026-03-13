@@ -30,7 +30,7 @@ const defaultBusiness = {
   address: "",
 };
 
-export default function NegociosPortalPage() {
+export default function NegociosPortal() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [businessId, setBusinessId] = useState("");
@@ -66,15 +66,21 @@ export default function NegociosPortalPage() {
 
     setLoading(true);
     try {
-      const signupResponse = await authApi.signup({
-        name: signup.name,
-        email: signup.email,
-        password: signup.password,
-        role: "business_owner",
-      });
+      let token = localStorage.getItem("rdm_token");
+      const existingUser = localStorage.getItem("rdm_user");
 
-      localStorage.setItem("rdm_token", signupResponse.data.token);
-      localStorage.setItem("rdm_user", JSON.stringify(signupResponse.data.user));
+      if (!token || !existingUser) {
+        const signupResponse = await authApi.signup({
+          name: signup.name,
+          email: signup.email,
+          password: signup.password,
+          role: "business_owner",
+        });
+
+        token = signupResponse.data.token;
+        localStorage.setItem("rdm_token", token);
+        localStorage.setItem("rdm_user", JSON.stringify(signupResponse.data.user));
+      }
 
       const createResponse = await businessesApi.create({
         name: business.name,
@@ -87,7 +93,11 @@ export default function NegociosPortalPage() {
       setBusinessId(createResponse.data.id);
       toast({ title: "¡Registro completado!", description: "Tu negocio fue creado. Ya puedes activar el plan mensual." });
     } catch (error) {
-      toast({ title: "Error", description: error instanceof Error ? error.message : "No se pudo registrar", variant: "destructive" });
+      toast({
+        title: "Error al crear negocio",
+        description: error instanceof Error ? error.message : "No se pudo crear el negocio.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

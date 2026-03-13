@@ -9,6 +9,8 @@ interface Message {
   content: string;
 }
 
+const MAX_INPUT_LENGTH = 1000;
+
 const suggestions = [
   "¿Qué hacer con 2 horas libres?",
   "¿Dónde comer el mejor paste?",
@@ -48,7 +50,7 @@ export default function RealitoChat() {
   const sendMessage = useCallback(
     async (text: string) => {
       const content = text.trim();
-      if (!content || isTyping) return;
+      if (!content || isTyping || content.length > MAX_INPUT_LENGTH) return;
 
       setMessages((prev) => [
         ...prev,
@@ -57,13 +59,26 @@ export default function RealitoChat() {
       setInput("");
       setIsTyping(true);
 
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 350));
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `${Date.now()}-a`, role: "assistant", content: localReply(content) },
-      ]);
-      setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          { id: `${Date.now()}-a`, role: "assistant", content: localReply(content) },
+        ]);
+      } catch (error) {
+        console.error("RealitoChat error", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `${Date.now()}-a-error`,
+            role: "assistant",
+            content: "Tuvimos un problema al procesar tu mensaje. Intenta de nuevo en unos momentos.",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
     },
     [isTyping],
   );
@@ -145,12 +160,13 @@ export default function RealitoChat() {
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Escribe tu pregunta..."
+                maxLength={MAX_INPUT_LENGTH}
                 className="flex-1 rounded-lg border border-white/10 bg-night-800 px-3 py-2 text-sm text-silver-300 outline-none"
               />
               <button
                 type="submit"
                 className="rounded-lg bg-gold-500 px-3 py-2 text-night-900 disabled:opacity-50"
-                disabled={!input.trim() || isTyping}
+                disabled={!input.trim() || isTyping || input.trim().length > MAX_INPUT_LENGTH}
               >
                 <Send className="h-4 w-4" />
               </button>
