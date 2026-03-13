@@ -14,6 +14,8 @@ interface Business {
   description: string;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+
 export default function GastronomiaPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,11 +23,15 @@ export default function GastronomiaPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/explore/theme/gastronomia");
+        const response = await fetch(`${API_BASE_URL}/businesses?category=GASTRONOMIA`);
+        if (!response.ok) {
+          throw new Error("No se pudo cargar la categoría de gastronomía");
+        }
         const data = await response.json();
-        setBusinesses(data.businesses ?? []);
+        setBusinesses(data.data ?? []);
       } catch (error) {
         console.error("Error loading gastronomía:", error);
+        setBusinesses([]);
       } finally {
         setLoading(false);
       }
