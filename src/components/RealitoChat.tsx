@@ -80,7 +80,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
       setIsTyping(true);
 
       try {
-        const response = `${localReply(content)}\n\nDirectriz del sistema: ${SYSTEM_INSTRUCTION}`;
+        const response = localReply(content);
         await streamAssistantReply(response);
       } catch (error) {
         console.error("RealitoChat error", error);
