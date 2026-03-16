@@ -5,8 +5,12 @@ import Supercluster from "supercluster";
 import "leaflet/dist/leaflet.css";
 import type { MapMarkerData, MapViewportState } from "@/features/places/mapTypes";
 
-type ClusterFeature = GeoJSON.Feature<GeoJSON.Point, { cluster: true; cluster_id: number; point_count: number }>;
-type PointFeature = GeoJSON.Feature<GeoJSON.Point, { cluster: false; markerId: string }>;
+// Definición estricta de tipos para evitar errores de propiedades inexistentes
+type ClusterProps = { cluster: true; cluster_id: number; point_count: number };
+type PointProps = { cluster: false; markerId: string };
+
+type ClusterFeature = GeoJSON.Feature<GeoJSON.Point, ClusterProps>;
+type PointFeature = GeoJSON.Feature<GeoJSON.Point, PointProps>;
 
 type ClusterItem = ClusterFeature | PointFeature;
 
@@ -18,11 +22,14 @@ interface Map2DPanelProps {
   onViewportChange: (next: Partial<MapViewportState>) => void;
 }
 
+// Estética Platinum & Obsidian Mist para marcadores
 const createPinIcon = (type: MapMarkerData["type"], isPremium?: boolean) => {
-  const color = isPremium ? "#f59e0b" : type === "place" ? "#60a5fa" : "#34d399";
+  const color = isPremium ? "#E5E7EB" : type === "place" ? "#60a5fa" : "#34d399";
+  const glow = isPremium ? "0 0 15px rgba(229, 231, 235, 0.8)" : `0 0 12px ${color}`;
+  
   return L.divIcon({
     className: "custom-map-pin",
-    html: `<span style="display:flex;width:${isPremium ? 28 : 22}px;height:${isPremium ? 28 : 22}px;border-radius:999px;background:${color};box-shadow:0 0 0 4px rgba(10,15,27,.8),0 0 12px ${color};border:1px solid rgba(255,255,255,.75)"></span>`,
+    html: `<span style="display:flex;width:${isPremium ? 26 : 20}px;height:${isPremium ? 26 : 20}px;border-radius:999px;background:${color};box-shadow:0 0 0 4px rgba(10,15,27,.8), ${glow};border:1px solid rgba(255,255,255,0.9);backdrop-filter: blur(2px);"></span>`,
     iconSize: [32, 32],
     iconAnchor: [16, 16],
   });
@@ -31,7 +38,7 @@ const createPinIcon = (type: MapMarkerData["type"], isPremium?: boolean) => {
 const createClusterIcon = (count: number) =>
   L.divIcon({
     className: "custom-cluster-pin",
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:radial-gradient(circle at top left, rgba(245,158,11,.95), rgba(180,83,9,.9));color:#0b1020;font-size:12px;font-weight:700;box-shadow:0 0 0 6px rgba(15,23,42,.55),0 0 22px rgba(245,158,11,.55);border:1px solid rgba(255,255,255,.85)">${count}</span>`,
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:radial-gradient(circle at top left, rgba(229,231,235,0.95), rgba(75,85,99,0.9));color:#0b1020;font-size:12px;font-weight:700;box-shadow:0 0 0 6px rgba(15,23,42,0.55),0 0 22px rgba(229,231,235,0.4);border:1px solid rgba(255,255,255,0.85)">${count}</span>`,
     iconSize: [38, 38],
     iconAnchor: [19, 19],
   });
@@ -52,9 +59,7 @@ function MapEventBridge({ onViewportChange }: { onViewportChange: (next: Partial
     };
 
     map.on(handler);
-    return () => {
-      map.off(handler);
-    };
+    return () => map.off(handler);
   }, [map, onViewportChange]);
 
   return null;
@@ -72,7 +77,7 @@ function MapFocus({ selected }: { selected: MapMarkerData | null }) {
 }
 
 function buildClusterIndex(points: PointFeature[]) {
-  return new Supercluster<{ cluster: false; markerId: string }, { cluster: true; cluster_id: number; point_count: number }>({
+  return new Supercluster<PointProps, ClusterProps>({
     radius: 58,
     maxZoom: 18,
     minZoom: 0,
@@ -99,7 +104,6 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
   );
 
   const index = useMemo(() => buildClusterIndex(points), [points]);
-
   const [version, setVersion] = useState(0);
 
   const clusterItems = useMemo<ClusterItem[]>(() => {
@@ -120,18 +124,20 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
 
   return (
     <>
-      {clusterItems.map((item) => {
+      {clusterItems.map((item, idx) => {
         const [lng, lat] = item.geometry.coordinates;
-        if (item.properties.cluster) {
-          const count = item.properties.point_count;
+        const { properties } = item;
+
+        // Type Guard para diferenciar entre Cluster y Punto Individual
+        if (properties.cluster) {
           return (
             <Marker
-              key={`cluster-${item.properties.cluster_id}`}
+              key={`cluster-${properties.cluster_id}-${idx}`}
               position={[lat, lng]}
-              icon={createClusterIcon(count)}
+              icon={createClusterIcon(properties.point_count)}
               eventHandlers={{
                 click: () => {
-                  const expansionZoom = index.getClusterExpansionZoom(item.properties.cluster_id);
+                  const expansionZoom = index.getClusterExpansionZoom(properties.cluster_id);
                   map.flyTo([lat, lng], Math.min(expansionZoom, 18), { duration: 0.6 });
                 },
               }}
@@ -139,19 +145,21 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
           );
         }
 
-        const marker = markerLookup.get(item.properties.markerId);
+        const marker = markerLookup.get(properties.markerId);
         if (!marker) return null;
 
         return (
           <Marker
-            key={marker.id}
+            key={`marker-${marker.id}`}
             position={[marker.lat, marker.lng]}
             icon={createPinIcon(marker.type, marker.isPremium)}
             eventHandlers={{ click: () => onSelect(marker) }}
           >
             <Popup>
-              <strong>{marker.name}</strong>
-              <p>{marker.description}</p>
+              <div className="p-1">
+                <strong className="text-slate-900 block border-b pb-1 mb-1">{marker.name}</strong>
+                <p className="text-xs text-slate-600 leading-tight">{marker.description}</p>
+              </div>
             </Popup>
           </Marker>
         );
@@ -162,23 +170,25 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
 
 export function Map2DPanel({ markers, selected, viewport, onSelect, onViewportChange }: Map2DPanelProps) {
   return (
-    <MapContainer
-      center={[viewport.lat, viewport.lng]}
-      zoom={viewport.zoom}
-      className="h-[420px] w-full rounded-2xl md:h-[640px]"
-      zoomControl
-      style={{
-        background:
-          "radial-gradient(circle at top left, rgba(46,67,106,0.45), rgba(15,23,42,0.95) 62%, rgba(7,10,18,1))",
-      }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      />
-      <MapEventBridge onViewportChange={onViewportChange} />
-      <MapFocus selected={selected} />
-      <ClusterLayer markers={markers} onSelect={onSelect} />
-    </MapContainer>
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+      <MapContainer
+        center={[viewport.lat, viewport.lng]}
+        zoom={viewport.zoom}
+        className="h-[420px] w-full md:h-[640px]"
+        zoomControl={true}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; CARTO'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        />
+        <MapEventBridge onViewportChange={onViewportChange} />
+        <MapFocus selected={selected} />
+        <ClusterLayer markers={markers} onSelect={onSelect} />
+      </MapContainer>
+      
+      {/* Overlay de diseño Crystal Glow en los bordes */}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5 ring-1 ring-inset ring-white/10" />
+    </div>
   );
 }
