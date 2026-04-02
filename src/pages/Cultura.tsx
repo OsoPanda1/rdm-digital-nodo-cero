@@ -25,6 +25,9 @@ import rdm2 from "@/assets/rdm2.jpeg";
 import rdm3 from "@/assets/rdm01.jpg";
 import rdm4 from "@/assets/rdm02.jpg";
 import pasteImg from "@/assets/paste.webp";
+import realitoAiScene from "@/assets/ChatGPT Image 4 mar 2026, 08_53_03.png";
+import realitoAiTradition from "@/assets/ChatGPT Image 4 mar 2026, 10_28_04 a.m..png";
+import presentationVideo from "@/assets/presentacion.mp4";
 
 // Extended festivals with more detail
 const festivals = [
@@ -322,6 +325,18 @@ const culturalImages = [
 
 const CulturaPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const downloadCultureGuide = () => {
+    const blob = new Blob(
+      [festivals.map((festival) => `${festival.name} (${festival.month})\n${festival.description}`).join("\n\n")],
+      { type: "text/plain;charset=utf-8" },
+    );
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guia-cultural-real-del-monte.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -394,11 +409,20 @@ const CulturaPage = () => {
                   transition={{ delay: 0.7, duration: 0.6 }}
                   className="flex flex-wrap gap-4 mt-8"
                 >
-                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8">
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-white rounded-full px-8"
+                    onClick={() => document.getElementById("calendario-festividades")?.scrollIntoView({ behavior: "smooth" })}
+                  >
                     <Calendar className="w-4 h-4 mr-2" />
                     Calendario de Festivales
                   </Button>
-                  <Button variant="outline" size="lg" className="rounded-full px-8 border-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full px-8 border-2"
+                    onClick={() => document.getElementById("expresiones-culturales")?.scrollIntoView({ behavior: "smooth" })}
+                  >
                     <Music className="w-4 h-4 mr-2" />
                     Expresiones Culturales
                   </Button>
@@ -451,7 +475,7 @@ const CulturaPage = () => {
         </section>
 
         {/* Festivals Section */}
-        <section className="py-24 bg-muted/30">
+        <section className="py-24 bg-muted/30" id="calendario-festividades">
           <div className="container mx-auto px-4 md:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -513,7 +537,7 @@ const CulturaPage = () => {
         </section>
 
         {/* Cultural Expressions Tabs */}
-        <section className="py-24">
+        <section className="py-24" id="expresiones-culturales">
           <div className="container mx-auto px-4 md:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -572,6 +596,10 @@ const CulturaPage = () => {
                 </TabsContent>
               ))}
             </Tabs>
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              <img src={realitoAiScene} alt="Arte y cultura viva en Real del Monte" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
+              <video src={presentationVideo} className="h-64 w-full rounded-2xl object-cover shadow-elevated" autoPlay muted loop playsInline />
+            </div>
           </div>
         </section>
 
@@ -661,6 +689,11 @@ const CulturaPage = () => {
                 className="relative"
               >
                 <ParallaxImage src={callesImg} alt="Cultura del Paste" />
+                <img
+                  src={realitoAiTradition}
+                  alt="Visual Realito AI sobre cultura del paste"
+                  className="absolute top-4 right-4 h-24 w-24 rounded-xl border border-white/30 object-cover shadow-lg"
+                />
                 <div className="absolute -bottom-6 -left-6 bg-background p-6 rounded-2xl shadow-elevated max-w-xs">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
@@ -725,6 +758,11 @@ const CulturaPage = () => {
                 </motion.div>
               ))}
             </div>
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+              {[rdm1, rdm2, rdm3, rdm4].map((img, idx) => (
+                <img key={idx} src={img} alt={`Espiritualidad visual ${idx + 1}`} className="h-40 w-full rounded-xl object-cover" />
+              ))}
+            </div>
           </div>
         </section>
 
@@ -768,11 +806,20 @@ const CulturaPage = () => {
                 un pedazo de esta cultura única en el mundo.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8">
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-white rounded-full px-8"
+                  onClick={() => (window.location.href = "/eventos")}
+                >
                   <Calendar className="w-4 h-4 mr-2" />
                   Ver Calendario Anual
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-full px-8 border-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full px-8 border-2"
+                  onClick={downloadCultureGuide}
+                >
                   <Globe className="w-4 h-4 mr-2" />
                   Talleres Culturales
                 </Button>

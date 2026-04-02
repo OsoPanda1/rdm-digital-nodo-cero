@@ -37,6 +37,19 @@ function MapaPageContent() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"2d" | "3d">("2d");
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
+  const locateUser = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const next = { lat: position.coords.latitude, lng: position.coords.longitude, zoom: 14 };
+        syncFrom2D(next);
+      },
+      () => {
+        syncFrom2D({ lat: 20.138, lng: -98.6735, zoom: 13 });
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
     setFilter(nextFilter);
@@ -185,6 +198,15 @@ function MapaPageContent() {
                     onClick={() => handleFilterChange("business")}
                   >
                     <Layers className="h-4 w-4" /> Negocios
+                  </button>
+                </div>
+                <div className="mt-3">
+                  <button
+                    onClick={locateUser}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gold-500/30 bg-gold-500/10 px-3 py-2 text-xs text-gold-300"
+                  >
+                    <LocateFixed className="h-4 w-4" />
+                    Usar mi geolocalización
                   </button>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
