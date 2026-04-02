@@ -1,99 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import mapboxgl, { Map as MapboxMap } from "mapbox-gl";
+import { useEffect, useRef, useState } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import L from "leaflet";
 import { Map as MapIcon, Navigation, Layers, Activity, Hexagon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { motion } from "framer-motion";
+import "leaflet/dist/leaflet.css";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const CENTER = { lat: 20.1389, lng: -98.6733 };
 
-/**
- * HOOK DE EVOLUCIÓN: Motor de Renderizado Mapbox
- * Extrae la complejidad de inicialización para mantener el componente ligero.
- */
-const useMapboxCore = (containerRef: React.RefObject<HTMLDivElement | null>, viewMode: "2d" | "3d") => {
-  const mapRef = useRef<MapboxMap | null>(null);
-  const CENTER = { lng: -98.6733, lat: 20.1389 };
-
+function ViewModeController({ viewMode }: { viewMode: "2d" | "3d" }) {
+  const map = useMap();
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11", // Obsidian Mist Base
-      center: [CENTER.lng, CENTER.lat],
-      zoom: 15,
-      pitch: viewMode === "3d" ? 60 : 0,
-      bearing: viewMode === "3d" ? -20 : 0,
-      antialias: true,
-    });
-
-    map.on("load", () => {
-      // Inyección de Terreno 3D
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.terrain-rgb",
-        tileSize: 512,
-        maxzoom: 14,
-      });
-      
-      if (viewMode === "3d") map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-
-      // Sky Layer para atmósfera de montaña
-      map.addLayer({
-        id: "sky",
-        type: "sky",
-        paint: {
-          "sky-type": "atmosphere",
-          "sky-atmosphere-sun": [0.0, 0.0],
-          "sky-atmosphere-sun-intensity": 15,
-        },
-      });
-
-      // Extrusión Platinum para edificios
-      map.addLayer({
-        id: "3d-buildings",
-        source: "composite",
-        "source-layer": "building",
-        filter: ["==", "extrude", "true"],
-        type: "fill-extrusion",
-        minzoom: 15,
-        paint: {
-          "fill-extrusion-color": "#E5E7EB", // Platinum
-          "fill-extrusion-height": ["get", "height"],
-          "fill-extrusion-base": ["get", "min_height"],
-          "fill-extrusion-opacity": 0.5,
-        },
-      });
-      
-      mapRef.current = map;
-    });
-
-    return () => map.remove();
-  }, []);
-
-  return mapRef;
-};
+    if (viewMode === "3d") {
+      map.flyTo([CENTER.lat, CENTER.lng], 16, { duration: 1.5 });
+    } else {
+      map.flyTo([CENTER.lat, CENTER.lng], 15, { duration: 1.5 });
+    }
+  }, [viewMode, map]);
+  return null;
+}
 
 export default function MapaView() {
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [viewMode, setViewMode] = useState<"2d" | "3d">("3d");
-  const mapRef = useMapboxCore(mapContainerRef, viewMode);
-
-  // Efecto de transición de cámara
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    if (viewMode === "2d") {
-      map.setTerrain(undefined);
-      map.flyTo({ pitch: 0, bearing: 0, duration: 2000 });
-    } else {
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-      map.flyTo({ pitch: 65, bearing: -25, zoom: 15.5, duration: 2000 });
-    }
-  }, [viewMode]);
 
   return (
     <div className="flex flex-col gap-6 p-2">
@@ -124,8 +53,20 @@ export default function MapaView() {
       </header>
 
       <section className="relative aspect-video w-full overflow-hidden rounded-[2.5rem] border border-white/10 bg-slate-900 shadow-2xl">
-        <div ref={mapContainerRef} className="h-full w-full" />
-        
+        <MapContainer
+          center={[CENTER.lat, CENTER.lng]}
+          zoom={15}
+          className="h-full w-full"
+          zoomControl={true}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; CARTO'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+          <ViewModeController viewMode={viewMode} />
+        </MapContainer>
+
         {/* Crystal Glow Pulse Overlay */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <motion.div
@@ -137,7 +78,7 @@ export default function MapaView() {
 
         {/* Telemetry Panel */}
         <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none">
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             className="pointer-events-auto flex items-center gap-5 rounded-3xl border border-white/10 bg-black/60 p-5 backdrop-blur-2xl"
@@ -150,7 +91,7 @@ export default function MapaView() {
               <p className="font-mono text-sm font-bold text-white tracking-widest">20.1389° N | 98.6733° W</p>
             </div>
           </motion.div>
-          
+
           <div className="text-right hidden md:block">
             <p className="text-[10px] text-white/30 uppercase tracking-[0.4em]">Digital Sovereignty Protocol</p>
             <p className="text-xs font-serif italic text-white/40">Real del Monte, Hidalgo</p>
@@ -163,7 +104,7 @@ export default function MapaView() {
         {[
           { label: "Active Federated Nodes", value: "124", icon: Layers, color: "text-blue-400" },
           { label: "Kernel Frequency", value: "1.2 GHz", icon: Activity, color: "text-emerald-400" },
-          { label: "LSM Sync Matrix", value: "98.2%", icon: MapIcon, color: "text-platinum" },
+          { label: "LSM Sync Matrix", value: "98.2%", icon: MapIcon, color: "text-slate-300" },
         ].map((stat) => (
           <div key={stat.label} className="group overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:bg-white/[0.05]">
             <div className="flex items-center gap-5">
