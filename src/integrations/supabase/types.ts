@@ -14,6 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          created_at: string
+          data: Json | null
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      businesses: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          description: string
+          email: string | null
+          facebook: string | null
+          id: string
+          image_url: string | null
+          image_url_2: string | null
+          image_url_3: string | null
+          instagram: string | null
+          is_featured: boolean
+          is_premium: boolean
+          is_verified: boolean
+          latitude: number | null
+          longitude: number | null
+          name: string
+          owner_id: string | null
+          phone: string | null
+          price_range: string | null
+          rating: number | null
+          schedule_display: string | null
+          short_description: string | null
+          status: string
+          tiktok: string | null
+          updated_at: string
+          video_url: string | null
+          views_count: number
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          email?: string | null
+          facebook?: string | null
+          id?: string
+          image_url?: string | null
+          image_url_2?: string | null
+          image_url_3?: string | null
+          instagram?: string | null
+          is_featured?: boolean
+          is_premium?: boolean
+          is_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          owner_id?: string | null
+          phone?: string | null
+          price_range?: string | null
+          rating?: number | null
+          schedule_display?: string | null
+          short_description?: string | null
+          status?: string
+          tiktok?: string | null
+          updated_at?: string
+          video_url?: string | null
+          views_count?: number
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          email?: string | null
+          facebook?: string | null
+          id?: string
+          image_url?: string | null
+          image_url_2?: string | null
+          image_url_3?: string | null
+          instagram?: string | null
+          is_featured?: boolean
+          is_premium?: boolean
+          is_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          owner_id?: string | null
+          phone?: string | null
+          price_range?: string | null
+          rating?: number | null
+          schedule_display?: string | null
+          short_description?: string | null
+          status?: string
+          tiktok?: string | null
+          updated_at?: string
+          video_url?: string | null
+          views_count?: number
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          end_date: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       forum_comments: {
         Row: {
           author_email: string | null
@@ -103,15 +277,96 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          is_active?: boolean
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          log_type: string
+          message: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          log_type: string
+          message?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          log_type?: string
+          message?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -238,6 +493,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
