@@ -59,7 +59,7 @@ function MapEventBridge({ onViewportChange }: { onViewportChange: (next: Partial
     };
 
     map.on(handler);
-    return () => map.off(handler);
+    return () => { map.off(handler); };
   }, [map, onViewportChange]);
 
   return null;
