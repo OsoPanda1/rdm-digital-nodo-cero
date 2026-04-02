@@ -1,32 +1,37 @@
 import { Compass, MapPin, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import minaImg from "@/assets/mina-acosta.webp";
+import penasImg from "@/assets/penas-cargadas.webp";
+import pasteImg from "@/assets/paste.webp";
+import panteonImg from "@/assets/panteon-ingles.webp";
+import realitoAiScene from "@/assets/ChatGPT Image 4 mar 2026, 08_53_03.png";
 
 const experiences = [
   {
     title: "Mina de Acosta",
     category: "Historia & Minería",
-    image: "https://picsum.photos/seed/mina/800/600",
+    image: minaImg,
     description: "Un viaje a las profundidades de la historia minera de Real del Monte.",
     rating: 4.9,
   },
   {
     title: "Bosque del Hiloche",
     category: "Ecoturismo",
-    image: "https://picsum.photos/seed/bosque/800/600",
+    image: penasImg,
     description: "Senderos entre niebla y pinos centenarios.",
     rating: 4.8,
   },
   {
     title: "Museo del Paste",
     category: "Gastronomía",
-    image: "https://picsum.photos/seed/paste/800/600",
+    image: pasteImg,
     description: "El sabor que define a un pueblo y su herencia inglesa.",
     rating: 5.0,
   },
   {
     title: "Panteón Inglés",
     category: "Cultura",
-    image: "https://picsum.photos/seed/panteon/800/600",
+    image: panteonImg,
     description: "Un lugar de descanso eterno con vista a las montañas.",
     rating: 4.7,
   },
@@ -89,7 +94,10 @@ export default function ExperienceHub() {
                 <p className="mb-4 line-clamp-2 text-xs text-gray-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                   {exp.description}
                 </p>
-                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 py-3 text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-white/20">
+                <button
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 py-3 text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-white/20"
+                  onClick={() => (window.location.href = "/mapa")}
+                >
                   Explorar Nodo
                   <Compass className="h-3 w-3" />
                 </button>
@@ -102,7 +110,7 @@ export default function ExperienceHub() {
       <div className="glass relative overflow-hidden rounded-[3rem] border border-white/10 p-12">
         <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 opacity-20">
           <div className="absolute inset-0 bg-gradient-to-l from-brand-amber/20 to-transparent" />
-          <img src="https://picsum.photos/seed/route/800/800" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+          <img src={realitoAiScene} className="h-full w-full object-cover" />
         </div>
 
         <div className="relative z-10 max-w-xl">
@@ -118,11 +126,17 @@ export default function ExperienceHub() {
             tu dispositivo con el Gemelo Digital para una experiencia inmersiva.
           </p>
           <div className="flex gap-4">
-            <button className="flex items-center gap-2 rounded-xl bg-brand-amber px-8 py-4 font-bold text-black transition-all hover:bg-amber-400">
+            <button
+              className="flex items-center gap-2 rounded-xl bg-brand-amber px-8 py-4 font-bold text-black transition-all hover:bg-amber-400"
+              onClick={() => (window.location.href = "/rutas")}
+            >
               Iniciar Navegación
               <Compass className="h-4 w-4" />
             </button>
-            <button className="rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-xs font-bold transition-all hover:bg-white/10">
+            <button
+              className="rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-xs font-bold transition-all hover:bg-white/10"
+              onClick={() => (window.location.href = "/historia")}
+            >
               Ver Detalles
             </button>
           </div>

@@ -529,6 +529,27 @@ const RouteCard = ({ route, isSelected, onClick }: { route: TouristRoute; isSele
 
 const RouteDetail = ({ route }: { route: TouristRoute }) => {
   const Icon = route.icon;
+  const handleDownloadMap = () => {
+    const payload = {
+      route: route.name,
+      difficulty: route.difficulty,
+      duration: route.duration,
+      distance: route.distance,
+      stops: route.stops.map((stop, index) => ({
+        step: index + 1,
+        name: stop.name,
+        description: stop.description,
+        duration: stop.duration,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mapa-${route.id}-real-del-monte.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   
   return (
     <motion.div
@@ -751,10 +772,15 @@ const RouteDetail = ({ route }: { route: TouristRoute }) => {
 
       {/* CTA */}
       <div className="flex flex-wrap gap-4">
-        <Button className={`${route.color.replace('text-', 'bg-')} text-white rounded-full px-8`}>
+        <Button
+          className={`${route.color.replace('text-', 'bg-')} text-white rounded-full px-8`}
+          onClick={() => {
+            window.location.href = `mailto:reservas@realdelmonte.travel?subject=Reserva%20de%20${encodeURIComponent(route.name)}`;
+          }}
+        >
           Reservar esta Ruta
         </Button>
-        <Button variant="outline" className="rounded-full px-8">
+        <Button variant="outline" className="rounded-full px-8" onClick={handleDownloadMap}>
           <Map className="w-4 h-4 mr-2" />
           Descargar Mapa
         </Button>
@@ -772,6 +798,18 @@ const RutasPage = () => {
   });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const downloadCompleteGuide = () => {
+    const content = touristRoutes
+      .map((route) => `${route.name}\n- Duración: ${route.duration}\n- Distancia: ${route.distance}\n- Dificultad: ${route.difficulty}`)
+      .join("\n\n");
+    const blob = new Blob([`Guía completa de rutas\n\n${content}`], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guia-completa-rutas-real-del-monte.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <PageTransition>
@@ -944,11 +982,15 @@ const RutasPage = () => {
                 la garantía de una experiencia auténtica en Real del Monte.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8">
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-white rounded-full px-8"
+                  onClick={() => (window.location.href = "mailto:reservas@realdelmonte.travel?subject=Reservar%20ruta%20en%20Real%20del%20Monte")}
+                >
                   <Route className="w-4 h-4 mr-2" />
                   Reservar una Ruta
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-full px-8 border-2">
+                <Button variant="outline" size="lg" className="rounded-full px-8 border-2" onClick={downloadCompleteGuide}>
                   <Map className="w-4 h-4 mr-2" />
                   Descargar Guía Completa
                 </Button>

@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { ChevronDown, MapPin, Compass, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImg from "@/assets/hero-real-del-monte.webp";
+import presentacionVideo from "@/assets/presentacion.mp4";
 import { AuroraBackground } from "@/components/VisualEffects";
 
 export default function HeroSection() {
@@ -22,6 +23,15 @@ export default function HeroSection() {
       <motion.div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImg})`, y: backgroundY, scale: 1.1, opacity: 0.4 }}
+      />
+      <motion.video
+        className="absolute inset-0 h-full w-full object-cover opacity-35"
+        style={{ y: backgroundY }}
+        src={presentacionVideo}
+        autoPlay
+        muted
+        loop
+        playsInline
       />
 
       {/* Gradient Overlays */}
@@ -133,6 +143,14 @@ export default function HeroSection() {
             >
               Ver rutas turisticas
             </Link>
+            <a
+              href={presentacionVideo}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-hero-glass inline-flex items-center gap-2"
+            >
+              Ver presentación oficial
+            </a>
           </motion.div>
         </motion.div>
 
