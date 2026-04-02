@@ -145,7 +145,7 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
           );
         }
 
-        const marker = markerLookup.get(properties.markerId);
+        const marker = markerLookup.get((properties as PointProps).markerId);
         if (!marker) return null;
 
         return (
