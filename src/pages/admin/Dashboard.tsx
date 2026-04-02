@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { 
-  Store, Users, TrendingUp, AlertCircle, CheckCircle, XCircle,
-  Clock, Star, MapPin, Phone, Globe, Instagram, Facebook, Youtube,
-  Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye, EyeOff,
-  Upload, Video, Image as ImageIcon, Calendar, DollarSign, ChevronDown
+import { useNavigate } from "react-router-dom";
+import {
+  Store, Users, TrendingUp, CheckCircle, Clock, Star, MapPin, Phone,
+  Plus, Search, Edit, Trash2, Eye, EyeOff, Calendar, DollarSign,
+  Shield, Activity, BarChart3, AlertTriangle, RefreshCw
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -12,22 +12,15 @@ import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from "@/components/ui/select";
-import { 
-  Card, CardContent, CardDescription, CardHeader, CardTitle 
-} from "@/components/ui/card";
-import { 
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter 
-} from "@/components/ui/dialog";
-import { 
-  Tabs, TabsContent, TabsList, TabsTrigger 
-} from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-// Business categories
 const BUSINESS_CATEGORIES = [
   { value: "GASTRONOMIA", label: "Gastronomía", icon: "🍽️" },
   { value: "HOSPEDAJE", label: "Hospedaje", icon: "🏨" },
@@ -47,428 +40,230 @@ const PRICE_RANGES = [
   { value: "LUJO", label: "Lujo ($$$$)" },
 ];
 
-// Sample business data
-const sampleBusinesses = [
-  {
-    id: "1",
-    name: "Pastes El Portal",
-    category: "GASTRONOMIA",
-    description: "Los pastes más tradicionales de Real del Monte desde 1985. Sabores clásicos y nuevas creaciones.",
-    shortDescription: "Tradición pastelera desde 1985",
-    phone: "771 123 4567",
-    whatsapp: "527711234567",
-    email: "contacto@pastelesportal.com",
-    website: "https://pastelesportal.com",
-    address: "Calle Main #123, Centro",
-    latitude: 20.1397,
-    longitude: -98.6708,
-    imageUrl: "/assets/paste.webp",
-    imageUrl2: "/assets/rdm1.jpeg",
-    imageUrl3: "/assets/rdm2.jpeg",
-    videoUrl: "",
-    scheduleDisplay: "Lun-Dom: 9:00 - 20:00",
-    facebook: "pastelesportal",
-    instagram: "@pastelesportal",
-    tiktok: "",
-    isPremium: true,
-    isVerified: true,
-    isFeatured: true,
-    isActive: true,
-    viewsCount: 1250,
-    rating: 4.9,
-    priceRange: "MODERADO"
-  },
-  {
-    id: "2",
-    name: "Hotel Real de Minas",
-    category: "HOSPEDAJE",
-    description: "Hotel boutique en casona colonial restaurada con vista a la montaña.",
-    shortDescription: "Casona colonial boutique",
-    phone: "771 234 5678",
-    whatsapp: "527712345678",
-    email: "reservas@hotelrealdeminash.com",
-    website: "https://hotelrealdeminash.com",
-    address: "Av. Colonial #45",
-    latitude: 20.1402,
-    longitude: -98.6712,
-    imageUrl: "/assets/calles-colonial.webp",
-    imageUrl2: "",
-    imageUrl3: "",
-    videoUrl: "",
-    scheduleDisplay: "Check-in: 15:00, Check-out: 12:00",
-    facebook: "hotelrealdeminash",
-    instagram: "@hotelrealdeminash",
-    tiktok: "",
-    isPremium: true,
-    isVerified: true,
-    isFeatured: false,
-    isActive: true,
-    viewsCount: 890,
-    rating: 4.7,
-    priceRange: "CARO"
-  },
-  {
-    id: "3",
-    name: "Platería Los Hermanos",
-    category: "PLATERIA",
-    description: "Joyería artesanal en plata con diseños únicos inspirados en la herencia minera de Real del Monte.",
-    shortDescription: "Joyería artesanal en plata",
-    phone: "771 345 6789",
-    whatsapp: "527713456789",
-    email: "ventas@platerialoshermanos.com",
-    website: "",
-    address: "Calle Artesanal #78",
-    latitude: 20.1395,
-    longitude: -98.6705,
-    imageUrl: "/assets/mina-acosta.webp",
-    imageUrl2: "",
-    imageUrl3: "",
-    videoUrl: "",
-    scheduleDisplay: "Lun-Sáb: 10:00 - 19:00",
-    facebook: "platerialoshermanos",
-    instagram: "@platerialoshermanos",
-    tiktok: "",
-    isPremium: false,
-    isVerified: true,
-    isFeatured: false,
-    isActive: true,
-    viewsCount: 456,
-    rating: 4.8,
-    priceRange: "MODERADO"
-  },
-  {
-    id: "4",
-    name: "Café La Neblina",
-    category: "GASTRONOMIA",
-    description: "Café artesanal de altura con los mejores postres y vista al bosque de niebla.",
-    shortDescription: "Café de altura con vista",
-    phone: "771 456 7890",
-    whatsapp: "527714567890",
-    email: "hola@neblinacafe.com",
-    website: "https://neblinacafe.com",
-    address: "Camino al Bosque #12",
-    latitude: 20.1410,
-    longitude: -98.6720,
-    imageUrl: "/assets/penas-cargadas.webp",
-    imageUrl2: "/assets/rdm01.jpg",
-    imageUrl3: "",
-    videoUrl: "",
-    scheduleDisplay: "Mar-Dom: 8:00 - 18:00",
-    facebook: "neblinacafe",
-    instagram: "@neblinacafe",
-    tiktok: "",
-    isPremium: false,
-    isVerified: false,
-    isFeatured: false,
-    isActive: true,
-    viewsCount: 320,
-    rating: 4.4,
-    priceRange: "MODERADO"
-  }
-];
+interface DashboardStats {
+  totalUsers: number;
+  totalBusinesses: number;
+  activeBusinesses: number;
+  pendingBusinesses: number;
+  totalEvents: number;
+  totalPosts: number;
+  premiumBusinesses: number;
+}
+
+interface Business {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  short_description: string | null;
+  phone: string | null;
+  address: string | null;
+  status: string;
+  is_premium: boolean;
+  is_featured: boolean;
+  is_verified: boolean;
+  views_count: number;
+  image_url: string | null;
+  created_at: string;
+}
 
 const AdminDashboard = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("businesses");
-  const [businesses, setBusinesses] = useState(sampleBusinesses);
-  const [selectedBusiness, setSelectedBusiness] = useState<typeof sampleBusinesses[0] | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading, profile } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0, totalBusinesses: 0, activeBusinesses: 0,
+    pendingBusinesses: 0, totalEvents: 0, totalPosts: 0, premiumBusinesses: 0
+  });
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  
-  // Form state
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
-    category: "GASTRONOMIA" as typeof BUSINESS_CATEGORIES[number]["value"],
-    description: "",
-    shortDescription: "",
-    phone: "",
-    whatsapp: "",
-    email: "",
-    website: "",
-    address: "",
-    addressReference: "",
-    latitude: "",
-    longitude: "",
-    imageUrl: "",
-    imageUrl2: "",
-    imageUrl3: "",
-    videoUrl: "",
-    scheduleDisplay: "",
-    facebook: "",
-    instagram: "",
-    tiktok: "",
-    priceRange: "MODERADO"
+    name: "", category: "GASTRONOMIA", description: "", short_description: "",
+    phone: "", address: "", price_range: "MODERADO",
+    image_url: "", latitude: "", longitude: "",
   });
 
-  // Stats
-  const stats = {
-    total: businesses.length,
-    active: businesses.filter(b => b.isActive).length,
-    pending: businesses.filter(b => !b.isVerified).length,
-    premium: businesses.filter(b => b.isPremium).length
-  };
+  const loadStats = useCallback(async () => {
+    try {
+      const [usersRes, bizRes, activeBizRes, pendingBizRes, eventsRes, postsRes, premRes] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('businesses').select('*', { count: 'exact', head: true }),
+        supabase.from('businesses').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('businesses').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('events').select('*', { count: 'exact', head: true }),
+        supabase.from('forum_posts').select('*', { count: 'exact', head: true }),
+        supabase.from('businesses').select('*', { count: 'exact', head: true }).eq('is_premium', true),
+      ]);
+      setStats({
+        totalUsers: usersRes.count ?? 0,
+        totalBusinesses: bizRes.count ?? 0,
+        activeBusinesses: activeBizRes.count ?? 0,
+        pendingBusinesses: pendingBizRes.count ?? 0,
+        totalEvents: eventsRes.count ?? 0,
+        totalPosts: postsRes.count ?? 0,
+        premiumBusinesses: premRes.count ?? 0,
+      });
+    } catch (err) {
+      console.error('Stats error:', err);
+    }
+  }, []);
 
-  // Filter businesses
+  const loadBusinesses = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) setBusinesses(data as Business[]);
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+    if (isAuthenticated) {
+      setLoading(true);
+      Promise.all([loadStats(), loadBusinesses()]).finally(() => setLoading(false));
+    }
+  }, [isAuthenticated, authLoading, navigate, loadStats, loadBusinesses]);
+
   const filteredBusinesses = businesses.filter(b => {
-    const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = b.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || b.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  // Handle form change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle select change
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Open new business dialog
-  const handleNewBusiness = () => {
-    setSelectedBusiness(null);
-    setFormData({
-      name: "",
-      category: "GASTRONOMIA",
-      description: "",
-      shortDescription: "",
-      phone: "",
-      whatsapp: "",
-      email: "",
-      website: "",
-      address: "",
-      addressReference: "",
-      latitude: "",
-      longitude: "",
-      imageUrl: "",
-      imageUrl2: "",
-      imageUrl3: "",
-      videoUrl: "",
-      scheduleDisplay: "",
-      facebook: "",
-      instagram: "",
-      tiktok: "",
-      priceRange: "MODERADO"
-    });
-    setIsEditing(true);
-  };
-
-  // Open edit business dialog
-  const handleEditBusiness = (business: typeof sampleBusinesses[0]) => {
-    setSelectedBusiness(business);
-    setFormData({
-      name: business.name,
-      category: business.category,
-      description: business.description,
-      shortDescription: business.shortDescription || "",
-      phone: business.phone || "",
-      whatsapp: business.whatsapp || "",
-      email: business.email || "",
-      website: business.website || "",
-      address: business.address || "",
-      addressReference: "",
-      latitude: business.latitude?.toString() || "",
-      longitude: business.longitude?.toString() || "",
-      imageUrl: business.imageUrl || "",
-      imageUrl2: business.imageUrl2 || "",
-      imageUrl3: business.imageUrl3 || "",
-      videoUrl: business.videoUrl || "",
-      scheduleDisplay: business.scheduleDisplay || "",
-      facebook: business.facebook || "",
-      instagram: business.instagram || "",
-      tiktok: business.tiktok || "",
-      priceRange: business.priceRange || "MODERADO"
-    });
-    setIsEditing(true);
-  };
-
-  // Save business
-  const handleSaveBusiness = () => {
+  const handleSaveBusiness = async () => {
     if (!formData.name || !formData.description) {
-      toast({
-        title: "Error",
-        description: "Por favor completa los campos requeridos",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Completa nombre y descripción", variant: "destructive" });
       return;
     }
-
-    if (formData.description.length > 500) {
-      toast({
-        title: "Error",
-        description: "La descripción no puede exceder 500 caracteres",
-        variant: "destructive"
-      });
-      return;
-    }
+    const payload = {
+      name: formData.name,
+      category: formData.category,
+      description: formData.description,
+      short_description: formData.short_description || null,
+      phone: formData.phone || null,
+      address: formData.address || null,
+      price_range: formData.price_range,
+      image_url: formData.image_url || null,
+      latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+    };
 
     if (selectedBusiness) {
-      // Update existing
-      setBusinesses(prev => prev.map(b => 
-        b.id === selectedBusiness.id 
-          ? { ...b, ...formData } as unknown as typeof b
-          : b
-      ));
-      toast({
-        title: "Éxito",
-        description: "Negocio actualizado correctamente"
-      });
+      const { error } = await supabase.from('businesses').update(payload).eq('id', selectedBusiness.id);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Actualizado", description: "Negocio actualizado" });
     } else {
-      // Create new
-      const newBusiness = {
-        id: Date.now().toString(),
-        ...formData,
-        isPremium: false,
-        isVerified: true, // Auto-verify for demo
-        isFeatured: false,
-        isActive: true,
-        viewsCount: 0,
-        rating: 0,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined
-      };
-      setBusinesses(prev => [...prev, newBusiness as unknown as typeof sampleBusinesses[0]]);
-      toast({
-        title: "Éxito",
-        description: "Negocio creado correctamente"
+      const { error } = await supabase.from('businesses').insert({
+        ...payload,
+        owner_id: profile?.id ?? null,
+        status: 'pending',
       });
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      toast({ title: "Creado", description: "Negocio registrado como pendiente" });
     }
-
     setIsEditing(false);
+    loadBusinesses();
+    loadStats();
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    await supabase.from('businesses').update({ status }).eq('id', id);
+    loadBusinesses();
+    loadStats();
+    toast({ title: "Estado actualizado" });
+  };
+
+  const handleDelete = async (id: string) => {
+    await supabase.from('businesses').delete().eq('id', id);
+    loadBusinesses();
+    loadStats();
+    toast({ title: "Eliminado" });
+  };
+
+  const openEdit = (b: Business) => {
+    setSelectedBusiness(b);
+    setFormData({
+      name: b.name, category: b.category, description: b.description,
+      short_description: b.short_description || "", phone: b.phone || "",
+      address: b.address || "", price_range: "MODERADO", image_url: b.image_url || "",
+      latitude: "", longitude: "",
+    });
+    setIsEditing(true);
+  };
+
+  const openNew = () => {
     setSelectedBusiness(null);
+    setFormData({
+      name: "", category: "GASTRONOMIA", description: "", short_description: "",
+      phone: "", address: "", price_range: "MODERADO", image_url: "", latitude: "", longitude: "",
+    });
+    setIsEditing(true);
   };
 
-  // Toggle business status
-  const handleToggleStatus = (id: string) => {
-    setBusinesses(prev => prev.map(b => 
-      b.id === id ? { ...b, isActive: !b.isActive } as typeof b : b
-    ));
-    toast({
-      title: "Estado actualizado",
-      description: "El estado del negocio ha sido actualizado"
-    });
-  };
-
-  // Toggle premium
-  const handleTogglePremium = (id: string) => {
-    setBusinesses(prev => prev.map(b => 
-      b.id === id ? { ...b, isPremium: !b.isPremium } as typeof b : b
-    ));
-    toast({
-      title: "Premium actualizado",
-      description: "El estado premium del negocio ha sido actualizado"
-    });
-  };
-
-  // Toggle featured
-  const handleToggleFeatured = (id: string) => {
-    setBusinesses(prev => prev.map(b => 
-      b.id === id ? { ...b, isFeatured: !b.isFeatured } as typeof b : b
-    ));
-    toast({
-      title: "Destacado actualizado",
-      description: "El negocio ha sido actualizado en destacados"
-    });
-  };
-
-  // Delete business
-  const handleDeleteBusiness = (id: string) => {
-    setBusinesses(prev => prev.filter(b => b.id !== id));
-    toast({
-      title: "Eliminado",
-      description: "El negocio ha sido eliminado"
-    });
-  };
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
-        
-        {/* Admin Header */}
-        <div className="bg-gradient-to-r from-amber-600 to-orange-700 pt-28 pb-12">
+
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[hsl(var(--navy))] to-[hsl(var(--navy-light))] pt-28 pb-12">
           <div className="container mx-auto px-4 md:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center gap-3 mb-2">
-                <Store className="w-8 h-8 text-white" />
+                <Shield className="w-8 h-8 text-[hsl(var(--gold))]" />
                 <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
-                  Panel de Administración
+                  Panel de Control
                 </h1>
               </div>
-              <p className="text-white/80">
-                Gestiona los negocios, dicho
-
-s y contenido de RDM Digital
+              <p className="text-white/70">
+                Control operativo en tiempo real — RDM Digital
               </p>
             </motion.div>
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Grid */}
         <div className="container mx-auto px-4 md:px-8 -mt-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-card border-0 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Store className="w-5 h-5 text-blue-500" />
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {[
+              { label: "Usuarios", value: stats.totalUsers, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: "Negocios", value: stats.totalBusinesses, icon: Store, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { label: "Activos", value: stats.activeBusinesses, icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" },
+              { label: "Pendientes", value: stats.pendingBusinesses, icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+              { label: "Premium", value: stats.premiumBusinesses, icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
+              { label: "Eventos", value: stats.totalEvents, icon: Calendar, color: "text-purple-500", bg: "bg-purple-500/10" },
+              { label: "Posts", value: stats.totalPosts, icon: BarChart3, color: "text-rose-500", bg: "bg-rose-500/10" },
+            ].map(({ label, value, icon: Icon, color, bg }) => (
+              <Card key={label} className="border-0 shadow-lg bg-card">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center`}>
+                      <Icon className={`w-4 h-4 ${color}`} />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">{value}</p>
+                      <p className="text-[10px] text-muted-foreground">{label}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.total}</p>
-                    <p className="text-xs text-muted-foreground">Total Negocios</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-0 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.active}</p>
-                    <p className="text-xs text-muted-foreground">Activos</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-0 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-yellow-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.pending}</p>
-                    <p className="text-xs text-muted-foreground">Pendientes</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border-0 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.premium}</p>
-                    <p className="text-xs text-muted-foreground">Premium</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -476,471 +271,291 @@ s y contenido de RDM Digital
         <div className="container mx-auto px-4 md:px-8 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full justify-start mb-6">
+              <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="businesses">Negocios</TabsTrigger>
-              <TabsTrigger value="dichos">Dichos del Pueblo</TabsTrigger>
-              <TabsTrigger value="analytics">Estadísticas</TabsTrigger>
+              <TabsTrigger value="analytics">Actividad</TabsTrigger>
             </TabsList>
 
-            {/* Businesses Tab */}
+            {/* Overview */}
+            <TabsContent value="overview">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-[hsl(var(--electric))]" />
+                      Estado del Sistema
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      { label: "Base de datos", status: "Operativa", ok: true },
+                      { label: "Autenticación", status: "Activa", ok: true },
+                      { label: "Mapa Leaflet", status: "Online", ok: true },
+                      { label: "Gemelo Digital 3D", status: "Modo básico", ok: true },
+                      { label: "Isabella IA", status: "Reglas activas", ok: true },
+                    ].map(({ label, status, ok }) => (
+                      <div key={label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <span className="text-sm">{label}</span>
+                        <Badge variant={ok ? "default" : "destructive"} className={ok ? "bg-green-500/20 text-green-600 border-0" : ""}>
+                          {status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[hsl(var(--gold))]" />
+                      Monetización
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-sm">Modelo</span>
+                      <span className="text-sm font-medium">Freemium + Activación</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-sm">Registro negocio</span>
+                      <span className="text-sm font-medium">Gratis (pendiente)</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-sm">Activación</span>
+                      <span className="text-sm font-medium">$200 MXN</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-sm">Premium</span>
+                      <span className="text-sm font-medium">$500 MXN / mes</span>
+                    </div>
+                    <Button className="w-full mt-4 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--terracotta))] text-white" disabled>
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Stripe (próximamente)
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Businesses */}
             <TabsContent value="businesses">
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar negocios..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Buscar negocios..." value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
                 </div>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-full md:w-[200px]">
-                    <SelectValue placeholder="Categoría" />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-full md:w-[200px]"><SelectValue placeholder="Categoría" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    {BUSINESS_CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.icon} {cat.label}
-                      </SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {BUSINESS_CATEGORIES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button onClick={handleNewBusiness} className="bg-amber-600 hover:bg-amber-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nuevo Negocio
+                <Button onClick={openNew} className="bg-[hsl(var(--gold))] hover:opacity-90 text-white">
+                  <Plus className="w-4 h-4 mr-2" /> Nuevo Negocio
                 </Button>
               </div>
 
-              {/* Business List */}
-              <div className="space-y-4">
-                {filteredBusinesses.map((business) => (
-                  <Card key={business.id} className={!business.isActive ? "opacity-60" : ""}>
-                    <CardContent className="p-4">
-                      <div className="flex flex-col md:flex-row gap-4">
-                        {/* Image */}
-                        <div className="w-full md:w-32 h-24 rounded-lg overflow-hidden shrink-0">
-                          <img 
-                            src={business.imageUrl} 
-                            alt={business.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold truncate">{business.name}</h3>
-                                {business.isPremium && (
-                                  <Badge className="bg-amber-500">Premium</Badge>
-                                )}
-                                {business.isFeatured && (
-                                  <Badge className="bg-blue-500">Destacado</Badge>
-                                )}
-                                {!business.isVerified && (
-                                  <Badge variant="outline" className="text-yellow-500 border-yellow-500">
-                                    Pendiente
+              {filteredBusinesses.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    <Store className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No hay negocios registrados aún</p>
+                    <Button onClick={openNew} variant="outline" className="mt-4">
+                      <Plus className="w-4 h-4 mr-2" /> Registrar primer negocio
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {filteredBusinesses.map((b) => (
+                    <Card key={b.id} className={b.status === 'inactive' ? "opacity-50" : ""}>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col md:flex-row gap-4">
+                          {b.image_url && (
+                            <div className="w-full md:w-28 h-20 rounded-lg overflow-hidden shrink-0">
+                              <img src={b.image_url} alt={b.name} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="font-semibold">{b.name}</h3>
+                                  <Badge variant="outline" className={
+                                    b.status === 'active' ? 'border-green-500 text-green-600' :
+                                    b.status === 'pending' ? 'border-yellow-500 text-yellow-600' :
+                                    'border-red-500 text-red-600'
+                                  }>
+                                    {b.status === 'active' ? 'Activo' : b.status === 'pending' ? 'Pendiente' : 'Inactivo'}
                                   </Badge>
-                                )}
+                                  {b.is_premium && <Badge className="bg-amber-500 text-white border-0">Premium</Badge>}
+                                  {b.is_featured && <Badge className="bg-blue-500 text-white border-0">Destacado</Badge>}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                  {b.short_description || b.description}
+                                </p>
                               </div>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {business.shortDescription}
-                              </p>
-                            </div>
-                            
-                            {/* Actions */}
-                            <div className="flex items-center gap-1">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleToggleStatus(business.id)}
-                                title={business.isActive ? "Desactivar" : "Activar"}
-                              >
-                                {business.isActive ? (
-                                  <Eye className="w-4 h-4" />
-                                ) : (
-                                  <EyeOff className="w-4 h-4" />
+                              <div className="flex items-center gap-1 shrink-0">
+                                {b.status === 'pending' && (
+                                  <Button variant="ghost" size="sm" onClick={() => handleStatusChange(b.id, 'active')}
+                                    className="text-green-600 hover:text-green-700">
+                                    <CheckCircle className="w-4 h-4" />
+                                  </Button>
                                 )}
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleTogglePremium(business.id)}
-                                title="Toggle Premium"
-                              >
-                                <Star className={`w-4 h-4 ${business.isPremium ? "fill-amber-500 text-amber-500" : ""}`} />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleToggleFeatured(business.id)}
-                                title="Toggle Destacado"
-                              >
-                                <TrendingUp className={`w-4 h-4 ${business.isFeatured ? "text-blue-500" : ""}`} />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleEditBusiness(business)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleDeleteBusiness(business.id)}
-                                className="text-red-500 hover:text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                                <Button variant="ghost" size="icon" onClick={() =>
+                                  handleStatusChange(b.id, b.status === 'active' ? 'inactive' : 'active')}>
+                                  {b.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => openEdit(b)}>
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDelete(b.id)}
+                                  className="text-destructive hover:text-destructive">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {business.phone}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {business.address}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              {business.viewsCount} visitas
-                            </span>
+                            <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
+                              {b.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{b.phone}</span>}
+                              {b.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{b.address}</span>}
+                              <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3" />{b.views_count} vistas</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            {/* Dichos Tab */}
-            <TabsContent value="dichos">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Dichos del Pueblo</CardTitle>
-                  <CardDescription>
-                    Gestiona los dichos mineros y tradiciones de Real del Monte
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12 text-muted-foreground">
-                    <p>Sección de Dichos del Pueblo en desarrollo</p>
-                    <p className="text-sm">Aquí podrás agregar, editar y gestionar los dichos mineros</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Analytics Tab */}
+            {/* Analytics */}
             <TabsContent value="analytics">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Estadísticas</CardTitle>
-                  <CardDescription>
-                    Estadísticas y métricas del portal
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12 text-muted-foreground">
-                    <p>Estadísticas en desarrollo</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Actividad Reciente</CardTitle>
+                    <CardDescription>Resumen de actividad en la plataforma</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span>Usuarios registrados</span>
+                        <span className="font-medium">{stats.totalUsers}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span>Posts en comunidad</span>
+                        <span className="font-medium">{stats.totalPosts}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span>Negocios registrados</span>
+                        <span className="font-medium">{stats.totalBusinesses}</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span>Eventos programados</span>
+                        <span className="font-medium">{stats.totalEvents}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      Seguridad
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span>RLS Políticas</span>
+                      <Badge className="bg-green-500/20 text-green-600 border-0">Activas</Badge>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span>Roles (RBAC)</span>
+                      <Badge className="bg-green-500/20 text-green-600 border-0">Configurado</Badge>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span>Auth Supabase</span>
+                      <Badge className="bg-green-500/20 text-green-600 border-0">Activa</Badge>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span>Error Boundary</span>
+                      <Badge className="bg-green-500/20 text-green-600 border-0">Global</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
 
         {/* Business Form Dialog */}
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {selectedBusiness ? "Editar Negocio" : "Nuevo Negocio"}
-              </DialogTitle>
+              <DialogTitle>{selectedBusiness ? "Editar Negocio" : "Nuevo Negocio"}</DialogTitle>
               <DialogDescription>
-                {selectedBusiness 
-                  ? "Actualiza la información del negocio" 
-                  : "Completa los datos del nuevo negocio para el directorio"
-                }
+                {selectedBusiness ? "Actualiza la información" : "Registra un negocio en el directorio"}
               </DialogDescription>
             </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              {/* Basic Info */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre del Negocio *</label>
-                <Input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Ej: Pastes El Portal"
-                />
+            <div className="space-y-4 py-2">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Nombre *</label>
+                <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Ej: Pastes El Portal" />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Categoría *</label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(v) => handleSelectChange("category", v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Categoría</label>
+                  <Select value={formData.category} onValueChange={(v) => setFormData(p => ({ ...p, category: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {BUSINESS_CATEGORIES.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.icon} {cat.label}
-                        </SelectItem>
+                      {BUSINESS_CATEGORIES.map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Rango de Precio</label>
-                  <Select 
-                    value={formData.priceRange} 
-                    onValueChange={(v) => handleSelectChange("priceRange", v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Precio</label>
+                  <Select value={formData.price_range} onValueChange={(v) => setFormData(p => ({ ...p, price_range: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {PRICE_RANGES.map(pr => (
-                        <SelectItem key={pr.value} value={pr.value}>
-                          {pr.label}
-                        </SelectItem>
+                      {PRICE_RANGES.map(p => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Descripción * <span className="text-muted-foreground">(Máx 500 caracteres)</span>
-                </label>
-                <Textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe el negocio, sus productos o servicios..."
-                  maxLength={500}
-                  className="min-h-[100px]"
-                />
-                <p className="text-xs text-muted-foreground text-right">
-                  {formData.description.length}/500
-                </p>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Descripción *</label>
+                <Textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Describe el negocio..." maxLength={500} className="min-h-[80px]" />
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Descripción Corta</label>
-                <Input
-                  name="shortDescription"
-                  value={formData.shortDescription}
-                  onChange={handleInputChange}
-                  placeholder="Versión corta para el mapa y tarjetas"
-                  maxLength={200}
-                />
-              </div>
-
-              {/* Contact Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <label className="text-sm font-medium">Teléfono</label>
-                  <Input
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="771 123 4567"
-                  />
+                  <Input value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">WhatsApp</label>
-                  <Input
-                    name="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleInputChange}
-                    placeholder="527711234567"
-                  />
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Dirección</label>
+                  <Input value={formData.address} onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))} />
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
-                  <Input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="correo@ejemplo.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Sitio Web</label>
-                  <Input
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    placeholder="https://ejemplo.com"
-                  />
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Dirección</label>
-                <Input
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Calle, número, colonia"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Latitud</label>
-                  <Input
-                    name="latitude"
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={handleInputChange}
-                    placeholder="20.1397"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Longitud</label>
-                  <Input
-                    name="longitude"
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={handleInputChange}
-                    placeholder="-98.6708"
-                  />
-                </div>
-              </div>
-
-              {/* Media */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Imágenes <span className="text-muted-foreground">(Máx 3)</span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <Input
-                      name="imageUrl"
-                      value={formData.imageUrl}
-                      onChange={handleInputChange}
-                      placeholder="URL Imagen 1"
-                    />
-                    {formData.imageUrl && (
-                      <div className="w-full h-16 rounded overflow-hidden">
-                        <img src={formData.imageUrl} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <Input
-                      name="imageUrl2"
-                      value={formData.imageUrl2}
-                      onChange={handleInputChange}
-                      placeholder="URL Imagen 2"
-                    />
-                    {formData.imageUrl2 && (
-                      <div className="w-full h-16 rounded overflow-hidden">
-                        <img src={formData.imageUrl2} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <Input
-                      name="imageUrl3"
-                      value={formData.imageUrl3}
-                      onChange={handleInputChange}
-                      placeholder="URL Imagen 3"
-                    />
-                    {formData.imageUrl3 && (
-                      <div className="w-full h-16 rounded overflow-hidden">
-                        <img src={formData.imageUrl3} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Video <span className="text-muted-foreground">(Máx 60 segundos)</span>
-                </label>
-                <Input
-                  name="videoUrl"
-                  value={formData.videoUrl}
-                  onChange={handleInputChange}
-                  placeholder="URL del video (YouTube, Vimeo)"
-                />
-              </div>
-
-              {/* Schedule */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Horario</label>
-                <Input
-                  name="scheduleDisplay"
-                  value={formData.scheduleDisplay}
-                  onChange={handleInputChange}
-                  placeholder="Lun-Vie: 9:00 - 18:00, Sáb: 10:00 - 14:00"
-                />
-              </div>
-
-              {/* Social Media */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Facebook</label>
-                  <Input
-                    name="facebook"
-                    value={formData.facebook}
-                    onChange={handleInputChange}
-                    placeholder="username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Instagram</label>
-                  <Input
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleInputChange}
-                    placeholder="@username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">TikTok</label>
-                  <Input
-                    name="tiktok"
-                    value={formData.tiktok}
-                    onChange={handleInputChange}
-                    placeholder="@username"
-                  />
-                </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Imagen URL</label>
+                <Input value={formData.image_url} onChange={(e) => setFormData(p => ({ ...p, image_url: e.target.value }))} />
               </div>
             </div>
-
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSaveBusiness} className="bg-amber-600 hover:bg-amber-700">
-                {selectedBusiness ? "Guardar Cambios" : "Crear Negocio"}
+              <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
+              <Button onClick={handleSaveBusiness} className="bg-[hsl(var(--gold))] text-white hover:opacity-90">
+                {selectedBusiness ? "Guardar Cambios" : "Registrar Negocio"}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -1,99 +1,110 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authApi } from '../lib/api';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
-interface User {
+export type UserRole = 'tourist' | 'business_owner' | 'admin';
+
+export interface Profile {
   id: string;
   name: string;
-  email: string;
-  role: 'tourist' | 'business_owner' | 'admin';
-  avatarUrl?: string;
+  email: string | null;
+  avatar_url: string | null;
+  role: UserRole;
+  is_active: boolean;
 }
 
 interface AuthContextType {
-  user: User | null;
-  token: string | null;
+  user: SupabaseUser | null;
+  profile: Profile | null;
+  session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string, role?: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (data: { name?: string; avatarUrl?: string }) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing token on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('rdm_token');
-    const storedUser = localStorage.getItem('rdm_user');
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (data) setProfile(data as Profile);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await authApi.login({ email, password });
-    const { user: userData, token: authToken } = response.data;
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        if (newSession?.user) {
+          setTimeout(() => fetchProfile(newSession.user.id), 0);
+        } else {
+          setProfile(null);
+        }
+        setIsLoading(false);
+      }
+    );
 
-    localStorage.setItem('rdm_token', authToken);
-    localStorage.setItem('rdm_user', JSON.stringify(userData));
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s?.user) fetchProfile(s.user.id);
+      setIsLoading(false);
+    });
 
-    setToken(authToken);
-    setUser(userData);
-  };
+    return () => subscription.unsubscribe();
+  }, [fetchProfile]);
 
-  const signup = async (name: string, email: string, password: string, role?: string) => {
-    const response = await authApi.signup({ name, email, password, role });
-    const { user: userData, token: authToken } = response.data;
+  const login = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  }, []);
 
-    localStorage.setItem('rdm_token', authToken);
-    localStorage.setItem('rdm_user', JSON.stringify(userData));
+  const signup = useCallback(async (name: string, email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
+    if (error) throw error;
+  }, []);
 
-    setToken(authToken);
-    setUser(userData);
-  };
-
-  const logout = async () => {
-    try {
-      await authApi.logout();
-    } catch (error) {
-      // Ignore logout errors
-    }
-
-    localStorage.removeItem('rdm_token');
-    localStorage.removeItem('rdm_user');
-
-    setToken(null);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-  };
+    setSession(null);
+    setProfile(null);
+  }, []);
 
-  const updateProfile = async (data: { name?: string; avatarUrl?: string }) => {
-    const response = await authApi.updateProfile(data);
-    const updatedUser = response.data;
-
-    localStorage.setItem('rdm_user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-  };
+  const refreshProfile = useCallback(async () => {
+    if (user) await fetchProfile(user.id);
+  }, [user, fetchProfile]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
+        profile,
+        session,
         isLoading,
-        isAuthenticated: !!user && !!token,
+        isAuthenticated: !!session,
+        isAdmin: profile?.role === 'admin',
         login,
         signup,
         logout,
-        updateProfile,
+        refreshProfile,
       }}
     >
       {children}
@@ -103,9 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
 
