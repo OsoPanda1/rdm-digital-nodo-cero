@@ -23,6 +23,7 @@ import { usePlaces } from "@/features/places";
 import { useBusinesses } from "@/features/businesses";
 import { useCommunityPosts } from "@/lib/hooks";
 import { useEvents } from "@/features/events";
+import presentacionVideo from "@/assets/presentacion.mp4";
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,6 +58,22 @@ const Index = () => {
             <TextReveal>
               <SectionHeader title="Lugares Imperdibles" subtitle="Descubre los atractivos más emblemáticos de Real del Monte" linkTo="/lugares" />
             </TextReveal>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mx-auto mb-8 max-w-4xl overflow-hidden rounded-2xl border border-border bg-card/40 p-3 shadow-card"
+            >
+              <p className="mb-3 px-2 text-sm font-medium text-muted-foreground">
+                Video de presentación oficial
+              </p>
+              <video
+                src={presentacionVideo}
+                controls
+                preload="metadata"
+                className="h-[320px] w-full rounded-xl object-cover md:h-[420px]"
+              />
+            </motion.div>
             {loadingPlaces ? (
               <LoadingSkeleton variant="card" count={4} />
             ) : (
