@@ -82,6 +82,7 @@ const shortStories = [
 
 const RelatosPage = () => {
   const [showVideo, setShowVideo] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<(typeof shortStories)[number] | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
@@ -155,8 +156,24 @@ const RelatosPage = () => {
                 controls
                 autoPlay
                 onPlay={initEcho}
-                className="w-full rounded-2xl shadow-2xl"
+                className="max-h-[80vh] w-full rounded-2xl object-contain shadow-2xl"
               />
+            </div>
+          </motion.div>
+        )}
+
+        {selectedStory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setSelectedStory(null)}
+          >
+            <div className="max-w-xl rounded-2xl bg-background p-6" onClick={(event) => event.stopPropagation()}>
+              <h3 className="font-serif text-2xl font-bold text-foreground">{selectedStory.title}</h3>
+              <p className="mt-3 text-muted-foreground">{selectedStory.excerpt}</p>
+              <p className="mt-4 text-sm text-muted-foreground">Lectura estimada: {selectedStory.readTime}</p>
             </div>
           </motion.div>
         )}
@@ -289,6 +306,7 @@ const RelatosPage = () => {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   className="glass rounded-2xl p-6 shadow-card hover:shadow-elevated transition-all cursor-pointer group"
+                  onClick={() => setSelectedStory(story)}
                 >
                   <div className="w-10 h-10 rounded-xl bg-gradient-warm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Scroll className="w-5 h-5 text-primary-foreground" />
@@ -327,7 +345,10 @@ const RelatosPage = () => {
                   Real del Monte está lleno de historias esperando ser contadas. Si conoces una leyenda, 
                   un relato familiar o una experiencia paranormal, compártela con nosotros.
                 </p>
-                <button className="px-8 py-3 rounded-xl bg-white text-terracotta font-semibold hover:bg-white/90 transition-colors">
+                <button
+                  className="px-8 py-3 rounded-xl bg-white text-terracotta font-semibold hover:bg-white/90 transition-colors"
+                  onClick={() => (window.location.href = "mailto:historias@realdelmonte.travel?subject=Quiero%20compartir%20mi%20historia")}
+                >
                   Compartir mi historia
                 </button>
               </div>

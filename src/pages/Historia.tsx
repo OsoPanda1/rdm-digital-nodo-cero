@@ -297,6 +297,18 @@ const historicalImages = [
 
 const HistoriaPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const downloadHistoricalGuide = () => {
+    const content = timeline
+      .map((item) => `${item.year} - ${item.title}\n${item.description}`)
+      .join("\n\n");
+    const blob = new Blob([`Guía histórica de Real del Monte\n\n${content}`], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "guia-historica-real-del-monte.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -369,11 +381,20 @@ const HistoriaPage = () => {
                   transition={{ delay: 0.7, duration: 0.6 }}
                   className="flex flex-wrap gap-4 mt-8"
                 >
-                  <Button size="lg" className="bg-terracotta hover:bg-terracotta/90 text-white rounded-full px-8">
+                  <Button
+                    size="lg"
+                    className="bg-terracotta hover:bg-terracotta/90 text-white rounded-full px-8"
+                    onClick={() => document.getElementById("historia-timeline")?.scrollIntoView({ behavior: "smooth" })}
+                  >
                     <Scroll className="w-4 h-4 mr-2" />
                     Explorar Línea del Tiempo
                   </Button>
-                  <Button variant="outline" size="lg" className="rounded-full px-8 border-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full px-8 border-2"
+                    onClick={() => document.getElementById("archivo-historico")?.scrollIntoView({ behavior: "smooth" })}
+                  >
                     <BookOpen className="w-4 h-4 mr-2" />
                     Archivo Histórico
                   </Button>
@@ -424,7 +445,7 @@ const HistoriaPage = () => {
         </section>
 
         {/* Interactive Timeline */}
-        <section className="py-24">
+        <section className="py-24" id="historia-timeline">
           <div className="container mx-auto px-4 md:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -489,7 +510,7 @@ const HistoriaPage = () => {
         </section>
 
         {/* Heritage Tabs Section */}
-        <section className="py-24 bg-muted/30">
+        <section className="py-24 bg-muted/30" id="archivo-historico">
           <div className="container mx-auto px-4 md:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -883,11 +904,15 @@ const HistoriaPage = () => {
                 soñadores forjaron una de las historias más fascinantes de México.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" className="bg-terracotta hover:bg-terracotta/90 text-white rounded-full px-8">
+                <Button
+                  size="lg"
+                  className="bg-terracotta hover:bg-terracotta/90 text-white rounded-full px-8"
+                  onClick={() => (window.location.href = "/mapa")}
+                >
                   <MapPin className="w-4 h-4 mr-2" />
                   Planificar Visita
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-full px-8 border-2">
+                <Button variant="outline" size="lg" className="rounded-full px-8 border-2" onClick={downloadHistoricalGuide}>
                   <BookOpen className="w-4 h-4 mr-2" />
                   Descargar Guía Histórica
                 </Button>

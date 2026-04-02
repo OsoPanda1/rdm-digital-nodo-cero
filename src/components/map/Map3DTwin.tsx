@@ -4,7 +4,7 @@ import { Environment, OrbitControls, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import type { MapMarkerData, MapViewportState } from "@/features/places/mapTypes";
 
-const GEO_LNG_OFFSET = 98.6732;
+const GEO_LNG_CENTER = -98.6732;
 const GEO_LAT_OFFSET = 20.1374;
 const GEO_COORD_SCALE = 160;
 
@@ -44,7 +44,7 @@ function FoggyTerrain({ points }: { points: MapMarkerData[] }) {
       {points.map((point) => (
         <mesh
           key={point.id}
-          position={[(point.lng + GEO_LNG_OFFSET) * GEO_COORD_SCALE, 0.18, -(point.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE]}
+          position={[(point.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE, 0.18, -(point.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE]}
           castShadow
         >
           <sphereGeometry args={[point.isPremium ? 0.18 : 0.13, 24, 24]} />
@@ -160,6 +160,9 @@ export function Map3DTwin({ viewport, markers, onViewportChange }: Map3DTwinProp
       </Canvas>
       <div className="absolute bottom-3 left-3 z-20 rounded-lg border border-white/15 bg-night-900/75 px-3 py-2 text-xs text-silver-300 backdrop-blur-sm">
         Gemelo Digital sincronizado · {viewport.lat.toFixed(4)}, {viewport.lng.toFixed(4)}
+      </div>
+      <div className="absolute right-3 top-3 z-20 rounded-lg border border-white/15 bg-night-900/75 px-3 py-2 text-[11px] text-silver-300 backdrop-blur-sm">
+        Arrastra para rotar · rueda para zoom
       </div>
     </div>
   );

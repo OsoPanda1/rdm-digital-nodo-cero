@@ -180,7 +180,7 @@ export function Map2DPanel({ markers, selected, viewport, onSelect, onViewportCh
       >
         <TileLayer
           attribution='&copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         <MapEventBridge onViewportChange={onViewportChange} />
         <MapFocus selected={selected} />
