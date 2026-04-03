@@ -24,6 +24,7 @@ import newsletterRoutes from "./routes/newsletter";
 import paymentsRoutes from "./routes/payments";
 import seoRoutes from "./routes/seo";
 import uploadRoutes from "./routes/upload";
+import federadosRoutes from "./routes/federados";
 
 dotenv.config();
 
@@ -90,6 +91,7 @@ app.use("/api/v1/newsletter", sensitiveLimiter, newsletterRoutes);
 app.use("/api/v1/payments", paymentsRoutes);
 app.use("/api/v1/seo", seoRoutes);
 app.use("/api/v1/upload", uploadRoutes);
+app.use("/api/v1/federados", federadosRoutes);
 
 // Legacy routes for backwards compatibility
 app.use("/api/auth", authLimiter, authRoutes);
@@ -107,6 +109,7 @@ app.use("/api/newsletter", sensitiveLimiter, newsletterRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/seo", seoRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/federados", federadosRoutes);
 
 // Error handling
 app.use(errorHandler);
