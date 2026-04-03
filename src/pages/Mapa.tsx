@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { Map2DPanel } from "@/components/map/Map2DPanel";
 import { MapSyncProvider, useMapSync } from "@/hooks/useMapSync";
 import type { MapMarkerData, MarkerType } from "@/features/places/mapTypes";
+import { useRealtimeGeoAI } from "@/hooks/useRealtimeGeoAI";
 
 import pasteImg from "@/assets/paste.webp";
 import minaImg from "@/assets/mina-acosta.webp";
@@ -37,19 +38,6 @@ function MapaPageContent() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"2d" | "3d">("2d");
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
-  const locateUser = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const next = { lat: position.coords.latitude, lng: position.coords.longitude, zoom: 14 };
-        syncFrom2D(next);
-      },
-      () => {
-        syncFrom2D({ lat: 20.138, lng: -98.6735, zoom: 13 });
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
     setFilter(nextFilter);
@@ -71,6 +59,16 @@ function MapaPageContent() {
       }),
     [filter, query],
   );
+  const {
+    userPosition,
+    trackingEnabled,
+    setTrackingEnabled,
+    aiFollowEnabled,
+    setAiFollowEnabled,
+    nearestMarker,
+    error: geoError,
+    centerOnUser,
+  } = useRealtimeGeoAI({ markers: filtered, onViewportChange: syncFrom2D });
 
   const stats = useMemo(
     () => [
@@ -202,12 +200,20 @@ function MapaPageContent() {
                 </div>
                 <div className="mt-3">
                   <button
-                    onClick={locateUser}
+                    onClick={() => setTrackingEnabled((current) => !current)}
                     className="inline-flex items-center gap-2 rounded-lg border border-gold-500/30 bg-gold-500/10 px-3 py-2 text-xs text-gold-300"
                   >
                     <LocateFixed className="h-4 w-4" />
-                    Usar mi geolocalización
+                    {trackingEnabled ? "Detener geolocalización AI" : "Activar geolocalización AI"}
                   </button>
+                  {userPosition && (
+                    <button
+                      onClick={centerOnUser}
+                      className="ml-2 inline-flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-300"
+                    >
+                      Centrar en mi posición
+                    </button>
+                  )}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   {["all", "place", "business"].map((item) => (
@@ -230,6 +236,7 @@ function MapaPageContent() {
                 {mode === "2d" ? (
                   <Map2DPanel
                     markers={filtered}
+                    userPosition={userPosition}
                     selected={selected}
                     viewport={viewport}
                     onSelect={setSelected}
@@ -243,7 +250,13 @@ function MapaPageContent() {
                       </div>
                     }
                   >
-                    <Map3DTwin viewport={viewport} markers={filtered} onViewportChange={syncFrom3D} />
+                    <Map3DTwin
+                      viewport={viewport}
+                      markers={filtered}
+                      userPosition={userPosition}
+                      aiPilotEnabled={aiFollowEnabled}
+                      onViewportChange={syncFrom3D}
+                    />
                   </Suspense>
                 )}
               </div>
@@ -314,12 +327,39 @@ function MapaPageContent() {
               </div>
 
               <div className="rounded-2xl border border-gold-500/30 bg-gold-500/10 p-4">
-                <h3 className="font-semibold text-gold-300">Capa Realito AI (Plan de implementación)</h3>
-                <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-silver-400">
-                  <li>Asistente contextual por POI con intentos de ruta, horario y compra.</li>
-                  <li>Streaming geoespacial de eventos por WebSocket federado.</li>
-                  <li>Sugerencias proactivas según densidad, clima y perfil de visitante.</li>
-                </ol>
+                <h3 className="font-semibold text-gold-300">Capa Realito AI en producción</h3>
+                <div className="mt-2 space-y-2 text-sm text-silver-300">
+                  <p>
+                    Estado geolocalización:{" "}
+                    <span className={trackingEnabled ? "text-emerald-300" : "text-silver-500"}>
+                      {trackingEnabled ? "Activa en tiempo real" : "Inactiva"}
+                    </span>
+                  </p>
+                  <p>
+                    Piloto automático IA:{" "}
+                    <button
+                      onClick={() => setAiFollowEnabled((current) => !current)}
+                      className={`rounded px-2 py-1 text-xs ${
+                        aiFollowEnabled ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-silver-300"
+                      }`}
+                    >
+                      {aiFollowEnabled ? "Encendido" : "Apagado"}
+                    </button>
+                  </p>
+                  {userPosition && (
+                    <p className="text-xs text-cyan-300">
+                      Posición: {userPosition.lat.toFixed(5)}, {userPosition.lng.toFixed(5)} · precisión ±
+                      {Math.round(userPosition.accuracy)}m
+                    </p>
+                  )}
+                  {nearestMarker && (
+                    <p className="text-xs text-gold-200">
+                      Nodo sugerido por IA: <strong>{nearestMarker.marker.name}</strong> a{" "}
+                      {(nearestMarker.distanceKm * 1000).toFixed(0)}m.
+                    </p>
+                  )}
+                  {geoError && <p className="text-xs text-red-300">{geoError}</p>}
+                </div>
                 <Link to="/negocios" className="mt-3 inline-block rounded-lg bg-gold-500 px-3 py-2 text-sm font-semibold text-night-900">
                   Ir al portal de comercios
                 </Link>

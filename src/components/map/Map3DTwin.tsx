@@ -11,6 +11,8 @@ const GEO_COORD_SCALE = 160;
 interface Map3DTwinProps {
   viewport: MapViewportState;
   markers: MapMarkerData[];
+  userPosition?: { lat: number; lng: number } | null;
+  aiPilotEnabled?: boolean;
   onViewportChange: (next: Partial<MapViewportState>) => void;
 }
 
@@ -130,7 +132,51 @@ function Atmosphere() {
   );
 }
 
-export function Map3DTwin({ viewport, markers, onViewportChange }: Map3DTwinProps) {
+function ViewportCameraRig({
+  viewport,
+  aiPilotEnabled,
+}: {
+  viewport: MapViewportState;
+  aiPilotEnabled: boolean;
+}) {
+  const { camera } = useThree();
+  const targetRef = useRef(new THREE.Vector3());
+  const desiredRef = useRef(new THREE.Vector3());
+
+  useFrame(() => {
+    const tx = (viewport.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE;
+    const tz = -(viewport.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE;
+    targetRef.current.set(tx, 0.1, tz);
+
+    const distance = THREE.MathUtils.clamp(18 - viewport.zoom * 0.7, 6, 11);
+    const y = THREE.MathUtils.clamp(2 + (18 - viewport.zoom) * 0.35, 2.2, 7.2);
+    desiredRef.current.set(tx + distance, y, tz + distance);
+
+    const damping = aiPilotEnabled ? 0.1 : 0.04;
+    camera.position.lerp(desiredRef.current, damping);
+    camera.lookAt(targetRef.current);
+  });
+
+  return null;
+}
+
+function UserBeacon({ userPosition }: { userPosition: { lat: number; lng: number } }) {
+  return (
+    <mesh
+      position={[
+        (userPosition.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE,
+        0.24,
+        -(userPosition.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE,
+      ]}
+      castShadow
+    >
+      <sphereGeometry args={[0.2, 24, 24]} />
+      <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={0.65} />
+    </mesh>
+  );
+}
+
+export function Map3DTwin({ viewport, markers, userPosition, aiPilotEnabled = false, onViewportChange }: Map3DTwinProps) {
   useEffect(() => {
     onViewportChange({ pitch: 55 });
   }, [onViewportChange]);
@@ -143,6 +189,8 @@ export function Map3DTwin({ viewport, markers, onViewportChange }: Map3DTwinProp
           <Atmosphere />
           <FoggyTerrain points={markers} />
           <FogPlane />
+          {userPosition && <UserBeacon userPosition={userPosition} />}
+          <ViewportCameraRig viewport={viewport} aiPilotEnabled={aiPilotEnabled} />
           <Environment preset="night" />
           <OrbitControls
             enablePan={false}
@@ -162,7 +210,7 @@ export function Map3DTwin({ viewport, markers, onViewportChange }: Map3DTwinProp
         Gemelo Digital sincronizado · {viewport.lat.toFixed(4)}, {viewport.lng.toFixed(4)}
       </div>
       <div className="absolute right-3 top-3 z-20 rounded-lg border border-white/15 bg-night-900/75 px-3 py-2 text-[11px] text-silver-300 backdrop-blur-sm">
-        Arrastra para rotar · rueda para zoom
+        {aiPilotEnabled ? "AI piloto activo · render 3D autoajustado" : "Arrastra para rotar · rueda para zoom"}
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ type ClusterItem = ClusterFeature | PointFeature;
 
 interface Map2DPanelProps {
   markers: MapMarkerData[];
+  userPosition?: { lat: number; lng: number } | null;
   selected: MapMarkerData | null;
   viewport: MapViewportState;
   onSelect: (marker: MapMarkerData) => void;
@@ -168,7 +169,18 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
   );
 }
 
-export function Map2DPanel({ markers, selected, viewport, onSelect, onViewportChange }: Map2DPanelProps) {
+export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect, onViewportChange }: Map2DPanelProps) {
+  const userLocationIcon = useMemo(
+    () =>
+      L.divIcon({
+        className: "user-location-pin",
+        html: `<span style="display:flex;width:20px;height:20px;border-radius:999px;background:#22d3ee;box-shadow:0 0 0 6px rgba(34,211,238,0.25), 0 0 20px rgba(34,211,238,0.65);border:2px solid rgba(255,255,255,0.95);"></span>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      }),
+    [],
+  );
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
       <MapContainer
@@ -185,6 +197,13 @@ export function Map2DPanel({ markers, selected, viewport, onSelect, onViewportCh
         <MapEventBridge onViewportChange={onViewportChange} />
         <MapFocus selected={selected} />
         <ClusterLayer markers={markers} onSelect={onSelect} />
+        {userPosition && (
+          <Marker position={[userPosition.lat, userPosition.lng]} icon={userLocationIcon}>
+            <Popup>
+              <p className="text-xs font-medium text-slate-800">Tu ubicación en tiempo real</p>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
       
       {/* Overlay de diseño Crystal Glow en los bordes */}
