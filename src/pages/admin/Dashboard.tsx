@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { IsabellaConsole } from "@/components/IsabellaConsole";
 
 const BUSINESS_CATEGORIES = [
   { value: "GASTRONOMIA", label: "Gastronomía", icon: "🍽️" },
@@ -274,6 +275,7 @@ const AdminDashboard = () => {
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="businesses">Negocios</TabsTrigger>
               <TabsTrigger value="analytics">Actividad</TabsTrigger>
+              <TabsTrigger value="isabella">Isabella</TabsTrigger>
             </TabsList>
 
             {/* Overview */}
@@ -489,6 +491,20 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="isabella">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Consola Isabella</CardTitle>
+                  <CardDescription>
+                    Runtime unificado con monitor cuántico y ledger BookPI.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <IsabellaConsole userId={profile?.id ?? "guest-console"} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
