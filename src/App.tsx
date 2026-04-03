@@ -30,6 +30,7 @@ const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const Dichos = lazy(() => import("./pages/Dichos"));
 const Catalogo = lazy(() => import("./pages/Catalogo"));
 const NegociosPortal = lazy(() => import("./pages/NegociosPortal"));
+const ValidacionTecnica = lazy(() => import("./pages/ValidacionTecnica"));
 
 const RouteFallback = () => (
   <div className="min-h-screen w-full animate-pulse bg-background" aria-label="Cargando contenido" />
@@ -62,6 +63,7 @@ const AnimatedRoutes = () => {
           <Route path="/dichos-mineros" element={<Dichos />} />
           <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/negocios" element={<NegociosPortal />} />
+          <Route path="/validacion-tecnica" element={<ValidacionTecnica />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
