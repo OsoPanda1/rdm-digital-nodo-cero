@@ -25,6 +25,7 @@ import paymentsRoutes from "./routes/payments";
 import seoRoutes from "./routes/seo";
 import uploadRoutes from "./routes/upload";
 import federadosRoutes from "./routes/federados";
+import isabellaRoutes from "./routes/isabella";
 
 dotenv.config();
 
@@ -92,6 +93,7 @@ app.use("/api/v1/payments", paymentsRoutes);
 app.use("/api/v1/seo", seoRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 app.use("/api/v1/federados", federadosRoutes);
+app.use("/api/v1/isabella", sensitiveLimiter, isabellaRoutes);
 
 // Legacy routes for backwards compatibility
 app.use("/api/auth", authLimiter, authRoutes);
@@ -110,6 +112,7 @@ app.use("/api/payments", paymentsRoutes);
 app.use("/api/seo", seoRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/federados", federadosRoutes);
+app.use("/api/isabella", sensitiveLimiter, isabellaRoutes);
 
 // Error handling
 app.use(errorHandler);
