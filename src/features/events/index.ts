@@ -1,96 +1,53 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, queryKeys } from '@/lib/apiClient';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Event {
   id: string;
   title: string;
+  name: string;
   description: string;
-  location: string;
+  location: string | null;
   startDate: string;
-  endDate?: string;
-  imageUrl?: string;
+  endDate: string | null;
+  imageUrl: string | null;
   isFeatured: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  category: string;
 }
 
 export interface EventFilters {
   isFeatured?: boolean;
-  startDate?: string;
-  endDate?: string;
   search?: string;
   limit?: number;
-  offset?: number;
 }
 
 export function useEvents(filters: EventFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.events.list(filters as Record<string, any>),
-    queryFn: () => apiClient.get<{ success: boolean; data: Event[]; pagination: any }>(`/events`, filters as Record<string, any>),
-    select: (res) => res?.data || [],
-  });
-}
+    queryKey: ['events', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('events')
+        .select('id, title, description, location, start_date, end_date, image_url, is_featured, category')
+        .order('start_date', { ascending: true })
+        .limit(filters.limit ?? 12);
 
-export function useFeaturedEvents() {
-  return useQuery({
-    queryKey: queryKeys.events.featured(),
-    queryFn: () => apiClient.get<{ success: boolean; data: Event[] }>(`/events/featured`),
-    select: (res) => res?.data || [],
-  });
-}
+      if (filters.isFeatured !== undefined) query = query.eq('is_featured', filters.isFeatured);
+      if (filters.search) query = query.ilike('title', `%${filters.search}%`);
 
-export function useUpcomingEvents() {
-  return useQuery({
-    queryKey: queryKeys.events.upcoming(),
-    queryFn: () => apiClient.get<{ success: boolean; data: Event[] }>(`/events/upcoming`),
-    select: (res) => res?.data || [],
-  });
-}
+      const { data, error } = await query;
+      if (error) throw error;
 
-export function useEvent(id: string) {
-  return useQuery({
-    queryKey: queryKeys.events.detail(id),
-    queryFn: () => apiClient.get<{ success: boolean; data: Event }>(`/events/${id}`),
-    enabled: !!id,
-    select: (res) => res?.data,
-  });
-}
-
-export function useCreateEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<Event>) => apiClient.post<Event>(`/events`, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.events.all }); },
-  });
-}
-
-export function useUpdateEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Event> }) => apiClient.put<Event>(`/events/${id}`, data),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
-      qc.invalidateQueries({ queryKey: queryKeys.events.all });
-    },
-  });
-}
-
-export function useDeleteEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.delete<void>(`/events/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.events.all }); },
-  });
-}
-
-export function useFeatureEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, isFeatured }: { id: string; isFeatured: boolean }) => apiClient.put<Event>(`/events/${id}/feature`, { isFeatured }),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
-      qc.invalidateQueries({ queryKey: queryKeys.events.all });
+      return (data ?? []).map((e) => ({
+        id: e.id,
+        title: e.title,
+        name: e.title,
+        description: e.description,
+        location: e.location,
+        startDate: e.start_date,
+        endDate: e.end_date,
+        imageUrl: e.image_url,
+        isFeatured: e.is_featured,
+        category: e.category,
+      }));
     },
   });
 }

@@ -1,25 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, queryKeys } from '@/lib/apiClient';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Business {
   id: string;
-  ownerId: string;
   name: string;
   category: string;
   description: string;
-  phone?: string;
-  address?: string;
-  imageUrl?: string;
-  website?: string;
-  email?: string;
+  shortDescription: string | null;
+  phone: string | null;
+  address: string | null;
+  imageUrl: string | null;
   isPremium: boolean;
-  premiumUntil?: string;
-  latitude?: number;
-  longitude?: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  owner?: { id: string; name: string; email: string };
+  isVerified: boolean;
+  isFeatured: boolean;
+  rating: number | null;
+  status: string;
 }
 
 export interface BusinessFilters {
@@ -27,66 +22,41 @@ export interface BusinessFilters {
   isPremium?: boolean;
   search?: string;
   limit?: number;
-  offset?: number;
 }
 
 export function useBusinesses(filters: BusinessFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.businesses.list(filters as Record<string, any>),
-    queryFn: () => apiClient.get<{ success: boolean; data: Business[]; pagination: any }>(`/businesses`, filters as Record<string, any>),
-    select: (res) => res?.data || [],
-  });
-}
+    queryKey: ['businesses', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('businesses')
+        .select('id, name, category, description, short_description, phone, address, image_url, is_premium, is_verified, is_featured, rating, status')
+        .eq('status', 'active')
+        .order('is_featured', { ascending: false })
+        .limit(filters.limit ?? 12);
 
-export function useBusiness(id: string) {
-  return useQuery({
-    queryKey: queryKeys.businesses.detail(id),
-    queryFn: () => apiClient.get<{ success: boolean; data: Business }>(`/businesses/${id}`),
-    enabled: !!id,
-    select: (res) => res?.data,
-  });
-}
+      if (filters.category) query = query.eq('category', filters.category);
+      if (filters.isPremium !== undefined) query = query.eq('is_premium', filters.isPremium);
+      if (filters.search) query = query.ilike('name', `%${filters.search}%`);
 
-export function useBusinessCategories() {
-  return useQuery({
-    queryKey: queryKeys.businesses.categories(),
-    queryFn: () => apiClient.get<{ success: boolean; data: string[] }>(`/businesses/categories`),
-    select: (res) => res?.data || [],
-  });
-}
+      const { data, error } = await query;
+      if (error) throw error;
 
-export function useCreateBusiness() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<Business>) => apiClient.post<Business>(`/businesses`, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
-  });
-}
-
-export function useUpdateBusiness() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Business> }) => apiClient.put<Business>(`/businesses/${id}`, data),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: queryKeys.businesses.detail(id) });
-      qc.invalidateQueries({ queryKey: queryKeys.businesses.all });
+      return (data ?? []).map((b) => ({
+        id: b.id,
+        name: b.name,
+        category: b.category,
+        description: b.description,
+        shortDescription: b.short_description,
+        phone: b.phone,
+        address: b.address,
+        imageUrl: b.image_url,
+        isPremium: b.is_premium,
+        isVerified: b.is_verified,
+        isFeatured: b.is_featured,
+        rating: b.rating ? Number(b.rating) : null,
+        status: b.status,
+      }));
     },
-  });
-}
-
-export function useDeleteBusiness() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.delete<void>(`/businesses/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
-  });
-}
-
-export function useUpgradeBusiness() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ businessId, plan }: { businessId: string; plan: 'monthly' | 'yearly' }) =>
-      apiClient.post<{ sessionId: string; url: string }>(`/payments/business/checkout`, { businessId, plan }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.businesses.all }); },
   });
 }
