@@ -8,6 +8,7 @@ import { NotificationProvider } from "@/components/NotificationSystem";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CinematicIntro from "@/components/CinematicIntro";
 import RealitoChatLauncher from "./components/RealitoChatLauncher";
+import GlobalSupportCTA from "./components/GlobalSupportCTA";
 
 const Index = lazy(() => import("./pages/Index"));
 const Lugares = lazy(() => import("./pages/Lugares"));
@@ -31,6 +32,7 @@ const Dichos = lazy(() => import("./pages/Dichos"));
 const Catalogo = lazy(() => import("./pages/Catalogo"));
 const NegociosPortal = lazy(() => import("./pages/NegociosPortal"));
 const ValidacionTecnica = lazy(() => import("./pages/ValidacionTecnica"));
+const Musica = lazy(() => import("./pages/Musica"));
 
 const RouteFallback = () => (
   <div className="min-h-screen w-full animate-pulse bg-background" aria-label="Cargando contenido" />
@@ -64,6 +66,7 @@ const AnimatedRoutes = () => {
           <Route path="/catalogo" element={<Catalogo />} />
           <Route path="/negocios" element={<NegociosPortal />} />
           <Route path="/validacion-tecnica" element={<ValidacionTecnica />} />
+          <Route path="/musica" element={<Musica />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -96,6 +99,7 @@ const AppInner = () => {
           {(!showIntro || introComplete) && (
             <AnimatedRoutes />
           )}
+          <GlobalSupportCTA />
           <RealitoChatLauncher />
         </TooltipProvider>
       </NotificationProvider>

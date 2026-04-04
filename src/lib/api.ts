@@ -379,6 +379,19 @@ export const paymentsApi = {
     apiRequest<{ success: boolean; data: any }>(`/payments/donations/${id}`),
 };
 
+
+// Music Economy API
+export const musicApi = {
+  getSongs: () =>
+    apiRequest<{ success: boolean; data: Array<{ id: string; title: string; description: string | null; basePrice: number; audioUrl: string | null; coverUrl: string | null }> }>('/music/songs'),
+
+  createSongCheckout: (data: { songId: string; amount: number }) =>
+    apiRequest<{ success: boolean; data: { sessionId: string; url: string } }>('/music/checkout', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
 // Upload API
 export const uploadApi = {
   uploadImage: async (file: File, folder?: string): Promise<{ url: string; key: string }> => {
@@ -487,4 +500,5 @@ export default {
   ai: aiApi,
   seo: seoApi,
   analytics: analyticsApi,
+  music: musicApi,
 };
