@@ -41,6 +41,7 @@ const RouteFallback = () => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  usePageTracking();
   return (
     <AnimatePresence mode="wait">
       <Suspense fallback={<RouteFallback />}>
