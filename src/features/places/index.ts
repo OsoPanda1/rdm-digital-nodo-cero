@@ -1,75 +1,56 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, queryKeys } from '@/lib/apiClient';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Place {
   id: string;
   name: string;
   category: string;
-  description?: string;
+  description: string;
   lat: number;
   lng: number;
-  imageUrl?: string;
-  isPremiumBusiness?: boolean;
+  imageUrl: string | null;
+  isPremiumBusiness: boolean;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PlaceFilters {
   category?: string;
   search?: string;
   limit?: number;
-  offset?: number;
 }
 
 export function usePlaces(filters: PlaceFilters = {}) {
   return useQuery({
-    queryKey: queryKeys.places.list(filters as Record<string, any>),
-    queryFn: () => apiClient.get<{ success: boolean; data: Place[] }>(`/markers`, filters as Record<string, any>),
-    select: (res) => res?.data || [],
-  });
-}
+    queryKey: ['places', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('businesses')
+        .select('id, name, category, description, latitude, longitude, image_url, is_premium, status')
+        .eq('status', 'active')
+        .order('is_featured', { ascending: false })
+        .limit(filters.limit ?? 8);
 
-export function usePlace(id: string) {
-  return useQuery({
-    queryKey: queryKeys.places.detail(id),
-    queryFn: () => apiClient.get<{ success: boolean; data: Place }>(`/markers/${id}`),
-    enabled: !!id,
-    select: (res) => res?.data,
-  });
-}
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      if (filters.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
 
-export function usePlaceCategories() {
-  return useQuery({
-    queryKey: queryKeys.places.all,
-    queryFn: () => apiClient.get<{ success: boolean; data: string[] }>(`/markers/categories`),
-    select: (res) => res?.data || [],
-  });
-}
+      const { data, error } = await query;
+      if (error) throw error;
 
-export function useCreatePlace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<Place>) => apiClient.post<Place>(`/markers`, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.places.all }); },
-  });
-}
-
-export function useUpdatePlace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Place> }) => apiClient.put<Place>(`/markers/${id}`, data),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: queryKeys.places.detail(id) });
-      qc.invalidateQueries({ queryKey: queryKeys.places.all });
+      return (data ?? []).map((b) => ({
+        id: b.id,
+        name: b.name,
+        category: b.category,
+        description: b.description,
+        lat: b.latitude ?? 20.1374,
+        lng: b.longitude ?? -98.6732,
+        imageUrl: b.image_url,
+        isPremiumBusiness: b.is_premium,
+        isActive: b.status === 'active',
+      }));
     },
-  });
-}
-
-export function useDeletePlace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.delete<void>(`/markers/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: queryKeys.places.all }); },
   });
 }

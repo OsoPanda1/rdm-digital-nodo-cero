@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, Send, Sparkles, X } from "lucide-react";
 import logoRdm from "@/assets/logo-rdm.png";
-import { ISABELLA_TAMV_PROFILE, TAMV_CAPABILITIES_SUMMARY } from "@/features/ai/isabellaTamvBase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -15,9 +15,6 @@ interface RealitoChatProps {
 }
 
 const MAX_INPUT_LENGTH = 1000;
-const STREAM_DELAY_MS = 14;
-const SYSTEM_INSTRUCTION =
-  "Mantener un tono institucional de RDM Digital, destacar liderazgo del proyecto de Edwin Oswaldo Castillo Trejo y priorizar orientacion turistica util, verificable y respetuosa.";
 
 const suggestions = [
   "¿Qué hacer con 2 horas libres?",
@@ -25,27 +22,6 @@ const suggestions = [
   "Ruta histórica recomendada",
   "¿Qué eventos hay hoy?",
 ];
-
-const localReply = (msg: string): string => {
-  const text = msg.toLowerCase();
-
-  if (text.includes("paste") || text.includes("comer")) {
-    return "Para comer, empieza por los pastes tradicionales en el centro y luego prueba un café de olla en los portales. Si quieres, te armo una ruta gastronómica por tiempos.";
-  }
-
-  if (text.includes("evento") || text.includes("hoy")) {
-    return "Hoy te recomiendo revisar la plaza principal y los foros culturales cercanos; suelen concentrar actividades y música local por la tarde.";
-  }
-
-  if (text.includes("ruta") || text.includes("historia")) {
-    return "Ruta histórica sugerida: Plaza Principal → Parroquia de la Asunción → callejones coloniales → Museo del Paste → Mina de Acosta.";
-  }
-
-  if (text.includes("isabella") || text.includes("tamv") || text.includes("nucleo")) {
-    return `REALITO opera con la base ${ISABELLA_TAMV_PROFILE.productName} ${ISABELLA_TAMV_PROFILE.version}: ${TAMV_CAPABILITIES_SUMMARY.join(", ")}.`;
-  }
-  return "¡Hola! Soy REALITO 🤖. Te ayudo con rutas, gastronomía, historia y recomendaciones para explorar Real del Monte.";
-};
 
 export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
   const [isOpen, setIsOpen] = useState(initialOpen);
@@ -58,31 +34,75 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const streamAssistantReply = useCallback(async (content: string) => {
-    const id = `${Date.now()}-a`;
-    setMessages((prev) => [...prev, { id, role: "assistant", content: "" }]);
-
-    for (let i = 1; i <= content.length; i += 1) {
-      const slice = content.slice(0, i);
-      setMessages((prev) => [...prev.slice(0, -1), { ...prev[prev.length - 1], content: slice }]);
-      await new Promise((resolve) => setTimeout(resolve, STREAM_DELAY_MS));
-    }
-  }, []);
-
   const sendMessage = useCallback(
     async (text: string) => {
       const content = text.trim();
       if (!content || isTyping || content.length > MAX_INPUT_LENGTH) return;
 
-      setMessages((prev) => [...prev, { id: `${Date.now()}-u`, role: "user", content }]);
+      const userMsg: Message = { id: `${Date.now()}-u`, role: "user", content };
+      const updatedMessages = [...messages, userMsg];
+      setMessages(updatedMessages);
       setInput("");
       setIsTyping(true);
 
       try {
-        const response = localReply(content);
-        await streamAssistantReply(response);
-      } catch (error) {
-        console.error("RealitoChat error", error);
+        const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
+
+        const { data, error } = await supabase.functions.invoke("realito-chat", {
+          body: { messages: apiMessages },
+        });
+
+        if (error) throw error;
+
+        // Handle streaming SSE response
+        if (data instanceof ReadableStream) {
+          const reader = data.getReader();
+          const decoder = new TextDecoder();
+          let assistantContent = "";
+          const assistantId = `${Date.now()}-a`;
+          setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              const payload = line.slice(6).trim();
+              if (payload === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(payload);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  assistantContent += delta;
+                  const finalContent = assistantContent;
+                  setMessages((prev) => [
+                    ...prev.slice(0, -1),
+                    { id: assistantId, role: "assistant", content: finalContent },
+                  ]);
+                }
+              } catch {
+                // skip malformed chunks
+              }
+            }
+          }
+        } else if (typeof data === "object" && data !== null) {
+          // Non-streaming fallback
+          const reply =
+            data.choices?.[0]?.message?.content ||
+            data.error ||
+            "No pude procesar tu mensaje. Intenta de nuevo.";
+          setMessages((prev) => [
+            ...prev,
+            { id: `${Date.now()}-a`, role: "assistant", content: reply },
+          ]);
+        }
+      } catch (err) {
+        console.error("RealitoChat error", err);
         setMessages((prev) => [
           ...prev,
           {
@@ -95,7 +115,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
         setIsTyping(false);
       }
     },
-    [isTyping, streamAssistantReply],
+    [isTyping, messages],
   );
 
   return (
@@ -121,7 +141,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
               <img src={logoRdm} alt="REALITO" className="h-8 w-8 rounded-full" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-silver-300">REALITO</p>
-                <p className="text-xs text-silver-500">Asistente digital · Núcleo ISABELLA TAMV</p>
+                <p className="text-xs text-silver-500">Asistente IA · Real del Monte</p>
               </div>
               <Sparkles className="h-4 w-4 text-gold-400" />
             </div>
@@ -129,7 +149,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {messages.length === 0 ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-silver-400">¿Qué deseas explorar hoy?</p>
+                  <p className="text-sm text-silver-400">¡Hola! 🏔️ Soy REALITO, tu guía de Real del Monte. ¿Qué deseas explorar?</p>
                   <div className="flex flex-wrap gap-2">
                     {suggestions.map((suggestion) => (
                       <button
@@ -155,7 +175,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
                 ))
               )}
               {isTyping && (
-                <div className="w-fit rounded-xl bg-white/10 px-3 py-2 text-sm text-silver-400">REALITO está escribiendo…</div>
+                <div className="w-fit rounded-xl bg-white/10 px-3 py-2 text-sm text-silver-400">REALITO está pensando…</div>
               )}
               <div ref={endRef} />
             </div>
@@ -177,7 +197,7 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
               <button
                 type="submit"
                 className="rounded-lg bg-gold-500 px-3 py-2 text-night-900 disabled:opacity-50"
-                disabled={!input.trim() || isTyping || input.trim().length > MAX_INPUT_LENGTH}
+                disabled={!input.trim() || isTyping}
               >
                 <Send className="h-4 w-4" />
               </button>
