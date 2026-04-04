@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { paymentsApi } from '../lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,14 +10,15 @@ import { useToast } from '@/components/ui/use-toast';
 import PageTransition from '@/components/PageTransition';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Heart, Star, Zap, Loader2, CheckCircle } from 'lucide-react';
+import { Heart, Star, Zap, Loader2, CheckCircle, ShieldCheck, Sparkles } from 'lucide-react';
 
 const Apoya = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [donationAmount, setDonationAmount] = useState('100');
+  const [donationAmount, setDonationAmount] = useState('50');
   const [customAmount, setCustomAmount] = useState('');
   const [donationType, setDonationType] = useState<'app' | 'business'>('app');
 
@@ -40,10 +41,20 @@ const Apoya = () => {
 
   const handleDonate = async () => {
     const amount = customAmount || donationAmount;
-    if (!amount || parseFloat(amount) < 10) {
-      toast({ title: 'Monto mínimo', description: 'El monto mínimo de donación es de 10 MXN.', variant: 'destructive' });
+    if (!amount || parseFloat(amount) < 50) {
+      toast({ title: 'Monto mínimo', description: 'El monto mínimo de donación es de 50 MXN.', variant: 'destructive' });
       return;
     }
+
+    if (donationType === 'business') {
+      toast({
+        title: 'Activa tu negocio',
+        description: 'Te llevamos al portal de negocios para activar tu apoyo empresarial.',
+      });
+      navigate('/negocios');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await paymentsApi.createDonation({
@@ -52,8 +63,9 @@ const Apoya = () => {
         message: 'Donación desde RDM Digital',
       });
       window.location.href = response.data.url;
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Error al procesar la donación.', variant: 'destructive' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al procesar la donación.';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
       setLoading(false);
     }
   };
@@ -95,6 +107,25 @@ const Apoya = () => {
               </p>
             </div>
 
+            <Card className="max-w-4xl mx-auto mb-8 border-0 shadow-2xl overflow-hidden">
+              <CardContent className="p-6 md:p-8 bg-gradient-to-r from-primary/10 via-background to-amber-500/10">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="rounded-xl border border-primary/20 p-4">
+                    <div className="flex items-center gap-2 mb-2 text-primary font-semibold"><ShieldCheck className="w-4 h-4" /> Trazabilidad</div>
+                    <p className="text-sm text-muted-foreground">Cada aporte queda registrado en el sistema para transparencia operativa.</p>
+                  </div>
+                  <div className="rounded-xl border border-primary/20 p-4">
+                    <div className="flex items-center gap-2 mb-2 text-primary font-semibold"><Sparkles className="w-4 h-4" /> Impacto local</div>
+                    <p className="text-sm text-muted-foreground">Tu donación fortalece contenido, promoción turística y digitalización comunitaria.</p>
+                  </div>
+                  <div className="rounded-xl border border-primary/20 p-4">
+                    <div className="flex items-center gap-2 mb-2 text-primary font-semibold"><Heart className="w-4 h-4" /> Mínimo accesible</div>
+                    <p className="text-sm text-muted-foreground">El recuadro de donación inicia desde <strong>50 MXN</strong> para facilitar apoyo continuo.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
               {[
                 { icon: Heart, title: 'Impacto Social', desc: 'Apoyas el turismo local y la economía de Real del Monte', color: 'text-primary' },
@@ -134,7 +165,7 @@ const Apoya = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Monto (MXN)</Label>
+                  <Label>Monto (MXN) — mínimo 50</Label>
                   <div className="grid grid-cols-3 gap-3">
                     {predefinedAmounts.map((amt) => (
                       <Button
@@ -153,7 +184,7 @@ const Apoya = () => {
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                     <Input
-                      id="custom-amount" type="number" min="10" placeholder="Otro monto" className="pl-8"
+                      id="custom-amount" type="number" min="50" placeholder="Otro monto" className="pl-8"
                       value={customAmount}
                       onChange={(e) => { setCustomAmount(e.target.value); if (e.target.value) setDonationAmount(''); }}
                     />
@@ -163,11 +194,11 @@ const Apoya = () => {
                 {!isAuthenticated && (
                   <div className="bg-muted border border-border rounded-lg p-4 text-sm text-muted-foreground">
                     <strong>Nota:</strong> Para hacer una donación necesitas{' '}
-                    <a href="/auth" className="underline font-semibold text-primary">iniciar sesión</a>
+                    <Link to="/auth" className="underline font-semibold text-primary">iniciar sesión</Link>
                   </div>
                 )}
 
-                <Button className="w-full h-12 text-lg" onClick={handleDonate} disabled={loading || !isAuthenticated}>
+                <Button className="w-full h-12 text-lg" onClick={handleDonate} disabled={loading || (!isAuthenticated && donationType === 'app')}>
                   {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Heart className="mr-2 h-5 w-5" />}
                   Donar ${customAmount || donationAmount} MXN
                 </Button>

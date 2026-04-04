@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Map, BookOpen, Utensils, Palette, TreePine, Ghost, Clock, Quote, Compass } from "lucide-react";
+import { Menu, X, ChevronDown, Map, BookOpen, Utensils, Palette, TreePine, Ghost, Clock, Quote, Compass, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoRdm from "@/assets/logo-rdm-digital.png";
 
@@ -240,6 +240,18 @@ const Navbar = () => {
                 <span className="relative z-10">{item.label}</span>
               </Link>
             ))}
+
+            <Link
+              to="/apoya"
+              className="ml-2 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5"
+              style={{
+                background: "linear-gradient(135deg, hsl(43,85%,55%), hsl(16,90%,55%))",
+                boxShadow: "0 10px 30px -16px hsla(16,90%,55%,0.9)",
+              }}
+            >
+              <Heart className="w-4 h-4 fill-white" />
+              Apoya el proyecto
+            </Link>
           </div>
 
           {/* Mobile toggle */}
@@ -360,6 +372,17 @@ const Navbar = () => {
                   </Link>
                 ))}
               </div>
+
+              <Link
+                to="/apoya"
+                className="mx-2 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white"
+                style={{
+                  background: "linear-gradient(135deg, hsl(43,85%,55%), hsl(16,90%,55%))",
+                }}
+              >
+                <Heart className="w-4 h-4 fill-white" />
+                Apoya el proyecto
+              </Link>
             </div>
           </motion.div>
         )}
