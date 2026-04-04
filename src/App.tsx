@@ -9,6 +9,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import CinematicIntro from "@/components/CinematicIntro";
 import RealitoChatLauncher from "./components/RealitoChatLauncher";
 import GlobalSupportCTA from "./components/GlobalSupportCTA";
+import { usePageTracking } from "@/hooks/useAnalytics";
 
 const Index = lazy(() => import("./pages/Index"));
 const Lugares = lazy(() => import("./pages/Lugares"));
@@ -40,6 +41,7 @@ const RouteFallback = () => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  usePageTracking();
   return (
     <AnimatePresence mode="wait">
       <Suspense fallback={<RouteFallback />}>
