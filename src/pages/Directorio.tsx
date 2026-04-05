@@ -8,42 +8,27 @@ import { SEOMeta, PAGE_SEO } from "@/components/SEOMeta";
 import { AuroraBackground, TextReveal } from "@/components/VisualEffects";
 import { motion } from "framer-motion";
 import { Search, Store, Sparkles } from "lucide-react";
+import { useBusinesses } from "@/features/businesses";
 
-import pasteImg from "@/assets/paste.webp";
-import panteonImg from "@/assets/panteon-ingles.webp";
-import minaImg from "@/assets/mina-acosta.webp";
 import callesImg from "@/assets/calles-colonial.webp";
-import rdm1 from "@/assets/rdm1.jpeg";
-import rdm2 from "@/assets/rdm2.jpeg";
-import rdm3 from "@/assets/rdm01.jpg";
-import rdm4 from "@/assets/rdm02.jpg";
 
-const businesses = [
-  { name: "Pastes El Portal", category: "Pastes", description: "Los pastes mas tradicionales desde 1985. Sabores clasicos y nuevas creaciones.", image: pasteImg, isPremium: true, rating: 4.9, phone: "771 123 4567" },
-  { name: "Hotel Real de Minas", category: "Hospedaje", description: "Hotel boutique en casona colonial restaurada con vista a la montana.", image: callesImg, isPremium: true, rating: 4.7, phone: "771 234 5678" },
-  { name: "Tours Mineros RDM", category: "Tours", description: "Recorridos guiados por las minas historicas con expertos en historia local.", image: minaImg, isPremium: false, rating: 4.5 },
-  { name: "Cafe La Neblina", category: "Restaurante", description: "Cafe artesanal de altura con los mejores postres y vista al bosque.", image: rdm1, isPremium: false, rating: 4.4 },
-  { name: "Artesanias del Monte", category: "Souvenir", description: "Artesanias locales, textiles y recuerdos autenticos hechos a mano.", image: rdm2, isPremium: true, rating: 4.6, phone: "771 345 6789" },
-  { name: "Posada La Escondida", category: "Hospedaje", description: "Cabanas rusticas entre pinos con chimenea y desayuno incluido.", image: rdm3, isPremium: false, rating: 4.3 },
-  { name: "La Casona Hostal", category: "Hospedaje", description: "Alojamiento economico en el corazon del centro historico.", image: rdm4, isPremium: false, rating: 4.2 },
-  { name: "Restaurant Los Murmullos", category: "Restaurante", description: "Comida tradicional hidalguense con ingredientes locales frescos.", image: panteonImg, isPremium: true, rating: 4.5 },
-];
-
-const categories = ["Todos", "Pastes", "Hospedaje", "Restaurante", "Tours", "Souvenir"];
+const categories = ["Todos", "GASTRONOMIA", "HOSPEDAJE", "PLATERIA", "ARTESANIA", "TURISMO", "BAR", "COMERCIO", "SERVICIOS"];
 
 const DirectorioPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Todos");
 
+  const { data: allBusinesses = [], isLoading } = useBusinesses({ limit: 50 });
+
   const filteredBusinesses = useMemo(() => {
-    return businesses.filter((biz) => {
+    return allBusinesses.filter((biz) => {
       const matchesSearch = searchQuery === "" ||
         biz.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         biz.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = activeCategory === "Todos" || biz.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, activeCategory, allBusinesses]);
 
   return (
     <PageTransition>
@@ -102,7 +87,6 @@ const DirectorioPage = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="space-y-6"
             >
-              {/* Search Bar */}
               <div className="relative max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-silver-500" />
                 <input
@@ -114,7 +98,6 @@ const DirectorioPage = () => {
                 />
               </div>
 
-              {/* Category Tabs */}
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <button
@@ -126,7 +109,7 @@ const DirectorioPage = () => {
                         : "border border-white/10 bg-white/5 text-silver-400 hover:bg-white/10 hover:text-silver-200"
                     }`}
                   >
-                    {cat}
+                    {cat === "Todos" ? "Todos" : cat.charAt(0) + cat.slice(1).toLowerCase()}
                   </button>
                 ))}
               </div>
@@ -136,22 +119,37 @@ const DirectorioPage = () => {
 
         {/* Results */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
-          {/* Results count */}
           <div className="flex items-center gap-2 mb-6 text-sm text-silver-500">
             <Sparkles className="h-3.5 w-3.5 text-gold-400/60" />
             <span>{filteredBusinesses.length} negocio{filteredBusinesses.length !== 1 ? "s" : ""} encontrado{filteredBusinesses.length !== 1 ? "s" : ""}</span>
           </div>
 
-          {filteredBusinesses.length === 0 ? (
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 rounded-2xl bg-white/5 animate-pulse" />
+              ))}
+            </div>
+          ) : filteredBusinesses.length === 0 ? (
             <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5">
               <Store className="h-12 w-12 text-silver-500 mx-auto mb-4" />
               <p className="text-silver-400 text-lg">No se encontraron negocios.</p>
-              <p className="text-silver-500 text-sm mt-2">Intenta con otros terminos de busqueda o categoria.</p>
+              <p className="text-silver-500 text-sm mt-2">Intenta con otros términos de búsqueda o categoría.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
               {filteredBusinesses.map((biz, i) => (
-                <BusinessCard key={biz.name} {...biz} index={i} />
+                <BusinessCard
+                  key={biz.id}
+                  name={biz.name}
+                  category={biz.category}
+                  description={biz.description}
+                  image={biz.imageUrl || "/placeholder.svg"}
+                  isPremium={biz.isPremium}
+                  rating={biz.rating ?? 4.2}
+                  phone={biz.phone ?? undefined}
+                  index={i}
+                />
               ))}
             </div>
           )}
