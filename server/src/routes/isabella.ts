@@ -11,6 +11,12 @@ const processSchema = z.object({
   text: z.string().min(1),
 });
 
+const federatedQuerySchema = z.object({
+  owner: z.string().min(1).optional(),
+  refresh: z.string().optional(),
+  maxContext: z.coerce.number().int().min(1).max(8).optional(),
+});
+
 router.post('/process', (req, res) => {
   const parsed = processSchema.safeParse(req.body);
   if (!parsed.success) {
