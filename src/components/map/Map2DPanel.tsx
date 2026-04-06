@@ -182,7 +182,8 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
   );
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl" role="region" aria-label="Mapa interactivo de Real del Monte">
+      <p className="sr-only">Usa el teclado: R centra Real del Monte y M centra tu ubicación si está activa.</p>
       <MapContainer
         center={[viewport.lat, viewport.lng]}
         zoom={viewport.zoom}

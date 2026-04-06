@@ -27,6 +27,7 @@ import uploadRoutes from "./routes/upload";
 import federadosRoutes from "./routes/federados";
 import isabellaRoutes from "./routes/isabella";
 import musicRoutes from "./routes/music";
+import poisRoutes from "./routes/pois";
 
 dotenv.config();
 
@@ -96,6 +97,7 @@ app.use("/api/v1/upload", uploadRoutes);
 app.use("/api/v1/federados", federadosRoutes);
 app.use("/api/v1/isabella", sensitiveLimiter, isabellaRoutes);
 app.use("/api/v1/music", musicRoutes);
+app.use("/api/v1/pois", poisRoutes);
 
 // Legacy routes for backwards compatibility
 app.use("/api/auth", authLimiter, authRoutes);
@@ -116,6 +118,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/federados", federadosRoutes);
 app.use("/api/isabella", sensitiveLimiter, isabellaRoutes);
 app.use("/api/music", musicRoutes);
+app.use("/api/pois", poisRoutes);
 
 // Error handling
 app.use(errorHandler);
