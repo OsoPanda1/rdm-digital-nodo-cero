@@ -72,29 +72,4 @@ router.get('/github/interconnect', async (req, res) => {
   }
 });
 
-router.post('/github/viable-update', async (req, res) => {
-  try {
-    const repoList = Array.isArray(req.body?.repos)
-      ? (req.body.repos as unknown[]).filter((item): item is string => typeof item === 'string')
-      : DEFAULT_EXTERNAL_FEDERATED_REPOS;
-
-    const limitParam = Number(req.body?.limit);
-    const limit = Number.isFinite(limitParam) ? limitParam : repoList.length;
-
-    const fusion = await githubRepoFusionService.syncFromRepoList(repoList, { limit });
-
-    return res.json({
-      source: 'cross-org-viable-update',
-      scope: 'rdm-digital',
-      recommendedRepo: 'OsoPanda1/tamv-digital-nexus',
-      ...fusion,
-    });
-  } catch (error) {
-    return res.status(502).json({
-      error: 'No se pudo generar la actualización viable',
-      details: error instanceof Error ? error.message : 'error desconocido',
-    });
-  }
-});
-
 export default router;
