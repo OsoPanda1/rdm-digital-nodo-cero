@@ -20,7 +20,6 @@ import ExperienceHub from "@/components/ExperienceHub";
 import MapaView from "@/components/MapaView";
 
 import { usePlaces } from "@/features/places";
-import { useBusinesses } from "@/features/businesses";
 import { useCommunityPosts } from "@/lib/hooks";
 import { useEvents } from "@/features/events";
 import presentacionVideo from "@/assets/presentacion.mp4";
@@ -34,7 +33,6 @@ const Index = () => {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   const { data: places = [], isLoading: loadingPlaces } = usePlaces();
-  const { data: businesses = [], isLoading: loadingBusinesses } = useBusinesses();
   const { data: posts = [], isLoading: loadingPosts } = useCommunityPosts();
   const { data: events = [], isLoading: loadingEvents } = useEvents();
 
@@ -110,27 +108,6 @@ const Index = () => {
         <VideoGallery />
         <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
 
-        {/* Businesses */}
-        <section className="py-24">
-          <div className="container mx-auto px-4 md:px-8">
-            <TextReveal>
-              <SectionHeader title="Directorio Local" subtitle="Negocios y servicios recomendados por la comunidad" linkTo="/directorio" />
-            </TextReveal>
-            {loadingBusinesses ? (
-              <LoadingSkeleton variant="card" count={2} />
-            ) : (
-              <StaggerContainer className="grid md:grid-cols-2 gap-6">
-                {businesses.map((biz: any, i: number) => (
-                  <StaggerItem key={biz.id || biz.name}>
-                    <GlowCard><BusinessCard {...biz} index={i} /></GlowCard>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            )}
-          </div>
-        </section>
-
-        <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
         <ImageGallery />
         <div className="container mx-auto px-4 md:px-8"><GradientSeparator /></div>
 
@@ -146,7 +123,15 @@ const Index = () => {
               <StaggerContainer className="grid md:grid-cols-3 gap-6">
                 {events.map((event: any, i: number) => (
                   <StaggerItem key={event.id || event.name}>
-                    <EventCard {...event} index={i} />
+                    <EventCard
+                      name={event.name || event.title}
+                      date={event.startDate ? new Date(event.startDate).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "Pronto"}
+                      time={event.startDate ? new Date(event.startDate).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : ""}
+                      location={event.location || "Real del Monte"}
+                      description={event.description}
+                      image={event.imageUrl}
+                      index={i}
+                    />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
