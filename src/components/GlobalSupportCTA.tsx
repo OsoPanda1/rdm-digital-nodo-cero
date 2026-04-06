@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const GlobalSupportCTA = () => {
   return (
-    <div className="fixed bottom-5 right-4 z-40">
+    <div className="fixed bottom-24 right-4 z-40">
       <Link
         to="/apoya"
         className="group inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white shadow-2xl transition-transform duration-300 hover:-translate-y-0.5"
