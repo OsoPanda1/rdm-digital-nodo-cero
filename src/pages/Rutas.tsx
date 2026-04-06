@@ -775,7 +775,11 @@ const RouteDetail = ({ route }: { route: TouristRoute }) => {
         <Button
           className={`${route.color.replace('text-', 'bg-')} text-white rounded-full px-8`}
           onClick={() => {
-            window.location.href = `mailto:reservas@realdelmonte.travel?subject=Reserva%20de%20${encodeURIComponent(route.name)}`;
+            const subject = encodeURIComponent(`Reserva de Ruta: ${route.name}`);
+            const body = encodeURIComponent(
+              `Hola, me gustaría reservar la ruta "${route.name}".\n\nDuración: ${route.duration}\nDistancia: ${route.distance}\nDificultad: ${route.difficulty}\nCosto: ${route.practicalInfo.price || "Consultar"}\n\nNúmero de personas: \nFecha deseada: \n\nQuedo atento a su confirmación.`
+            );
+            window.location.href = `mailto:tamvonlinenetwork@outlook.es?subject=${subject}&body=${body}`;
           }}
         >
           Reservar esta Ruta
