@@ -382,6 +382,7 @@ function TimelineInteractive() {
 }
 
 
+const HistoriaPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const downloadHistoricalGuide = () => {
     const content = timeline
