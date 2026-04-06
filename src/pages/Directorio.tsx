@@ -9,6 +9,7 @@ import { AuroraBackground, TextReveal } from "@/components/VisualEffects";
 import { motion } from "framer-motion";
 import { Search, Store, Sparkles } from "lucide-react";
 import { useBusinesses } from "@/features/businesses";
+import { Link } from "react-router-dom";
 
 import callesImg from "@/assets/calles-colonial.webp";
 
@@ -134,7 +135,10 @@ const DirectorioPage = () => {
             <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5">
               <Store className="h-12 w-12 text-silver-500 mx-auto mb-4" />
               <p className="text-silver-400 text-lg">No se encontraron negocios.</p>
-              <p className="text-silver-500 text-sm mt-2">Intenta con otros términos de búsqueda o categoría.</p>
+              <p className="text-silver-500 text-sm mt-2">Los negocios se registran directamente en la plataforma.</p>
+              <Link to="/negocios" className="mt-4 inline-block rounded-full bg-gold-400/20 px-5 py-2 text-sm text-gold-400 border border-gold-400/30 hover:bg-gold-400/30 transition">
+                Registra tu negocio
+              </Link>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
