@@ -3,7 +3,6 @@ import { useRef } from "react";
 import HeroSection from "@/components/HeroSection";
 import SectionHeader from "@/components/SectionHeader";
 import PlaceCard from "@/components/PlaceCard";
-import BusinessCard from "@/components/BusinessCard";
 import PostCard from "@/components/PostCard";
 import EventCard from "@/components/EventCard";
 import RoutesSection from "@/components/RoutesSection";
