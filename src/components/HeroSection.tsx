@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
-import { ChevronDown, MapPin, Compass, Sparkles } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronDown, MapPin, Compass, Sparkles, Play, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImg from "@/assets/hero-real-del-monte.webp";
 import presentacionVideo from "@/assets/presentacion.mp4";
@@ -8,6 +8,7 @@ import { AuroraBackground } from "@/components/VisualEffects";
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showVideo, setShowVideo] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -19,19 +20,10 @@ export default function HeroSection() {
 
   return (
     <section ref={containerRef} className="relative min-h-screen overflow-hidden bg-night-900 text-silver-300">
-      {/* Parallax Background */}
+      {/* Parallax Background — static image only, no video overlay */}
       <motion.div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroImg})`, y: backgroundY, scale: 1.1, opacity: 0.4 }}
-      />
-      <motion.video
-        className="absolute inset-0 h-full w-full object-cover opacity-35"
-        style={{ y: backgroundY }}
-        src={presentacionVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
+        style={{ backgroundImage: `url(${heroImg})`, y: backgroundY, scale: 1.1, opacity: 0.5 }}
       />
 
       {/* Gradient Overlays */}
@@ -65,7 +57,7 @@ export default function HeroSection() {
             <MapPin className="h-3.5 w-3.5 text-gold-400" />
             <span>Real del Monte</span>
             <span className="mx-1 h-3 w-px bg-white/20" />
-            <span className="text-gold-400">Pueblo Magico</span>
+            <span className="text-gold-400">Pueblo Mágico</span>
             <span className="mx-1 h-3 w-px bg-white/20" />
             <span>Hidalgo</span>
           </motion.div>
@@ -99,7 +91,7 @@ export default function HeroSection() {
             transition={{ duration: 0.7, delay: 0.7 }}
             className="mx-auto max-w-2xl text-base text-silver-400 md:text-lg leading-relaxed"
           >
-            Historia minera, gastronomia local, eventos vivos y rutas culturales
+            Historia minera, gastronomía local, eventos vivos y rutas culturales
             en una sola plataforma digital a 2,700 metros de altura.
           </motion.p>
 
@@ -113,7 +105,7 @@ export default function HeroSection() {
             {[
               { label: "Altitud", value: "2,700 msnm" },
               { label: "Fundado", value: "1534" },
-              { label: "Pueblo Magico", value: "Desde 2004" },
+              { label: "Pueblo Mágico", value: "Desde 2004" },
             ].map((stat) => (
               <div key={stat.label} className="flex items-center gap-2">
                 <Sparkles className="h-3 w-3 text-gold-400/60" />
@@ -141,16 +133,15 @@ export default function HeroSection() {
               to="/rutas"
               className="btn-hero-glass inline-flex items-center gap-2"
             >
-              Ver rutas turisticas
+              Ver rutas turísticas
             </Link>
-            <a
-              href={presentacionVideo}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              onClick={() => setShowVideo(true)}
               className="btn-hero-glass inline-flex items-center gap-2"
             >
+              <Play className="h-4 w-4" />
               Ver presentación oficial
-            </a>
+            </button>
           </motion.div>
         </motion.div>
 
@@ -165,6 +156,35 @@ export default function HeroSection() {
           <ChevronDown className="h-5 w-5 animate-bounce text-gold-400/60" />
         </motion.div>
       </motion.div>
+
+      {/* Video Modal */}
+      {showVideo && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setShowVideo(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute -top-12 right-0 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
+            >
+              <X className="h-4 w-4" />
+              Cerrar
+            </button>
+            <video
+              src={presentacionVideo}
+              controls
+              autoPlay
+              className="w-full rounded-2xl shadow-2xl"
+            />
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 }

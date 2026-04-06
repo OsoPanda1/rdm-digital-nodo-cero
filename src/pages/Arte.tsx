@@ -145,50 +145,68 @@ const ArtePage = () => {
             </motion.div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {crafts.map((craft, index) => (
-                <motion.div
-                  key={craft.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="glass rounded-2xl p-6 shadow-card hover:shadow-elevated transition-all"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-warm flex items-center justify-center">
-                      <craft.icon className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <h3 className="font-serif text-xl font-bold text-foreground">{craft.title}</h3>
-                  </div>
+              {crafts.map((craft, index) => {
+                const craftImages = [rdm1, rdm2, rdm3, rdm4];
+                return (
+                  <motion.div
+                    key={craft.title}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="glass rounded-2xl overflow-hidden shadow-card hover:shadow-elevated transition-all"
+                  >
+                    <img
+                      src={craftImages[index % craftImages.length]}
+                      alt={craft.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-warm flex items-center justify-center">
+                          <craft.icon className="w-6 h-6 text-primary-foreground" />
+                        </div>
+                        <h3 className="font-serif text-xl font-bold text-foreground">{craft.title}</h3>
+                      </div>
 
-                  <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-                    {craft.description}
-                  </p>
+                      <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                        {craft.description}
+                      </p>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Técnicas</span>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {craft.techniques.map((tech) => (
-                          <span key={tech} className="px-2 py-0.5 rounded bg-muted text-xs text-muted-foreground">
-                            {tech}
-                          </span>
-                        ))}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-xs text-muted-foreground uppercase tracking-wider">Técnicas</span>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {craft.techniques.map((tech) => (
+                              <span key={tech} className="px-2 py-0.5 rounded bg-muted text-xs text-muted-foreground">
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-muted-foreground uppercase tracking-wider">Materiales</span>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {craft.materials.map((mat) => (
+                              <span key={mat} className="px-2 py-0.5 rounded bg-muted text-xs text-muted-foreground">
+                                {mat}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Materiales</span>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {craft.materials.map((mat) => (
-                          <span key={mat} className="px-2 py-0.5 rounded bg-muted text-xs text-muted-foreground">
-                            {mat}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Image gallery */}
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <img src={callesImg} alt="Artesanías en Real del Monte" className="h-48 w-full rounded-2xl object-cover shadow-card" />
+              <img src={minaImg} alt="Escultura en metal de minas" className="h-48 w-full rounded-2xl object-cover shadow-card" />
+              <img src={rdm1} alt="Platería tradicional" className="h-48 w-full rounded-2xl object-cover shadow-card" />
+              <img src={rdm2} alt="Textiles y bordados" className="h-48 w-full rounded-2xl object-cover shadow-card" />
             </div>
           </div>
         </section>

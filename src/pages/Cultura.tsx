@@ -596,9 +596,11 @@ const CulturaPage = () => {
                 </TabsContent>
               ))}
             </Tabs>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              <img src={realitoAiScene} alt="Arte y cultura viva en Real del Monte" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
-              <video src={presentationVideo} className="h-64 w-full rounded-2xl object-cover shadow-elevated" autoPlay muted loop playsInline />
+            <div className="mt-10 grid gap-4 md:grid-cols-4">
+              <img src={rdm1} alt="Música y bandas de viento en Real del Monte" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
+              <img src={rdm2} alt="Danza folclórica minera" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
+              <img src={rdm3} alt="Arte y pintura en las calles" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
+              <img src={rdm4} alt="Artesanías y joyería de plata" className="h-64 w-full rounded-2xl object-cover shadow-elevated" />
             </div>
           </div>
         </section>
