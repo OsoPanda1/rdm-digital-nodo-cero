@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Award, Filter, Layers, LocateFixed, MapPin, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -34,9 +34,12 @@ const markers: MapMarkerData[] = [
 
 function MapaPageContent() {
   const [filter, setFilter] = useState<"all" | MarkerType>("all");
+  const [mapMarkers, setMapMarkers] = useState<MapMarkerData[]>(markers);
   const [selected, setSelected] = useState<MapMarkerData | null>(markers[0]);
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"2d" | "3d">("2d");
+  const [lowBandwidthMode, setLowBandwidthMode] = useState(false);
+  const [poiStatus, setPoiStatus] = useState<{ loading: boolean; message: string | null }>({ loading: false, message: null });
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
@@ -50,14 +53,14 @@ function MapaPageContent() {
 
   const filtered = useMemo(
     () =>
-      markers.filter((item) => {
+      mapMarkers.filter((item) => {
         const byType = filter === "all" || item.type === filter;
         const byQuery = `${item.name} ${item.category} ${item.description}`
           .toLowerCase()
           .includes(query.toLowerCase().trim());
         return byType && byQuery;
       }),
-    [filter, query],
+    [filter, mapMarkers, query],
   );
   const {
     userPosition,
@@ -69,6 +72,91 @@ function MapaPageContent() {
     error: geoError,
     centerOnUser,
   } = useRealtimeGeoAI({ markers: filtered, onViewportChange: syncFrom2D });
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadPois = async () => {
+      setPoiStatus({ loading: true, message: null });
+      try {
+        const response = await fetch('/api/v1/pois?zone=real-del-monte&limit=80', { signal: controller.signal });
+        if (!response.ok) throw new Error('No se pudieron cargar POIs');
+        const payload = await response.json();
+
+        const fromApi: MapMarkerData[] = (payload.features ?? []).map((feature: {
+          geometry: { coordinates: [number, number] };
+          properties: {
+            id: string;
+            name: string;
+            category: string;
+            description: string;
+            type: string;
+            priority: number;
+          };
+        }) => ({
+          id: feature.properties.id,
+          name: feature.properties.name,
+          category: feature.properties.category,
+          lat: feature.geometry.coordinates[1],
+          lng: feature.geometry.coordinates[0],
+          description: feature.properties.description,
+          image: callesImg,
+          type: feature.properties.type === 'servicio' ? 'business' : 'place',
+          isPremium: feature.properties.priority >= 9,
+          status: feature.properties.priority >= 9 ? 'En alta demanda' : 'Activo',
+          rating: 4.5,
+          phone: undefined,
+        }));
+
+        if (fromApi.length > 0) {
+          setMapMarkers(fromApi);
+          setSelected((current) => current ?? fromApi[0]);
+        }
+
+        setPoiStatus({ loading: false, message: null });
+      } catch {
+        setPoiStatus({ loading: false, message: 'Usando datos locales por conectividad limitada.' });
+      }
+    };
+
+    void loadPois();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === 'r') {
+        syncFrom2D({ lat: 20.138, lng: -98.6737, zoom: 14 });
+      }
+      if (event.key.toLowerCase() === 'm') {
+        centerOnUser();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [centerOnUser, syncFrom2D]);
+
+  const emitMapEvent = async (eventType: 'MAP_POI_SELECTED' | 'MAP_PAGE_VIEW', poi?: MapMarkerData) => {
+    try {
+      await fetch('/api/v1/pois/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType,
+          poiId: poi?.id,
+          type: poi?.category,
+          userProfile: 'guest',
+        }),
+      });
+    } catch {
+      // no-op en modo resiliente
+    }
+  };
+
+  useEffect(() => {
+    void emitMapEvent('MAP_PAGE_VIEW');
+  }, []);
 
   const stats = useMemo(
     () => [
@@ -148,6 +236,12 @@ function MapaPageContent() {
                   Gemelo 3D
                 </button>
               </div>
+              <button
+                onClick={() => setLowBandwidthMode((current) => !current)}
+                className="inline-flex rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs tracking-wide text-silver-300 hover:bg-white/10"
+              >
+                {lowBandwidthMode ? 'Modo Ligero ON' : 'Modo Ligero OFF'}
+              </button>
             </motion.div>
           </div>
         </section>
@@ -233,13 +327,13 @@ function MapaPageContent() {
               </div>
 
               <div className="overflow-hidden rounded-2xl border border-white/10">
-                {mode === "2d" ? (
+                {mode === "2d" || lowBandwidthMode ? (
                   <Map2DPanel
                     markers={filtered}
                     userPosition={userPosition}
                     selected={selected}
                     viewport={viewport}
-                    onSelect={setSelected}
+                    onSelect={(marker) => { setSelected(marker); void emitMapEvent('MAP_POI_SELECTED', marker); }}
                     onViewportChange={syncFrom2D}
                   />
                 ) : (
@@ -298,7 +392,7 @@ function MapaPageContent() {
                       )}
                       <button
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-silver-200 hover:bg-white/10"
-                        onClick={() => setSelected(markers[0])}
+                        onClick={() => setSelected(mapMarkers[0] ?? null)}
                       >
                         <LocateFixed className="h-4 w-4" /> Volver al nodo principal
                       </button>
@@ -311,11 +405,12 @@ function MapaPageContent() {
 
               <div className="glass-dark rounded-2xl border border-gold-500/30 p-4">
                 <h3 className="font-semibold text-gold-300">Exploración rápida</h3>
+                <p className="mt-1 text-xs text-silver-500">Atajos: R = centrar Real del Monte · M = mi ubicación.</p>
                 <ul className="mt-3 space-y-2 text-sm text-silver-400">
                   {filtered.slice(0, 4).map((item) => (
                     <li key={item.id}>
                       <button
-                        onClick={() => setSelected(item)}
+                        onClick={() => { setSelected(item); void emitMapEvent('MAP_POI_SELECTED', item); }}
                         className="flex w-full items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-left transition hover:border-gold-500/40 hover:bg-white/5"
                       >
                         <span>{item.name}</span>
@@ -359,6 +454,8 @@ function MapaPageContent() {
                     </p>
                   )}
                   {geoError && <p className="text-xs text-red-300">{geoError}</p>}
+                  {poiStatus.loading && <p className="text-xs text-sky-300">Sincronizando POIs desde backend...</p>}
+                  {poiStatus.message && <p className="text-xs text-amber-300">{poiStatus.message}</p>}
                 </div>
                 <Link to="/negocios" className="mt-3 inline-block rounded-lg bg-gold-500 px-3 py-2 text-sm font-semibold text-night-900">
                   Ir al portal de comercios

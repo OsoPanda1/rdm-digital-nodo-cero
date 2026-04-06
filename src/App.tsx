@@ -10,6 +10,8 @@ import CinematicIntro from "@/components/CinematicIntro";
 import RealitoChatLauncher from "./components/RealitoChatLauncher";
 import GlobalSupportCTA from "./components/GlobalSupportCTA";
 import { usePageTracking } from "@/hooks/useAnalytics";
+import ImmersiveInteractionLayer from "@/components/ImmersiveInteractionLayer";
+import IsabellaAura from "@/components/IsabellaAura";
 
 const Index = lazy(() => import("./pages/Index"));
 const Lugares = lazy(() => import("./pages/Lugares"));
@@ -101,6 +103,8 @@ const AppInner = () => {
           {(!showIntro || introComplete) && (
             <AnimatedRoutes />
           )}
+          <ImmersiveInteractionLayer />
+          <IsabellaAura />
           <GlobalSupportCTA />
           <RealitoChatLauncher />
         </TooltipProvider>
