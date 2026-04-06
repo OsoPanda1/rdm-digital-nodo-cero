@@ -295,7 +295,93 @@ const historicalImages = [
   { src: penasImg, alt: "Peñas Cargadas", caption: "Formaciones rocosas milenarias" },
 ];
 
-const HistoriaPage = () => {
+const timelineImages = [minaImg, callesImg, heroImg, panteonImg, penasImg, rdm1, rdm2, rdm3, rdm4, rdm5];
+
+function TimelineInteractive() {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  return (
+    <div className="relative max-w-5xl mx-auto">
+      <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terracotta via-gold to-forest md:-translate-x-1/2" />
+
+      {timeline.map((item, index) => {
+        const isOpen = expanded === item.year;
+        const Icon = item.icon;
+        const img = timelineImages[index % timelineImages.length];
+
+        return (
+          <motion.div
+            key={item.year}
+            initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ delay: index * 0.08, duration: 0.5 }}
+            className={`relative flex items-start gap-8 mb-12 last:mb-0 ${
+              index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+            }`}
+          >
+            <div className={`flex-1 ${index % 2 === 0 ? "md:text-right" : "md:text-left"}`}>
+              <motion.div
+                onClick={() => setExpanded(isOpen ? null : item.year)}
+                whileHover={{ scale: 1.02 }}
+                className={`glass rounded-2xl overflow-hidden cursor-pointer ${
+                  index % 2 === 0 ? "md:ml-auto" : "md:mr-auto"
+                } max-w-lg transition-shadow duration-300 ${
+                  isOpen ? "shadow-elevated ring-2 ring-gold/30" : "hover:shadow-elevated"
+                }`}
+              >
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${item.color}/10 text-sm font-bold`}>
+                      <Icon className="w-4 h-4" />
+                      {item.year}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {isOpen ? "▲ Cerrar" : "▼ Ver más"}
+                    </span>
+                  </div>
+                  <h3 className="font-serif text-xl font-bold text-foreground mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <img src={img} alt={item.title} className="w-full h-48 object-cover" />
+                      <div className="p-6 pt-4 border-t border-border bg-muted/30">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {item.details}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+
+            <div className="relative z-10 w-10 h-10 rounded-full bg-background border-4 border-background shadow-lg flex items-center justify-center shrink-0">
+              <div className={`w-4 h-4 rounded-full ${item.color}`} />
+            </div>
+
+            <div className="flex-1 hidden md:block" />
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+
   const containerRef = useRef<HTMLDivElement>(null);
   const downloadHistoricalGuide = () => {
     const content = timeline
