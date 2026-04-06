@@ -205,7 +205,10 @@ export class GitHubRepoFusionService {
 
 
   private normalizeRepoNames(repoFullNames: string[]): string[] {
-    return [...new Set(repoFullNames.map((repo) => repo.trim()).filter((repo) => repo.length > 0))];
+    return [...new Set(repoFullNames
+      .map((repo) => repo.trim().replace(/\s+/g, ''))
+      .filter((repo) => repo.length > 0)
+      .map((repo) => repo.toLowerCase()))];
   }
 
   private async fetchReposByFullName(repoFullNames: string[]): Promise<GitHubRepo[]> {

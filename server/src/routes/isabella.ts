@@ -52,6 +52,7 @@ router.post('/process-federated', async (req, res) => {
 
     return res.json({
       source: 'isabella-federated-runtime',
+      resolverVersion: '2026.04.merge-safe.1',
       context,
       ...result,
     });

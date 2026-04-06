@@ -68,6 +68,7 @@ router.get('/github/interconnect', async (req, res) => {
 
     return res.json({
       source: 'live-github-graph',
+      resolverVersion: '2026.04.merge-safe.1',
       ...sync,
     });
   } catch (error) {
@@ -95,6 +96,7 @@ router.post('/github/viable-update', async (req, res) => {
 
     return res.json({
       source: 'cross-org-viable-update',
+      resolverVersion: '2026.04.merge-safe.1',
       scope: 'rdm-digital',
       recommendedRepo: 'OsoPanda1/tamv-digital-nexus',
       requestedRepos: repoList.length,

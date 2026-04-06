@@ -66,12 +66,19 @@ export class IsabellaFederatedContextService {
 
     const repos = await this.fetchOwnerRepos(owner, maxRepos);
     const snippets = await this.fetchRepoSnippets(repos, query);
+    const normalizedSnippets = snippets.length > 0 ? snippets : repos.slice(0, 3).map((repo) => ({
+      repo: repo.full_name,
+      repoUrl: repo.html_url,
+      score: 1,
+      summary: this.summarize(repo.description ?? 'Repositorio sin README indexado aún.'),
+      updatedAt: repo.updated_at,
+    }));
 
     const payload: IsabellaFederatedContext = {
       owner,
       generatedAt: new Date().toISOString(),
       scannedRepos: repos.length,
-      snippets: snippets.slice(0, MAX_SNIPPETS),
+      snippets: normalizedSnippets.slice(0, MAX_SNIPPETS),
     };
 
     this.cache = {
