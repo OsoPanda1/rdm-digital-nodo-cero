@@ -11,6 +11,12 @@ const processSchema = z.object({
   text: z.string().min(1),
 });
 
+const federatedQuerySchema = z.object({
+  owner: z.string().min(1).optional(),
+  refresh: z.string().optional(),
+  maxContext: z.coerce.number().int().min(1).max(8).optional(),
+});
+
 router.post('/process', (req, res) => {
   const parsed = processSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -27,15 +33,21 @@ router.post('/process-federated', async (req, res) => {
     return res.status(400).json({ error: 'Payload inválido', details: parsed.error.flatten() });
   }
 
+  const queryParsed = federatedQuerySchema.safeParse(req.query);
+  if (!queryParsed.success) {
+    return res.status(400).json({ error: 'Query inválida', details: queryParsed.error.flatten() });
+  }
+
   try {
     const context = await isabellaFederatedContextService.buildContext(parsed.data.text, {
-      owner: typeof req.query.owner === 'string' ? req.query.owner : undefined,
-      forceRefresh: req.query.refresh === '1',
+      owner: queryParsed.data.owner,
+      forceRefresh: queryParsed.data.refresh === '1',
     });
 
+    const maxContext = queryParsed.data.maxContext ?? 3;
     const result = isabellaRuntimeService.process({
       ...parsed.data,
-      federatedContext: context.snippets.slice(0, 3).map((snippet) => `${snippet.repo}: ${snippet.summary}`),
+      federatedContext: context.snippets.slice(0, maxContext).map((snippet) => `${snippet.repo}: ${snippet.summary}`),
     });
 
     return res.json({
@@ -53,11 +65,15 @@ router.post('/process-federated', async (req, res) => {
 
 router.get('/context', async (req, res) => {
   const q = typeof req.query.q === 'string' ? req.query.q : '';
+  const queryParsed = federatedQuerySchema.safeParse(req.query);
+  if (!queryParsed.success) {
+    return res.status(400).json({ error: 'Query inválida', details: queryParsed.error.flatten() });
+  }
 
   try {
     const context = await isabellaFederatedContextService.buildContext(q, {
-      owner: typeof req.query.owner === 'string' ? req.query.owner : undefined,
-      forceRefresh: req.query.refresh === '1',
+      owner: queryParsed.data.owner,
+      forceRefresh: queryParsed.data.refresh === '1',
     });
 
     return res.json(context);

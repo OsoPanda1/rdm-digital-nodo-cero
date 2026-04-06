@@ -115,8 +115,9 @@ export class GitHubRepoFusionService {
   }
 
   async syncFromRepoList(repoFullNames: string[], options?: { limit?: number }): Promise<FusionSyncResult> {
-    const limit = Math.max(1, Math.min(options?.limit ?? Math.max(repoFullNames.length, 10), 80));
-    const repos = await this.fetchReposByFullName(repoFullNames);
+    const normalizedRepoNames = this.normalizeRepoNames(repoFullNames);
+    const limit = Math.max(1, Math.min(options?.limit ?? Math.max(normalizedRepoNames.length, 10), 80));
+    const repos = await this.fetchReposByFullName(normalizedRepoNames);
 
     return this.buildFusionPayload('cross-org', repos, limit);
   }
@@ -126,7 +127,7 @@ export class GitHubRepoFusionService {
       .filter((repo) => !repo.archived && !repo.disabled)
       .map((repo) => ({ repo, score: this.scoreRepo(repo) }))
       .filter(({ repo, score }) => score > 0 || this.isRdmRelated(repo))
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => b.score - a.score || b.repo.updated_at.localeCompare(a.repo.updated_at))
       .slice(0, limit)
       .map(({ repo, score }) => ({
         repo: repo.name,
@@ -202,8 +203,13 @@ export class GitHubRepoFusionService {
     return repos;
   }
 
+
+  private normalizeRepoNames(repoFullNames: string[]): string[] {
+    return [...new Set(repoFullNames.map((repo) => repo.trim()).filter((repo) => repo.length > 0))];
+  }
+
   private async fetchReposByFullName(repoFullNames: string[]): Promise<GitHubRepo[]> {
-    const uniqueRepoNames = [...new Set(repoFullNames.map((repo) => repo.trim()).filter((repo) => repo.length > 0))];
+    const uniqueRepoNames = this.normalizeRepoNames(repoFullNames);
     const chunkSize = 6;
     const allRepos: GitHubRepo[] = [];
 
