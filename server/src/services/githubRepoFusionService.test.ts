@@ -52,61 +52,6 @@ describe('GitHubRepoFusionService', () => {
     expect(result.relatedRepos).toBe(2);
     expect(result.nodes[0].repo).toBe('tamv-digital-nexus');
     expect(result.edges.length).toBeGreaterThan(0);
-    expect(result.backlog.length).toBe(2);
-  });
-
-  it('procesa lista externa de repos y asigna tracks de integración', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          id: 11,
-          name: 'federated-learning-with-grpc-docker',
-          full_name: 'mayankshah1607/federated-learning-with-grpc-docker',
-          html_url: 'https://github.com/mayankshah1607/federated-learning-with-grpc-docker',
-          description: 'federated learning with grpc and docker',
-          homepage: null,
-          language: 'Python',
-          topics: ['federated-learning', 'grpc', 'docker'],
-          stargazers_count: 19,
-          forks_count: 7,
-          updated_at: new Date().toISOString(),
-          archived: false,
-          disabled: false,
-        }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          id: 12,
-          name: 'Fedrated_DDoS_Detection',
-          full_name: 'HemanthKumar-CS/Fedrated_DDoS_Detection',
-          html_url: 'https://github.com/HemanthKumar-CS/Fedrated_DDoS_Detection',
-          description: 'security ddos federated detector',
-          homepage: null,
-          language: 'Python',
-          topics: ['security', 'privacy'],
-          stargazers_count: 1,
-          forks_count: 0,
-          updated_at: new Date().toISOString(),
-          archived: false,
-          disabled: false,
-        }),
-      } as Response);
-
-    vi.stubGlobal('fetch', fetchMock);
-
-    const service = new GitHubRepoFusionService();
-    const result = await service.syncFromRepoList([
-      'mayankshah1607/federated-learning-with-grpc-docker',
-      'HemanthKumar-CS/Fedrated_DDoS_Detection',
-    ]);
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(result.nodes.length).toBe(2);
-    expect(result.nodes.map((node) => node.integrationTrack)).toEqual(
-      expect.arrayContaining(['orchestration-infra', 'security-privacy']),
-    );
+    expect(result.edges[0].reasons.some((item) => item.startsWith('same-language:'))).toBe(true);
   });
 });

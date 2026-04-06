@@ -28,11 +28,6 @@ const DEFAULT_EXTERNAL_FEDERATED_REPOS = [
   'Tinghao-Chen/FedLPS',
 ];
 
-const viableUpdateSchema = z.object({
-  repos: z.array(z.string().min(3)).optional(),
-  limit: z.number().int().min(1).max(80).optional(),
-});
-
 router.get('/overview', (_req, res) => {
   res.json(quantumFederationService.getOverview());
 });
@@ -58,7 +53,7 @@ router.get('/github/interconnect', async (req, res) => {
     const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
     const forceRefresh = req.query.refresh === '1';
     const limitParam = Number(req.query.limit);
-    const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : undefined;
+    const limit = Number.isFinite(limitParam) ? limitParam : undefined;
 
     const sync = await githubRepoFusionService.syncRelatedRepos({
       owner,
@@ -73,36 +68,6 @@ router.get('/github/interconnect', async (req, res) => {
   } catch (error) {
     return res.status(502).json({
       error: 'No se pudo sincronizar la federación desde GitHub',
-      details: error instanceof Error ? error.message : 'error desconocido',
-    });
-  }
-});
-
-router.post('/github/viable-update', async (req, res) => {
-  const parsed = viableUpdateSchema.safeParse(req.body ?? {});
-  if (!parsed.success) {
-    return res.status(400).json({ error: 'Payload inválido', details: parsed.error.flatten() });
-  }
-
-  try {
-    const repoList = parsed.data.repos && parsed.data.repos.length > 0
-      ? parsed.data.repos
-      : DEFAULT_EXTERNAL_FEDERATED_REPOS;
-
-    const limit = parsed.data.limit ?? repoList.length;
-
-    const fusion = await githubRepoFusionService.syncFromRepoList(repoList, { limit });
-
-    return res.json({
-      source: 'cross-org-viable-update',
-      scope: 'rdm-digital',
-      recommendedRepo: 'OsoPanda1/tamv-digital-nexus',
-      requestedRepos: repoList.length,
-      ...fusion,
-    });
-  } catch (error) {
-    return res.status(502).json({
-      error: 'No se pudo generar la actualización viable',
       details: error instanceof Error ? error.message : 'error desconocido',
     });
   }
