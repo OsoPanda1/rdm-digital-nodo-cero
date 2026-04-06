@@ -463,49 +463,7 @@ const HistoriaPage = () => {
               </p>
             </motion.div>
 
-            <div className="relative max-w-5xl mx-auto">
-              {/* Vertical line */}
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terracotta via-gold to-forest md:-translate-x-1/2" />
-              
-              {timeline.map((item, index) => (
-                <motion.div
-                  key={item.year}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                  className={`relative flex items-start gap-8 mb-16 last:mb-0 ${
-                    index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                  }`}
-                >
-                  {/* Content */}
-                  <div className={`flex-1 ${index % 2 === 0 ? "md:text-right" : "md:text-left"}`}>
-                    <div className={`glass rounded-2xl p-6 ${index % 2 === 0 ? "md:ml-auto" : "md:mr-auto"} max-w-lg hover:shadow-elevated transition-shadow duration-300`}>
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-foreground/5 text-foreground text-sm font-bold mb-3">
-                        {item.year}
-                      </span>
-                      <h3 className="font-serif text-xl font-bold text-foreground mb-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                        {item.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 leading-relaxed border-t border-border pt-3">
-                        {item.details}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Icon */}
-                  <div className="relative z-10 w-10 h-10 rounded-full bg-background border-4 border-background shadow-lg flex items-center justify-center shrink-0">
-                    <div className={`w-4 h-4 rounded-full ${item.color}`} />
-                  </div>
-
-                  {/* Spacer for alternating layout */}
-                  <div className="flex-1 hidden md:block" />
-                </motion.div>
-              ))}
-            </div>
+            <TimelineInteractive />
           </div>
         </section>
 
