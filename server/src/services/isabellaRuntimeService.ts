@@ -3,6 +3,7 @@ import { bookpiStore, type Emotion } from './bookpiStore';
 export interface IsabellaProcessInput {
   userId: string;
   text: string;
+  federatedContext?: string[];
 }
 
 export interface IsabellaProcessOutput {
@@ -15,6 +16,7 @@ export interface IsabellaProcessOutput {
   miniResults: Record<string, unknown>[];
   finalResponse: string;
   bookpiRecordId: string;
+  federatedContextUsed: string[];
 }
 
 export class IsabellaRuntimeService {
@@ -24,7 +26,7 @@ export class IsabellaRuntimeService {
     const emotion = this.classifyEmotion(cleanInput);
     const routePlan = this.computeRoute(intent, emotion);
     const miniResults = this.executeMiniAIs(routePlan, cleanInput, emotion);
-    const finalResponse = this.synthesize(cleanInput, intent, emotion, miniResults);
+    const finalResponse = this.synthesize(cleanInput, intent, emotion, miniResults, input.federatedContext ?? []);
 
     const record = bookpiStore.append({
       userId: input.userId,
@@ -40,6 +42,7 @@ export class IsabellaRuntimeService {
       miniResults,
       finalResponse,
       bookpiRecordId: record.id,
+      federatedContextUsed: input.federatedContext ?? [],
     };
   }
 
@@ -99,9 +102,11 @@ export class IsabellaRuntimeService {
     intent: string,
     emotion: Emotion,
     miniResults: Record<string, unknown>[],
+    federatedContext: string[],
   ): string {
     const agents = miniResults.map((result) => String(result.agent)).join(', ');
-    return `Isabella procesó: "${cleanInput}" | intent=${intent} | emotion=${emotion} | agentes=${agents}`;
+    const context = federatedContext.length > 0 ? ` | contexto=${federatedContext.join(' || ')}` : '';
+    return `Isabella procesó: "${cleanInput}" | intent=${intent} | emotion=${emotion} | agentes=${agents}${context}`;
   }
 }
 

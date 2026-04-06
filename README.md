@@ -1,231 +1,135 @@
-# RDM Digital — Análisis técnico integral y estado real del proyecto
+# RDM Digital Nexus
 
-> Documento generado tras una revisión estática y ejecución de checks del repositorio para evaluar **qué está completo**, **qué está parcial** y **qué presenta fallas**.
-
-## 1) Resumen ejecutivo
-
-El proyecto tiene una base funcional sólida en frontend (React + Vite) y una visión de producto ambiciosa (turismo, cultura, comunidad, IA, mapa y portal de negocios). La aplicación web compila y genera build de producción en el frontend, pero el backend actualmente no compila y presenta deuda técnica alta en tipado, lint y consistencia de rutas/modelos.
-
-### Estado general (alto nivel)
-
-- ✅ **Frontend compila** (`npm run build`) y la navegación principal está integrada por rutas lazy-loaded.
-- ⚠️ **Backend no compila** (`npm run build` en `server/`) por errores de tipos, módulos faltantes y referencias inconsistentes.
-- ❌ **Calidad de código no estabilizada**: lint global con alto número de errores (principalmente `any`, tipos y reglas de ESLint).
-- ⚠️ **Cobertura de pruebas mínima**: solo pruebas base (1 test frontend + 1 test backend).
+Plataforma federada para turismo, cultura, comercio local y experiencias inmersivas de **Real del Monte**, con backend API + frontend XR-ready y runtime de IA (**Isabella**) conectado a repositorios federados.
 
 ---
 
-## 2) Alcance del análisis y metodología
+## ¿Qué hace este proyecto?
 
-Este análisis se realizó sobre el código del repositorio con enfoque en:
+RDM Digital Nexus unifica capacidades de:
 
-1. **Estructura y arquitectura** (frontend, backend, base de datos, despliegue).
-2. **Rutas y flujo de navegación** (pantallas, componentes y entrypoints).
-3. **Procesos críticos** (auth, API, IA, newsletter, pagos, analítica).
-4. **Revisión de interacción UI** (inventario estático de botones/acciones).
-5. **Checks automatizados** (lint, test, build frontend/backend).
-
-### Métricas rápidas obtenidas
-
-- Archivos `ts/tsx`: **175**.
-- Páginas React: **23**.
-- Componentes React: **80**.
-- Botones detectados por análisis estático (`<button`/`<Button`): **97**.
-- Endpoints backend detectados (`router.get/post/put/patch/delete`): **107**.
+- **Portal público** (historia, cultura, directorio, eventos, rutas, gastronomía, arte, comunidad).
+- **Módulo de negocios y economía musical** (catálogo, apoyo, donaciones, flows de pago).
+- **Mapa y experiencias digitales** (capas geográficas y componentes visuales multimedia).
+- **Runtime de IA Isabella** para clasificación de intención/emoción, auditoría de mensajes y enrutamiento de mini-agentes.
+- **Federación GitHub** para sincronizar conocimiento distribuido entre repositorios relacionados a TAMV/RDM/federated-AI.
 
 ---
 
-## 3) Arquitectura del sistema
+## Arquitectura
 
-## Frontend
+### Frontend
+- React 18 + TypeScript + Vite.
+- UI con Tailwind y componentes reutilizables.
+- Ruteo SPA por dominios (cultura, turismo, comunidad, admin, música, mapa).
 
-- Stack: **React 18 + TypeScript + Vite + Tailwind + React Query + React Router**.
-- Enrutamiento central en `src/App.tsx`, con carga diferida por página y fallback animado.
-- Módulos de experiencia: chat (`Realito`), intro cinemática, CTA global, mapas, galerías, páginas temáticas y panel admin.
+### Backend
+- Express + TypeScript + Prisma.
+- API versionada (`/api/v1`) + compatibilidad legacy (`/api`).
+- Seguridad base: `helmet`, `cors`, rate limit, logging y middleware de errores.
 
-## Backend
-
-- Stack: **Express + TypeScript + Prisma + PostgreSQL**.
-- API versionada (`/api/v1/...`) y también rutas legacy (`/api/...`).
-- Middleware de seguridad/base: `helmet`, `cors`, `rate-limit`, logging y manejo de errores.
-
-## Datos
-
-- Modelo relacional amplio en Prisma: usuarios, perfiles turísticos, negocios, eventos, rutas, publicaciones, tips, newsletter, donaciones y compras musicales.
-
-## Operación/Infra
-
-- Artefactos de despliegue en Docker y Kubernetes.
-- Runbook operativo presente (`RUNBOOK.md`) con procedimientos de incidentes y rollback.
+### Data & IA
+- PostgreSQL/Prisma para entidades de negocio/turismo/comunidad.
+- Isabella Runtime + BookPI para trazabilidad operativa.
+- Contexto federado desde GitHub para enriquecer respuestas de IA en caliente.
 
 ---
 
-## 4) Revisión funcional por áreas
+## Funcionalidades clave implementadas
 
-## 4.1 Navegación y vistas (frontend)
+## 1) Federación de repos y backlog de integración
 
-**Completado / funcional base:**
+Endpoints:
+- `GET /api/v1/federados/github/interconnect`
+- `POST /api/v1/federados/github/viable-update`
 
-- Rutas públicas y temáticas integradas: inicio, mapa, lugares, directorio, eventos, comunidad, historia, cultura, relatos, ecoturismo, gastronomía, arte, rutas, música, etc.
-- Ruta de administración `/admin` integrada en frontend.
-- Control de errores UI (ErrorBoundary) y notificaciones (toasters/providers).
+Capacidades:
+- Descubre y puntúa repos por relevancia (RDM/TAMV/federated-AI).
+- Construye grafo de interconexiones (`nodes`, `edges`, peso y razones).
+- Genera backlog técnico priorizado (`P0/P1/P2`) con módulo objetivo e impacto esperado.
 
-**Parcial / pendiente:**
+## 2) Isabella federada (IA funcional)
 
-- No hay evidencia en este análisis de pruebas E2E para validar navegación real botón por botón.
-- Varias pantallas tienen alta densidad de acciones; sin cobertura automatizada por flujo crítico.
+Endpoints:
+- `POST /api/v1/isabella/process`
+- `POST /api/v1/isabella/process-federated`
+- `GET /api/v1/isabella/context`
+- `GET /api/v1/isabella/bookpi`
 
-## 4.2 Botones e interacción UI
+Capacidades:
+- Limpieza de ruido + clasificación de intención/emoción.
+- Routing de miniagentes (`MiniAI_Auditoria`, `MiniAI_Arquitectura`, `MiniAI_Etico`, `ANUBIS_Sentinel`, etc.).
+- Inyección de contexto federado de repos de GitHub (README + descripción) con ranking y caché.
+- Trazabilidad de ejecución en BookPI.
 
-Se detectaron **97 botones** de forma estática. Archivos con mayor concentración:
+## 3) Optimizaciones operativas recientes
 
-- `src/pages/Mapa.tsx`
-- `src/pages/admin/Dashboard.tsx`
-- `src/pages/Comunidad.tsx`
-- `src/pages/NegociosPortal.tsx`
-- `src/pages/Historia.tsx`
-
-**Conclusión:** hay un volumen considerable de interacción, pero falta una matriz de QA funcional (casos por botón/estado/error/accesibilidad) para afirmar completitud total.
-
-## 4.3 API y backend
-
-**Completado / positivo:**
-
-- Diseño modular de rutas por dominio (auth, users, businesses, posts, events, routes, markers, tips, ai, analytics, newsletter, payments, seo, upload, federados, isabella, music).
-- Limitadores de tasa por criticidad y endpoint.
-
-**Fallas críticas detectadas:**
-
-1. **Import roto de ruta inexistente** (`./routes/explore`) en `server/src/index.ts`.
-2. **Dependencias faltantes para upload** (`aws-sdk`) en compilación.
-3. **Errores de tipos Prisma/TS** (incluyendo `Role`, `AppError`, firmas en routes).
-4. **Script lint de backend incompatible** con configuración actual (`--ext` inválido con `eslint.config.js`).
-
-## 4.4 Base de datos y esquema Prisma
-
-**Parcial / riesgo alto:**
-
-- El modelo `Business` presenta relaciones repetidas/duplicadas (`owner`, `tipsReceived`), lo cual puede provocar conflictos y errores de compilación/generación según versión/configuración.
-- Existen indicios de desalineación entre tipos esperados en código y tipos generados por Prisma.
-
-## 4.5 IA, newsletter y procesos de negocio
-
-**Parcial:**
-
-- Flujos IA integrados en frontend y backend (chat/query/sesiones), pero con deuda de tipado.
-- Newsletter y auth incluyen TODOs explícitos para envío real de correos/proveedor externo.
+- Caché temporal para sincronizaciones GitHub.
+- Timeouts explícitos en llamadas remotas para evitar bloqueos de request.
+- Concurrencia controlada al leer README de múltiples repos para reducir cuellos de botella.
 
 ---
 
-## 5) Resultado de checks ejecutados
+## Estado actual de producción
 
-## Frontend (raíz del repo)
-
-- `npm run test`: ✅ pasa (1 test).
-- `npm run build`: ✅ pasa.
-- `npm run lint`: ❌ falla con múltiples errores (tipado estricto, reglas TS/ESLint).
-
-Observación adicional de build: advertencias por chunks pesados y assets multimedia muy grandes (impacto potencial en performance de carga inicial).
-
-## Backend (`server/`)
-
-- `npm run test`: ✅ pasa (1 test).
-- `npm run build`: ❌ falla por errores de compilación/módulos/tipos.
-- `npm run lint`: ❌ falla por comando incompatible con la configuración de ESLint.
+- Frontend: funcional para despliegue con build Vite.
+- Backend: funcional en rutas críticas de federación e Isabella.
+- Existen módulos legacy con deuda técnica TypeScript que requieren hardening progresivo para CI/CD full green.
 
 ---
 
-## 6) Qué está completado vs qué no está completado
+## Quickstart
 
-## Completado (base operativa)
-
-- Experiencia frontend multipágina con diseño rico y gran cantidad de contenido.
-- Integración de componentes clave (chat, mapas, galerías, admin, notificaciones).
-- Build de frontend funcional.
-- Estructura backend extensa y bien segmentada por dominios.
-
-## Incompleto / con fallas
-
-- Backend no listo para build estable en estado actual.
-- Lint no estabilizado en frontend/backend.
-- Cobertura de pruebas insuficiente para asegurar calidad por flujo.
-- Integraciones críticas pendientes (correo newsletter/recuperación/verificación).
-- Deuda técnica importante en tipado (`any`) y consistencia de contratos API.
-
----
-
-## 7) Plan de corrección recomendado (priorizado)
-
-### Prioridad P0 (bloqueantes)
-
-1. Corregir compilación backend:
-   - eliminar/arreglar import `explore` o restaurar archivo de ruta;
-   - corregir dependencia/uso de `aws-sdk`;
-   - arreglar errores de tipos en middleware y rutas.
-2. Corregir script lint backend para ESLint flat config.
-3. Resolver inconsistencias en `schema.prisma` (duplicidades y relaciones conflictivas).
-
-### Prioridad P1 (calidad y confiabilidad)
-
-1. Reducir `any` en frontend/backend mediante tipos DTO compartidos.
-2. Agregar suite de pruebas por dominios críticos:
-   - Auth (login/refresh/reset),
-   - Payments (session/webhook),
-   - Newsletter,
-   - AI query/chat,
-   - permisos admin.
-3. Añadir pruebas E2E (Playwright/Cypress) para rutas principales y botones críticos.
-
-### Prioridad P2 (performance y operación)
-
-1. Optimizar assets pesados (video/imágenes) y estrategia de lazy loading de medios.
-2. Establecer presupuestos de performance (LCP, JS inicial, tamaño chunk).
-3. Añadir CI gates obligatorios: `lint + test + build(front+back)` con cobertura mínima.
-
----
-
-## 8) Guía de ejecución local (actualizada)
-
-## Requisitos
-
-- Node.js 18+
-- npm 9+
-- (Backend) PostgreSQL accesible y variables de entorno definidas.
-
-## Frontend
-
+## 1) Frontend
 ```bash
 npm install
 npm run dev
 ```
 
-## Backend
-
+## 2) Backend
 ```bash
 cd server
 npm install
 npm run dev
 ```
 
-## Checks recomendados
-
+## 3) Tests backend
 ```bash
-# raíz
-npm run test
-npm run build
-npm run lint
-
-# backend
-cd server
-npm run test
-npm run build
-npm run lint
+npm --prefix server test -- --run
 ```
 
 ---
 
-## 9) Conclusión final
+## Variables de entorno relevantes
 
-El sistema **sí tiene una base amplia y valiosa**, especialmente en experiencia frontend y diseño del dominio, pero **no puede considerarse completamente terminado/correcto** mientras el backend no compile de forma limpia, el lint no esté estabilizado y no exista cobertura de pruebas suficiente sobre los flujos críticos.
+Backend (`server/.env`):
+- `PORT`
+- `FRONTEND_URL`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `GITHUB_TOKEN` (opcional pero recomendado para evitar rate limit)
+- `GITHUB_FEDERATION_OWNER` (default: `OsoPanda1`)
 
-Este README refleja el estado real encontrado en el repositorio y sirve como hoja de ruta para llevar el proyecto a un estado de producción confiable.
+---
+
+## Posicionamiento global del proyecto
+
+RDM Digital Nexus se posiciona como una plataforma **phygital** de patrimonio/turismo con enfoque en:
+
+- **Soberanía tecnológica local** (federación de conocimiento y repositorios).
+- **IA contextual de territorio** (Isabella + BookPI + repos federados).
+- **Escalabilidad regional** hacia smart-city cultural y economía creativa.
+- **Interoperabilidad** con ecosistemas XR/VR/AI y pipelines distribuidos.
+
+En términos de producto, combina un stack utilitario de ciudad/pueblo turístico con una capa de IA federada orientada a operación real y trazabilidad.
+
+---
+
+## Roadmap sugerido (global-ready)
+
+1. Hardening TypeScript del backend legacy para build 100% limpio.
+2. CI/CD con gates obligatorios (`lint + test + build`).
+3. Métricas SLO para endpoints de federación/IA.
+4. Integración de embeddings/vector store para contexto Isabella semántico.
+5. Orquestación multi-repo hacia `tamv-digital-nexus` como hub principal.
+

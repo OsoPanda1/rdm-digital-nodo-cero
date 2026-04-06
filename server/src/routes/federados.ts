@@ -1,7 +1,37 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { quantumFederationService } from '../services/quantumFederationService';
+import { githubRepoFusionService } from '../services/githubRepoFusionService';
 
 const router = Router();
+
+const DEFAULT_EXTERNAL_FEDERATED_REPOS = [
+  'shreyasnbhat/federated-learning',
+  'mayankshah1607/federated-learning-with-grpc-docker',
+  'jklujklu/Batch-Aggregate',
+  'Victoryao0321/Fedrated-learning',
+  'Breeze1in1drizzle/Fed-Learning-Breeze',
+  'HemanthKumar-CS/Fedrated_DDoS_Detection',
+  'TEOTD/fp-client',
+  'nabilajalil/fedcourse24',
+  'Chukwuemeka-James/Fedrated-Swarm-Behavior',
+  'linhanphan/federated-learning-simulation',
+  'ZAKAUDD/Fedrated-Learning',
+  'dalqattan/HFL-attacks',
+  'Mingyue-Cheng/Awesome-Fedrated-Learning-in-Time-Series',
+  'dprcsingh/fedratedGraph',
+  'gizealew11/FDT_Museum_Evacuation_Simulation',
+  'tianwen1209/FedPTM',
+  'Talal-ALBarqi/decentralized_flower',
+  'Warwick-PDP-Group/FedratedScope',
+  'kanishkdhebana/Fedrated_learning_algorithms',
+  'Tinghao-Chen/FedLPS',
+];
+
+const viableUpdateSchema = z.object({
+  repos: z.array(z.string().min(3)).optional(),
+  limit: z.number().int().min(1).max(80).optional(),
+});
 
 router.get('/overview', (_req, res) => {
   res.json(quantumFederationService.getOverview());
@@ -21,6 +51,61 @@ router.get('/pulse/:id', (req, res) => {
   }
 
   return res.json(pulse);
+});
+
+router.get('/github/interconnect', async (req, res) => {
+  try {
+    const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+    const forceRefresh = req.query.refresh === '1';
+    const limitParam = Number(req.query.limit);
+    const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : undefined;
+
+    const sync = await githubRepoFusionService.syncRelatedRepos({
+      owner,
+      forceRefresh,
+      limit,
+    });
+
+    return res.json({
+      source: 'live-github-graph',
+      ...sync,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo sincronizar la federación desde GitHub',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
+router.post('/github/viable-update', async (req, res) => {
+  const parsed = viableUpdateSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Payload inválido', details: parsed.error.flatten() });
+  }
+
+  try {
+    const repoList = parsed.data.repos && parsed.data.repos.length > 0
+      ? parsed.data.repos
+      : DEFAULT_EXTERNAL_FEDERATED_REPOS;
+
+    const limit = parsed.data.limit ?? repoList.length;
+
+    const fusion = await githubRepoFusionService.syncFromRepoList(repoList, { limit });
+
+    return res.json({
+      source: 'cross-org-viable-update',
+      scope: 'rdm-digital',
+      recommendedRepo: 'OsoPanda1/tamv-digital-nexus',
+      requestedRepos: repoList.length,
+      ...fusion,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo generar la actualización viable',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
 });
 
 export default router;
