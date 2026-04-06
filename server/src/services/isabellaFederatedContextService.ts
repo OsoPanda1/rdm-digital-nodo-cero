@@ -46,9 +46,6 @@ const CONTEXT_KEYWORDS = [
   'quantum',
 ];
 
-const MAX_SNIPPETS = 8;
-const FETCH_TIMEOUT_MS = 7000;
-
 export class IsabellaFederatedContextService {
   private cache: CacheEntry | null = null;
   private readonly cacheTtlMs = 5 * 60 * 1000;
@@ -60,25 +57,18 @@ export class IsabellaFederatedContextService {
     if (!options?.forceRefresh && this.cache && this.cache.expiresAt > Date.now()) {
       return {
         ...this.cache.payload,
-        snippets: this.rankByQuery(this.cache.payload.snippets, query).slice(0, MAX_SNIPPETS),
+        snippets: this.rankByQuery(this.cache.payload.snippets, query).slice(0, 8),
       };
     }
 
     const repos = await this.fetchOwnerRepos(owner, maxRepos);
     const snippets = await this.fetchRepoSnippets(repos, query);
-    const normalizedSnippets = snippets.length > 0 ? snippets : repos.slice(0, 3).map((repo) => ({
-      repo: repo.full_name,
-      repoUrl: repo.html_url,
-      score: 1,
-      summary: this.summarize(repo.description ?? 'Repositorio sin README indexado aún.'),
-      updatedAt: repo.updated_at,
-    }));
 
     const payload: IsabellaFederatedContext = {
       owner,
       generatedAt: new Date().toISOString(),
       scannedRepos: repos.length,
-      snippets: normalizedSnippets.slice(0, MAX_SNIPPETS),
+      snippets: snippets.slice(0, 8),
     };
 
     this.cache = {
@@ -96,42 +86,26 @@ export class IsabellaFederatedContextService {
   }
 
   private async fetchRepoSnippets(repos: GitHubRepoSummary[], query: string): Promise<IsabellaContextSnippet[]> {
-    const snippets = await this.mapWithConcurrency(repos, 5, async (repo) => {
+    const snippets: IsabellaContextSnippet[] = [];
+
+    for (const repo of repos) {
       const readme = await this.fetchReadme(repo.full_name);
       const decodedReadme = this.decodeReadme(readme?.content, readme?.encoding);
       const baseSummary = `${repo.description ?? ''} ${decodedReadme}`.trim();
       const score = this.computeScore(baseSummary, query);
 
-      if (score <= 0) {
-        return null;
+      if (score > 0) {
+        snippets.push({
+          repo: repo.full_name,
+          repoUrl: repo.html_url,
+          score,
+          summary: this.summarize(baseSummary),
+          updatedAt: repo.updated_at,
+        });
       }
+    }
 
-      return {
-        repo: repo.full_name,
-        repoUrl: repo.html_url,
-        score,
-        summary: this.summarize(baseSummary),
-        updatedAt: repo.updated_at,
-      } satisfies IsabellaContextSnippet;
-    });
-
-    return this.rankByQuery(snippets.filter((snippet): snippet is IsabellaContextSnippet => snippet !== null), query);
-  }
-
-  private async mapWithConcurrency<T, R>(items: T[], concurrency: number, worker: (item: T) => Promise<R>): Promise<R[]> {
-    const results: R[] = [];
-    let index = 0;
-
-    const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
-      while (index < items.length) {
-        const currentIndex = index;
-        index += 1;
-        results[currentIndex] = await worker(items[currentIndex]);
-      }
-    });
-
-    await Promise.all(runners);
-    return results;
+    return this.rankByQuery(snippets, query);
   }
 
   private rankByQuery(snippets: IsabellaContextSnippet[], query: string): IsabellaContextSnippet[] {
@@ -175,26 +149,18 @@ export class IsabellaFederatedContextService {
 
   private async fetchGitHubJson<T>(endpoint: string): Promise<T> {
     const token = process.env.GITHUB_TOKEN;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const response = await fetch(endpoint, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
 
-    try {
-      const response = await fetch(endpoint, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Isabella GitHub sync failed (${response.status})`);
-      }
-
-      return (await response.json()) as T;
-    } finally {
-      clearTimeout(timeout);
+    if (!response.ok) {
+      throw new Error(`Isabella GitHub sync failed (${response.status})`);
     }
+
+    return (await response.json()) as T;
   }
 }
 

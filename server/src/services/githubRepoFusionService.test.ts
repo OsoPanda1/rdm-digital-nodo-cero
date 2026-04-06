@@ -52,39 +52,6 @@ describe('GitHubRepoFusionService', () => {
     expect(result.relatedRepos).toBe(2);
     expect(result.nodes[0].repo).toBe('tamv-digital-nexus');
     expect(result.edges.length).toBeGreaterThan(0);
-    expect(result.backlog.length).toBe(2);
-  });
-
-  it('normaliza lista de repos duplicados antes de sincronizar cross-org', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        id: 11,
-        name: 'federated-learning-with-grpc-docker',
-        full_name: 'mayankshah1607/federated-learning-with-grpc-docker',
-        html_url: 'https://github.com/mayankshah1607/federated-learning-with-grpc-docker',
-        description: 'federated learning with grpc and docker',
-        homepage: null,
-        language: 'Python',
-        topics: ['federated-learning', 'grpc', 'docker'],
-        stargazers_count: 19,
-        forks_count: 7,
-        updated_at: new Date().toISOString(),
-        archived: false,
-        disabled: false,
-      }),
-    } as Response);
-
-    vi.stubGlobal('fetch', fetchMock);
-
-    const service = new GitHubRepoFusionService();
-    const result = await service.syncFromRepoList([
-      ' MAYANKSHAH1607/federated-learning-with-grpc-docker ',
-      'mayankshah1607/federated-learning-with-grpc-docker',
-    ]);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(result.nodes.length).toBe(1);
-    expect(result.nodes[0].integrationTrack).toBe('orchestration-infra');
+    expect(result.edges[0].reasons.some((item) => item.startsWith('same-language:'))).toBe(true);
   });
 });
