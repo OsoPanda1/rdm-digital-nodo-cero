@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L, { type LeafletEventHandlerFnMap, type Map as LeafletMap } from "leaflet";
 import Supercluster from "supercluster";
 import "leaflet/dist/leaflet.css";
@@ -16,7 +16,7 @@ type ClusterItem = ClusterFeature | PointFeature;
 
 interface Map2DPanelProps {
   markers: MapMarkerData[];
-  userPosition?: { lat: number; lng: number } | null;
+  userPosition?: { lat: number; lng: number; accuracy?: number } | null;
   selected: MapMarkerData | null;
   viewport: MapViewportState;
   onSelect: (marker: MapMarkerData) => void;
@@ -73,6 +73,27 @@ function MapFocus({ selected }: { selected: MapMarkerData | null }) {
     if (!selected) return;
     map.flyTo([selected.lat, selected.lng], Math.max(map.getZoom(), 15), { duration: 0.75 });
   }, [map, selected]);
+
+  return null;
+}
+
+function MapViewportSync({ viewport }: { viewport: MapViewportState }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const latDiff = Math.abs(center.lat - viewport.lat);
+    const lngDiff = Math.abs(center.lng - viewport.lng);
+    const zoomDiff = Math.abs(zoom - viewport.zoom);
+
+    if (latDiff > 0.00012 || lngDiff > 0.00012 || zoomDiff >= 1) {
+      map.flyTo([viewport.lat, viewport.lng], viewport.zoom, {
+        animate: true,
+        duration: 0.75,
+      });
+    }
+  }, [map, viewport.lat, viewport.lng, viewport.zoom]);
 
   return null;
 }
@@ -158,8 +179,8 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
           >
             <Popup>
               <div className="p-1">
-                <strong className="text-slate-900 block border-b pb-1 mb-1">{marker.name}</strong>
-                <p className="text-xs text-slate-600 leading-tight">{marker.description}</p>
+                <strong className="block border-b pb-1 mb-1 text-foreground">{marker.name}</strong>
+                <p className="text-xs leading-tight text-muted-foreground">{marker.description}</p>
               </div>
             </Popup>
           </Marker>
@@ -174,7 +195,7 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
     () =>
       L.divIcon({
         className: "user-location-pin",
-        html: `<span style="display:flex;width:20px;height:20px;border-radius:999px;background:#22d3ee;box-shadow:0 0 0 6px rgba(34,211,238,0.25), 0 0 20px rgba(34,211,238,0.65);border:2px solid rgba(255,255,255,0.95);"></span>`,
+        html: `<span style="display:flex;width:20px;height:20px;border-radius:999px;background:hsl(var(--accent));box-shadow:0 0 0 6px hsl(var(--accent) / 0.25), 0 0 20px hsl(var(--accent) / 0.65);border:2px solid hsl(var(--primary-foreground) / 0.95);"></span>`,
         iconSize: [20, 20],
         iconAnchor: [10, 10],
       }),
@@ -195,15 +216,33 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
           attribution='&copy; CARTO'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
+        <MapViewportSync viewport={viewport} />
         <MapEventBridge onViewportChange={onViewportChange} />
         <MapFocus selected={selected} />
         <ClusterLayer markers={markers} onSelect={onSelect} />
         {userPosition && (
-          <Marker position={[userPosition.lat, userPosition.lng]} icon={userLocationIcon}>
-            <Popup>
-              <p className="text-xs font-medium text-slate-800">Tu ubicación en tiempo real</p>
-            </Popup>
-          </Marker>
+          <>
+            <Circle
+              center={[userPosition.lat, userPosition.lng]}
+              radius={Math.max(userPosition.accuracy ?? 0, 12)}
+              pathOptions={{
+                color: "hsl(var(--accent))",
+                fillColor: "hsl(var(--accent))",
+                fillOpacity: 0.12,
+                weight: 1,
+              }}
+            />
+            <Marker position={[userPosition.lat, userPosition.lng]} icon={userLocationIcon}>
+              <Popup>
+                <div className="space-y-1 p-1 text-foreground">
+                  <p className="text-xs font-semibold">Tu ubicación en tiempo real</p>
+                  <p className="text-[11px] leading-tight text-muted-foreground">
+                    Precisión estimada: ±{Math.round(userPosition.accuracy ?? 0)} m
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          </>
         )}
       </MapContainer>
       

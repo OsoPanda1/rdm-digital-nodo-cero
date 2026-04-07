@@ -1,22 +1,31 @@
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { Html, OrbitControls, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import type { MapMarkerData, MapViewportState } from "@/features/places/mapTypes";
 
-const GEO_LNG_CENTER = -98.6732;
-const GEO_LAT_OFFSET = 20.1374;
 const GEO_COORD_SCALE = 160;
 
 interface Map3DTwinProps {
   viewport: MapViewportState;
   markers: MapMarkerData[];
-  userPosition?: { lat: number; lng: number } | null;
+  userPosition?: { lat: number; lng: number; accuracy?: number } | null;
   aiPilotEnabled?: boolean;
   onViewportChange: (next: Partial<MapViewportState>) => void;
 }
 
-function Terrain({ points }: { points: MapMarkerData[] }) {
+function toScenePosition(
+  point: Pick<MapViewportState, "lat" | "lng"> | Pick<MapMarkerData, "lat" | "lng">,
+  center: Pick<MapViewportState, "lat" | "lng">,
+) {
+  return [
+    (point.lng - center.lng) * GEO_COORD_SCALE,
+    0,
+    -(point.lat - center.lat) * GEO_COORD_SCALE,
+  ] as const;
+}
+
+function Terrain({ points, center }: { points: MapMarkerData[]; center: Pick<MapViewportState, "lat" | "lng"> }) {
   const geom = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(18, 18, 80, 80);
     const positions = geometry.attributes.position;
@@ -38,7 +47,10 @@ function Terrain({ points }: { points: MapMarkerData[] }) {
       {points.map((point) => (
         <mesh
           key={point.id}
-          position={[(point.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE, 0.18, -(point.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE]}
+          position={(() => {
+            const [x, , z] = toScenePosition(point, center);
+            return [x, 0.18, z] as const;
+          })()}
         >
           <sphereGeometry args={[point.isPremium ? 0.18 : 0.13, 16, 16]} />
           <meshStandardMaterial
@@ -58,12 +70,11 @@ function CameraRig({ viewport, aiPilotEnabled }: { viewport: MapViewportState; a
   const desired = useRef(new THREE.Vector3());
 
   useFrame(() => {
-    const tx = (viewport.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE;
-    const tz = -(viewport.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE;
-    target.current.set(tx, 0.1, tz);
+    const angle = THREE.MathUtils.degToRad(viewport.bearing || 35);
     const dist = THREE.MathUtils.clamp(18 - viewport.zoom * 0.7, 6, 11);
     const y = THREE.MathUtils.clamp(2 + (18 - viewport.zoom) * 0.35, 2.2, 7.2);
-    desired.current.set(tx + dist, y, tz + dist);
+    target.current.set(0, 0.1, 0);
+    desired.current.set(Math.cos(angle) * dist, y, Math.sin(angle) * dist);
     camera.position.lerp(desired.current, aiPilotEnabled ? 0.1 : 0.04);
     camera.lookAt(target.current);
   });
@@ -76,20 +87,26 @@ export function Map3DTwin({ viewport, markers, userPosition, aiPilotEnabled = fa
     onViewportChange({ pitch: 55 });
   }, [onViewportChange]);
 
+  const userScenePosition = userPosition ? toScenePosition(userPosition, viewport) : null;
+
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#070b14]" style={{ height: "640px" }}>
-      <Canvas shadows camera={{ position: [8, 6, 8], fov: 48 }} dpr={[1, 1.5]} style={{ width: "100%", height: "100%" }}>
+      <Canvas camera={{ position: [8, 6, 8], fov: 48 }} dpr={[1, 1.5]} style={{ width: "100%", height: "100%" }}>
         <Suspense fallback={null}>
-          <ambientLight intensity={0.45} color="#d6ddf0" />
-          <spotLight position={[6, 12, 8]} intensity={1.05} angle={0.4} penumbra={0.55} color="#a6c2ff" castShadow />
-          <spotLight position={[-8, 10, -6]} intensity={0.6} angle={0.52} color="#f7d6a0" />
-          <pointLight position={[0, 8, 0]} intensity={0.25} color="#f59e0b" distance={20} />
+          <ambientLight intensity={0.6} color="#d6ddf0" />
+          <directionalLight position={[6, 10, 8]} intensity={1.15} color="#a6c2ff" />
+          <pointLight position={[0, 8, 0]} intensity={0.18} color="#f59e0b" distance={20} />
           <Stars radius={80} depth={35} count={1200} factor={2.5} fade speed={0.3} />
-          <Terrain points={markers} />
-          {userPosition && (
-            <mesh position={[(userPosition.lng - GEO_LNG_CENTER) * GEO_COORD_SCALE, 0.24, -(userPosition.lat - GEO_LAT_OFFSET) * GEO_COORD_SCALE]}>
+          <Terrain points={markers} center={viewport} />
+          {userScenePosition && (
+            <mesh position={[userScenePosition[0], 0.24, userScenePosition[2]]}>
               <sphereGeometry args={[0.2, 16, 16]} />
               <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={0.65} />
+              <Html center distanceFactor={8}>
+                <div className="rounded-full border border-border bg-primary/85 px-2 py-1 text-[10px] font-medium text-primary-foreground shadow-soft backdrop-blur-sm">
+                  Tú · ±{Math.round(userPosition.accuracy ?? 0)}m
+                </div>
+              </Html>
             </mesh>
           )}
           <CameraRig viewport={viewport} aiPilotEnabled={aiPilotEnabled} />
