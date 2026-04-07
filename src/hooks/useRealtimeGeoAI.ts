@@ -10,6 +10,17 @@ interface GeoPoint {
   timestamp: number;
 }
 
+function toGeoPoint(position: GeolocationPosition): GeoPoint {
+  return {
+    lat: position.coords.latitude,
+    lng: position.coords.longitude,
+    accuracy: position.coords.accuracy,
+    speed: position.coords.speed,
+    heading: position.coords.heading,
+    timestamp: position.timestamp,
+  };
+}
+
 interface UseRealtimeGeoAIParams {
   markers: MapMarkerData[];
   onViewportChange: (next: Partial<MapViewportState>) => void;
@@ -64,33 +75,36 @@ export function useRealtimeGeoAI({ markers, onViewportChange }: UseRealtimeGeoAI
       setError("Tardamos más de lo esperado en obtener tu ubicación. Puedes seguir explorando el mapa manualmente.");
     }, 12000);
 
-    watchId.current = navigator.geolocation.watchPosition(
-      (position) => {
-        const nextPoint: GeoPoint = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          speed: position.coords.speed,
-          heading: position.coords.heading,
-          timestamp: position.timestamp,
-        };
-        setUserPosition(nextPoint);
-        setError(null);
+    const handlePosition = (position: GeolocationPosition) => {
+      const nextPoint = toGeoPoint(position);
+      setUserPosition(nextPoint);
+      setError(null);
 
-        if (warmupTimeoutRef.current !== null) {
-          window.clearTimeout(warmupTimeoutRef.current);
-          warmupTimeoutRef.current = null;
-        }
+      if (warmupTimeoutRef.current !== null) {
+        window.clearTimeout(warmupTimeoutRef.current);
+        warmupTimeoutRef.current = null;
+      }
 
-        if (aiFollowEnabled) {
-          onViewportChange({
-            lat: nextPoint.lat,
-            lng: nextPoint.lng,
-            zoom: 16,
-            bearing: nextPoint.heading ?? 0,
-          });
-        }
+      if (aiFollowEnabled) {
+        onViewportChange({
+          lat: nextPoint.lat,
+          lng: nextPoint.lng,
+          zoom: 16,
+          bearing: nextPoint.heading ?? 0,
+        });
+      }
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      handlePosition,
+      (geoError) => {
+        setError(mapGeoError(geoError.code));
       },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
+    );
+
+    watchId.current = navigator.geolocation.watchPosition(
+      handlePosition,
       (geoError) => {
         setError(mapGeoError(geoError.code));
       },

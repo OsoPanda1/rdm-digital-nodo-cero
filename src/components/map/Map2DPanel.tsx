@@ -16,7 +16,7 @@ type ClusterItem = ClusterFeature | PointFeature;
 
 interface Map2DPanelProps {
   markers: MapMarkerData[];
-  userPosition?: { lat: number; lng: number } | null;
+  userPosition?: { lat: number; lng: number; accuracy?: number } | null;
   selected: MapMarkerData | null;
   viewport: MapViewportState;
   onSelect: (marker: MapMarkerData) => void;
@@ -195,7 +195,7 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
     () =>
       L.divIcon({
         className: "user-location-pin",
-        html: `<span style="display:flex;width:20px;height:20px;border-radius:999px;background:#22d3ee;box-shadow:0 0 0 6px rgba(34,211,238,0.25), 0 0 20px rgba(34,211,238,0.65);border:2px solid rgba(255,255,255,0.95);"></span>`,
+        html: `<span style="display:flex;width:20px;height:20px;border-radius:999px;background:hsl(var(--accent));box-shadow:0 0 0 6px hsl(var(--accent) / 0.25), 0 0 20px hsl(var(--accent) / 0.65);border:2px solid hsl(var(--primary-foreground) / 0.95);"></span>`,
         iconSize: [20, 20],
         iconAnchor: [10, 10],
       }),
@@ -224,7 +224,7 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
           <>
             <Circle
               center={[userPosition.lat, userPosition.lng]}
-              radius={Math.max(userPosition.accuracy, 12)}
+              radius={Math.max(userPosition.accuracy ?? 0, 12)}
               pathOptions={{
                 color: "hsl(var(--accent))",
                 fillColor: "hsl(var(--accent))",
@@ -234,10 +234,10 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
             />
             <Marker position={[userPosition.lat, userPosition.lng]} icon={userLocationIcon}>
               <Popup>
-                <div className="space-y-1 p-1 text-slate-800">
+                <div className="space-y-1 p-1 text-foreground">
                   <p className="text-xs font-semibold">Tu ubicación en tiempo real</p>
-                  <p className="text-[11px] leading-tight text-slate-600">
-                    Precisión estimada: ±{Math.round(userPosition.accuracy)} m
+                  <p className="text-[11px] leading-tight text-muted-foreground">
+                    Precisión estimada: ±{Math.round(userPosition.accuracy ?? 0)} m
                   </p>
                 </div>
               </Popup>
