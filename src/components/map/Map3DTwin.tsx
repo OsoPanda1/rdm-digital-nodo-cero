@@ -47,7 +47,10 @@ function Terrain({ points, center }: { points: MapMarkerData[]; center: Pick<Map
       {points.map((point) => (
         <mesh
           key={point.id}
-          position={[...toScenePosition(point, center).slice(0, 1), 0.18, toScenePosition(point, center)[2]]}
+          position={(() => {
+            const [x, , z] = toScenePosition(point, center);
+            return [x, 0.18, z] as const;
+          })()}
         >
           <sphereGeometry args={[point.isPremium ? 0.18 : 0.13, 16, 16]} />
           <meshStandardMaterial

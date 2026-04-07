@@ -179,8 +179,8 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
           >
             <Popup>
               <div className="p-1">
-                <strong className="text-slate-900 block border-b pb-1 mb-1">{marker.name}</strong>
-                <p className="text-xs text-slate-600 leading-tight">{marker.description}</p>
+                <strong className="block border-b pb-1 mb-1 text-foreground">{marker.name}</strong>
+                <p className="text-xs leading-tight text-muted-foreground">{marker.description}</p>
               </div>
             </Popup>
           </Marker>
