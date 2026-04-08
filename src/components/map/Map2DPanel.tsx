@@ -4,6 +4,8 @@ import L, { type LeafletEventHandlerFnMap, type Map as LeafletMap } from "leafle
 import Supercluster from "supercluster";
 import "leaflet/dist/leaflet.css";
 import type { MapMarkerData, MapViewportState } from "@/features/places/mapTypes";
+import type { RouteData } from "@/hooks/useRouting";
+import { RouteOverlay } from "./RouteOverlay";
 
 // Definición estricta de tipos para evitar errores de propiedades inexistentes
 type ClusterProps = { cluster: true; cluster_id: number; point_count: number };
@@ -21,6 +23,8 @@ interface Map2DPanelProps {
   viewport: MapViewportState;
   onSelect: (marker: MapMarkerData) => void;
   onViewportChange: (next: Partial<MapViewportState>) => void;
+  route?: RouteData | null;
+  activeStepIndex?: number;
 }
 
 // Estética Platinum & Obsidian Mist para marcadores
@@ -190,7 +194,7 @@ function ClusterLayer({ markers, onSelect }: { markers: MapMarkerData[]; onSelec
   );
 }
 
-export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect, onViewportChange }: Map2DPanelProps) {
+export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect, onViewportChange, route, activeStepIndex = 0 }: Map2DPanelProps) {
   const userLocationIcon = useMemo(
     () =>
       L.divIcon({
@@ -220,6 +224,7 @@ export function Map2DPanel({ markers, userPosition, selected, viewport, onSelect
         <MapEventBridge onViewportChange={onViewportChange} />
         <MapFocus selected={selected} />
         <ClusterLayer markers={markers} onSelect={onSelect} />
+        {route && <RouteOverlay route={route} activeStepIndex={activeStepIndex} />}
         {userPosition && (
           <>
             <Circle

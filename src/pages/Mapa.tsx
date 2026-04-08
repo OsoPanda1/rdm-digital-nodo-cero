@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Award, Filter, Layers, LocateFixed, MapPin, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
-import { motion } from "framer-motion";
+import { Award, Filter, Layers, LocateFixed, MapPin, Navigation, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
@@ -12,6 +12,8 @@ import { Map2DPanel } from "@/components/map/Map2DPanel";
 import { MapSyncProvider, useMapSync } from "@/hooks/useMapSync";
 import type { MapMarkerData, MarkerType } from "@/features/places/mapTypes";
 import { useRealtimeGeoAI } from "@/hooks/useRealtimeGeoAI";
+import { useRouting } from "@/hooks/useRouting";
+import { NavigationPanel } from "@/components/map/NavigationPanel";
 
 import pasteImg from "@/assets/paste.webp";
 import minaImg from "@/assets/mina-acosta.webp";
@@ -40,6 +42,7 @@ function MapaPageContent() {
   const [mode, setMode] = useState<"2d" | "3d">("2d");
   const [lowBandwidthMode, setLowBandwidthMode] = useState(false);
   const [poiStatus, setPoiStatus] = useState<{ loading: boolean; message: string | null }>({ loading: false, message: null });
+  const [navigationTarget, setNavigationTarget] = useState<MapMarkerData | null>(null);
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
@@ -72,6 +75,27 @@ function MapaPageContent() {
     error: geoError,
     centerOnUser,
   } = useRealtimeGeoAI({ markers: filtered, onViewportChange: syncFrom2D });
+
+  const {
+    route,
+    loading: routeLoading,
+    error: routeError,
+    activeStepIndex,
+    activeStep,
+    advanceStep,
+    cancelRoute,
+  } = useRouting({
+    origin: userPosition ? { lat: userPosition.lat, lng: userPosition.lng } : null,
+    destination: navigationTarget ? { lat: navigationTarget.lat, lng: navigationTarget.lng } : null,
+    enabled: !!navigationTarget && !!userPosition,
+  });
+
+  // Auto-advance routing steps when user moves
+  useEffect(() => {
+    if (userPosition && route) {
+      advanceStep(userPosition.lat, userPosition.lng);
+    }
+  }, [userPosition, route, advanceStep]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -335,6 +359,8 @@ function MapaPageContent() {
                     viewport={viewport}
                     onSelect={(marker) => { setSelected(marker); void emitMapEvent('MAP_POI_SELECTED', marker); }}
                     onViewportChange={syncFrom2D}
+                    route={route}
+                    activeStepIndex={activeStepIndex}
                   />
                 ) : (
                   <Suspense
@@ -390,6 +416,19 @@ function MapaPageContent() {
                           <Phone className="h-4 w-4" /> Llamar
                         </a>
                       )}
+                      {userPosition && trackingEnabled && (
+                        <button
+                          onClick={() => {
+                            setNavigationTarget(selected);
+                            setMode("2d");
+                          }}
+                          disabled={routeLoading}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 px-3 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-500/30 transition disabled:opacity-50"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          {routeLoading ? "Calculando ruta..." : "Cómo llegar caminando"}
+                        </button>
+                      )}
                       <button
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-silver-200 hover:bg-white/10"
                         onClick={() => setSelected(mapMarkers[0] ?? null)}
@@ -403,6 +442,28 @@ function MapaPageContent() {
                 )}
               </div>
 
+              {/* Turn-by-turn Navigation Panel */}
+              <AnimatePresence>
+                {route && activeStep && (
+                  <NavigationPanel
+                    route={route}
+                    activeStepIndex={activeStepIndex}
+                    activeStep={activeStep}
+                    loading={routeLoading}
+                    onCancel={() => { cancelRoute(); setNavigationTarget(null); }}
+                  />
+                )}
+                {routeError && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="glass-dark rounded-2xl border border-red-500/30 p-4 text-xs text-red-300"
+                  >
+                    {routeError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="glass-dark rounded-2xl border border-gold-500/30 p-4">
                 <h3 className="font-semibold text-gold-300">Exploración rápida</h3>
                 <p className="mt-1 text-xs text-silver-500">Atajos: R = centrar Real del Monte · M = mi ubicación.</p>
