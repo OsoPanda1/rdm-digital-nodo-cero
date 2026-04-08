@@ -192,9 +192,8 @@ export class GitHubRepoFusionService {
       `git clone https://github.com/${owner}/${targetRepo}.git`,
       `cd ${targetRepo}`,
       ...externalSeeds.map((seed) => `git remote add ext-${seed.repo} https://github.com/${seed.owner}/${seed.repo}.git`),
-      ...mergeSequence.map((repo) => `git remote add ${repo} https://github.com/${owner}/${repo}.git || true`),
-      ...mergeSequence.map((repo) => `git fetch ${repo} --tags`),
-      '# aplicar integración por lote: git merge --allow-unrelated-histories <repo>/<branch>',
+      ...mergeSequence.slice(0, 10).map((repo) => `git remote add ${repo} https://github.com/${owner}/${repo}.git`),
+      '# repetir fetch/cherry-pick por lotes hasta cubrir toda la secuencia',
     ];
 
     const bootstrapScript = bootstrapCommands.join('\n');

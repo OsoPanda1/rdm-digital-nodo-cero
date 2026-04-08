@@ -44,14 +44,32 @@ Plataforma full-stack para operación turística/cultural de Real del Monte con 
 - `GET /api/v1/federados/github/interconnect`
 - `GET /api/v1/federados/github/chain-loop`
 - `GET /api/v1/federados/github/unification-plan`
-- `GET /api/v1/federados/github/unification-script`
+- `GET /api/v1/quantum/architecture`
+- `GET /api/v1/quantum/status`
+- `POST /api/v1/quantum/validate`
+- `POST /api/v1/quantum/resilience`
+- `GET /api/v1/territory/map-state`
+- `POST /api/v1/identity/register`
+- `POST /api/v1/identity/challenge`
+- `POST /api/v1/identity/verify`
+- `GET /api/v1/identity/session`
+- `GET /api/v1/identity/me`
+- `POST /api/v1/identity/revoke`
+- `GET /api/v1/identity/audit`
+- `GET /api/v1/simulation/scenarios`
+- `POST /api/v1/simulation/run`
 
-Parámetros útiles:
-- `owner`
-- `targetRepo`
-- `maxRepos`
-- `preset=quantum`
-- `seedRepo` (repetido o CSV)
+Capacidades:
+- Descubre y puntúa repos por relevancia (RDM/TAMV/federated-AI).
+- Construye grafo de interconexiones (`nodes`, `edges`, peso y razones).
+- Genera backlog técnico priorizado (`P0/P1/P2`) con módulo objetivo e impacto esperado.
+- Construye una cadena circular repo→repo para flujo continuo entre todos los repos activos de un owner, con loopback al origen.
+- Permite fijar `startRepo` para arrancar la cadena desde un repositorio concreto (ej. `tamv-digital-nexus`).
+- Genera un plan de consolidación multi-fase para unificar repositorios activos en un hub objetivo (`targetRepo`) con secuencia de merge y comandos bootstrap (hasta 400 repos).
+- Soporta `preset=quantum` para inyectar automáticamente repos base (Microsoft Quantum, TensorFlow Quantum, QuantumKatas, QuantumultX y PennyLane) al plan de bootstrap.
+- Acepta `seedRepo` (uno o varios) para anexar repos externos estratégicos al plan sin perder la priorización de los repos del owner.
+
+## 2) Isabella federada (IA funcional)
 
 ### Isabella
 - `POST /api/v1/isabella/process`
