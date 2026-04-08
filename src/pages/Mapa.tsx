@@ -359,6 +359,8 @@ function MapaPageContent() {
                     viewport={viewport}
                     onSelect={(marker) => { setSelected(marker); void emitMapEvent('MAP_POI_SELECTED', marker); }}
                     onViewportChange={syncFrom2D}
+                    route={route}
+                    activeStepIndex={activeStepIndex}
                   />
                 ) : (
                   <Suspense
@@ -413,6 +415,19 @@ function MapaPageContent() {
                         >
                           <Phone className="h-4 w-4" /> Llamar
                         </a>
+                      )}
+                      {userPosition && trackingEnabled && (
+                        <button
+                          onClick={() => {
+                            setNavigationTarget(selected);
+                            setMode("2d");
+                          }}
+                          disabled={routeLoading}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 px-3 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-500/30 transition disabled:opacity-50"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          {routeLoading ? "Calculando ruta..." : "Cómo llegar caminando"}
+                        </button>
                       )}
                       <button
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-silver-200 hover:bg-white/10"
