@@ -11,10 +11,15 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "test": "vitest"
   },
-  "keywords": ["real-del-monte", "tourism", "api", "pueblo-magico"],
+  "keywords": [
+    "real-del-monte",
+    "tourism",
+    "api",
+    "pueblo-magico"
+  ],
   "author": "RDM Digital",
   "license": "MIT",
   "dependencies": {

@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Role } from '@prisma/client';
+import { isValidFederationSignature } from '../lib/federationSignature';
 
 export interface AuthRequest extends Request {
   user?: {
     id: string;
     email: string;
     role: Role;
+    federationSig?: string;
   };
 }
 
@@ -27,7 +29,15 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
       id: string;
       email: string;
       role: Role;
+      federationSig?: string;
     };
+
+    if (!isValidFederationSignature(decoded)) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'Token rejected by federation constitutional layer' }
+      });
+    }
     
     req.user = decoded;
     next();
@@ -73,9 +83,12 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
       id: string;
       email: string;
       role: Role;
+      federationSig?: string;
     };
-    
-    req.user = decoded;
+
+    if (isValidFederationSignature(decoded)) {
+      req.user = decoded;
+    }
   } catch (error) {
     // Token invalid, but continue anyway for optional auth
   }

@@ -1,48 +1,47 @@
 # RDM Digital Nexus
 
-Plataforma federada para turismo, cultura, comercio local y experiencias inmersivas de **Real del Monte**, con backend API + frontend XR-ready y runtime de IA (**Isabella**) conectado a repositorios federados.
+Plataforma full-stack para operación turística/cultural de Real del Monte con backend federado, capa de identidad soberana, runtime de IA (Isabella), unificación multi-repo y panel operacional.
 
 ---
 
-## ¿Qué hace este proyecto?
+## Estado actual (abril 2026)
 
-RDM Digital Nexus unifica capacidades de:
-
-- **Portal público** (historia, cultura, directorio, eventos, rutas, gastronomía, arte, comunidad).
-- **Módulo de negocios y economía musical** (catálogo, apoyo, donaciones, flows de pago).
-- **Mapa y experiencias digitales** (capas geográficas y componentes visuales multimedia).
-- **Runtime de IA Isabella** para clasificación de intención/emoción, auditoría de mensajes y enrutamiento de mini-agentes.
-- **Federación GitHub** para sincronizar conocimiento distribuido entre repositorios relacionados a TAMV/RDM/federated-AI.
+- Frontend React + Vite en producción local (`npm run dev`, `npm run build`).
+- Backend Express + TypeScript con rutas versionadas (`/api/v1`) y rutas legacy (`/api`).
+- Integración federada de repositorios GitHub (owner configurable).
+- Pipeline CI para ejecutar unificación por lotes (remote/fetch/merge opcional) con reporte de conflictos.
+- Capa de seguridad constitucional opcional para JWT firmados con clave maestra federada.
 
 ---
 
 ## Arquitectura
 
 ### Frontend
-- React 18 + TypeScript + Vite.
-- UI con Tailwind y componentes reutilizables.
-- Ruteo SPA por dominios (cultura, turismo, comunidad, admin, música, mapa).
+- React 18 + TypeScript + Vite + Tailwind.
+- Ruta operacional: `/soberano` (telemetría de territorio, estado cuántico y sesión soberana).
 
 ### Backend
-- Express + TypeScript + Prisma.
-- API versionada (`/api/v1`) + compatibilidad legacy (`/api`).
-- Seguridad base: `helmet`, `cors`, rate limit, logging y middleware de errores.
+- Express + Prisma + Zod.
+- Seguridad base: `helmet`, `cors`, `express-rate-limit`, middleware de errores.
+- Submódulos principales:
+  - **Federados**: sincronización GitHub, plan/script de unificación.
+  - **Isabella**: contexto federado, runtime de procesamiento.
+  - **Identity**: registro/desafío/verificación/revocación/auditoría.
+  - **Quantum (L6.Q)**: validación de estado y resiliencia.
+  - **Simulation**: escenarios de ataque y score de recuperación.
+  - **Territory**: estado operativo de mapa/capas/sensores.
 
-### Data & IA
-- PostgreSQL/Prisma para entidades de negocio/turismo/comunidad.
-- Isabella Runtime + BookPI para trazabilidad operativa.
-- Contexto federado desde GitHub para enriquecer respuestas de IA en caliente.
+### Datos
+- Prisma + PostgreSQL para entidades de negocio/social.
+- Supabase migrations para tablas y políticas RLS.
+- Shield de inmutabilidad para bloque génesis en `system_logs`.
 
 ---
 
-## Funcionalidades clave implementadas
+## Endpoints clave
 
-## 1) Federación de repos y backlog de integración
-
-Endpoints:
+### Federación / Unificación
 - `GET /api/v1/federados/github/interconnect`
-- `POST /api/v1/federados/github/viable-update`
-
 - `GET /api/v1/federados/github/chain-loop`
 - `GET /api/v1/federados/github/unification-plan`
 - `GET /api/v1/quantum/architecture`
@@ -72,101 +71,118 @@ Capacidades:
 
 ## 2) Isabella federada (IA funcional)
 
-Endpoints:
+### Isabella
 - `POST /api/v1/isabella/process`
 - `POST /api/v1/isabella/process-federated`
 - `GET /api/v1/isabella/context`
-- `GET /api/v1/isabella/bookpi`
 - `GET /api/v1/isabella/readiness`
 
-Capacidades:
-- Limpieza de ruido + clasificación de intención/emoción.
-- Routing de miniagentes (`MiniAI_Auditoria`, `MiniAI_Arquitectura`, `MiniAI_Etico`, `ANUBIS_Sentinel`, etc.).
-- Inyección de contexto federado de repos de GitHub (README + descripción) con ranking y caché.
-- Trazabilidad de ejecución en BookPI.
-- Diagnóstico de readiness para validar entorno mínimo (JWT, DB, conectividad federada) antes de producción.
+Parámetros federados:
+- `owner`
+- `maxRepos` (hasta 400)
+- `maxContext` (hasta 100)
+- `refresh=1`
 
-## 3) Optimizaciones operativas recientes
+### Quantum / Identity / Simulation / Territory
+- `GET /api/v1/quantum/architecture`
+- `GET /api/v1/quantum/status`
+- `POST /api/v1/quantum/validate`
+- `POST /api/v1/quantum/resilience`
 
-- Caché temporal para sincronizaciones GitHub.
-- Timeouts explícitos en llamadas remotas para evitar bloqueos de request.
-- Concurrencia controlada al leer README de múltiples repos para reducir cuellos de botella.
+- `POST /api/v1/identity/register`
+- `POST /api/v1/identity/challenge`
+- `POST /api/v1/identity/verify`
+- `GET /api/v1/identity/session`
+- `GET /api/v1/identity/me`
+- `POST /api/v1/identity/revoke`
+- `GET /api/v1/identity/audit`
 
+- `GET /api/v1/simulation/scenarios`
+- `POST /api/v1/simulation/run`
 
-## 4) NOTITAMV + DreamSpaces (nuevo módulo operativo)
-
-Endpoints:
-- `GET /api/v1/notitamv/health`
-- `POST /api/v1/notitamv/orchestrate`
-- `POST /api/v1/notitamv/dreamspace/texturize`
-
-Capacidades:
-- Orquestación contextual de notificaciones multicanal (push/webpush/iot/xr) con prioridad por urgencia/evento.
-- Selección de firma sonora “Alma TAMV” + efecto visual sugerido para microinteracciones.
-- Modo de privacidad por diseño con política de retención diferenciada.
-- Stub funcional para texturización DreamSpaces y retorno de artefactos XR (`texture_url`, `stylized_mesh_url`, `thumbnail_url`).
+- `GET /api/v1/territory/map-state`
 
 ---
 
-## Estado actual de producción
+## Seguridad constitucional de tokens
 
-- Frontend: funcional para despliegue con build Vite.
-- Backend: funcional en rutas críticas de federación e Isabella.
-- Existen módulos legacy con deuda técnica TypeScript que requieren hardening progresivo para CI/CD full green.
+Si defines `FEDERATION_MASTER_KEY`, los JWT emitidos por `/auth/login` y `/auth/signup` incluyen `federationSig`.
+
+- `requireAuth` rechaza tokens sin firma válida de federación.
+- `optionalAuth` solo adjunta usuario cuando la firma es válida.
+
+Si `FEDERATION_MASTER_KEY` no está definido, el sistema mantiene compatibilidad con el flujo actual.
+
+---
+
+## Punto Cero (Libro Génesis)
+
+La migración `20260408073000_genesis_immutability_shield.sql`:
+- Inserta el bloque raíz `TAMV_GENESIS_ROOT` de forma idempotente.
+- Crea trigger para bloquear cualquier `UPDATE` o `DELETE` sobre dicho bloque.
+
+---
+
+## CI/CD de unificación real
+
+Workflow: `.github/workflows/unification-pipeline.yml`
+
+Trigger manual (`workflow_dispatch`) con:
+- `owner`
+- `target_repo`
+- `max_repos`
+- `batch_size`
+- `dry_run`
+- `merge_branch`
+
+Ejecutor: `tools/ci/unification-executor.mjs`
+- Obtiene `unification-script` desde API.
+- Aplica `git remote add` y `git fetch` por lotes.
+- Ejecuta merges opcionales por rama.
+- Genera `unification-report.json` con fallos y conflictos.
 
 ---
 
 ## Quickstart
 
-## 1) Frontend
+### Frontend
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-## 2) Backend
+### Backend
 ```bash
-cd server
-npm install
-npm run dev
+npm --prefix server ci
+npm --prefix server run dev
 ```
 
-## 3) Tests backend
+### Checks recomendados
 ```bash
+npm --prefix server run lint
 npm --prefix server test -- --run
+npm run build
 ```
 
 ---
 
-## Variables de entorno relevantes
+## Variables de entorno
 
-Backend (`server/.env`):
-- `PORT`
+### Backend mínimas
+- `PORT` (default 3001)
 - `FRONTEND_URL`
 - `DATABASE_URL`
 - `JWT_SECRET`
-- `GITHUB_TOKEN` (opcional pero recomendado para evitar rate limit)
-- `GITHUB_FEDERATION_OWNER` (default: `OsoPanda1`)
+
+### Federación
+- `GITHUB_FEDERATION_OWNER` (default `OsoPanda1`)
+- `GITHUB_TOKEN` (recomendado para evitar rate limits)
+
+### Seguridad constitucional
+- `FEDERATION_MASTER_KEY` (activa validación federada de JWT)
 
 ---
 
-## Posicionamiento global del proyecto
+## Objetivo operativo
 
-RDM Digital Nexus se posiciona como una plataforma **phygital** de patrimonio/turismo con enfoque en:
-
-- **Soberanía tecnológica local** (federación de conocimiento y repositorios).
-- **IA contextual de territorio** (Isabella + BookPI + repos federados).
-- **Escalabilidad regional** hacia smart-city cultural y economía creativa.
-- **Interoperabilidad** con ecosistemas XR/VR/AI y pipelines distribuidos.
-
-En términos de producto, combina un stack utilitario de ciudad/pueblo turístico con una capa de IA federada orientada a operación real y trazabilidad.
-
----
-
-## Roadmap sugerido (global-ready)
-
-1. Hardening TypeScript del backend legacy para build 100% limpio.
-2. CI/CD con gates obligatorios (`lint + test + build`).
-3. Métricas SLO para endpoints de federación/IA.
-4. Integración de embeddings/vector store para contexto Isabella semántico.
-5. Orquestación multi-repo hacia `tamv-digital-nexus` como hub principal.
+Consolidar los repos federados en un hub funcional (`tamv-digital-nexus`) con flujo repetible de unificación, trazabilidad de conflictos y validación de integridad en runtime.
