@@ -61,12 +61,14 @@ Endpoints:
 - `POST /api/v1/isabella/process-federated`
 - `GET /api/v1/isabella/context`
 - `GET /api/v1/isabella/bookpi`
+- `GET /api/v1/isabella/readiness`
 
 Capacidades:
 - Limpieza de ruido + clasificación de intención/emoción.
 - Routing de miniagentes (`MiniAI_Auditoria`, `MiniAI_Arquitectura`, `MiniAI_Etico`, `ANUBIS_Sentinel`, etc.).
 - Inyección de contexto federado de repos de GitHub (README + descripción) con ranking y caché.
 - Trazabilidad de ejecución en BookPI.
+- Diagnóstico de readiness para validar entorno mínimo (JWT, DB, conectividad federada) antes de producción.
 
 ## 3) Optimizaciones operativas recientes
 
