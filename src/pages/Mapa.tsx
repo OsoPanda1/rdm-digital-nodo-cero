@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Award, Filter, Layers, LocateFixed, MapPin, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
-import { motion } from "framer-motion";
+import { Award, Filter, Layers, LocateFixed, MapPin, Navigation, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
@@ -12,6 +12,8 @@ import { Map2DPanel } from "@/components/map/Map2DPanel";
 import { MapSyncProvider, useMapSync } from "@/hooks/useMapSync";
 import type { MapMarkerData, MarkerType } from "@/features/places/mapTypes";
 import { useRealtimeGeoAI } from "@/hooks/useRealtimeGeoAI";
+import { useRouting } from "@/hooks/useRouting";
+import { NavigationPanel } from "@/components/map/NavigationPanel";
 
 import pasteImg from "@/assets/paste.webp";
 import minaImg from "@/assets/mina-acosta.webp";
