@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isabellaRuntimeService } from '../services/isabellaRuntimeService';
 import { bookpiStore } from '../services/bookpiStore';
 import { isabellaFederatedContextService } from '../services/isabellaFederatedContextService';
+import { isabellaReadinessService } from '../services/isabellaReadinessService';
 
 const router = Router();
 
@@ -82,6 +83,12 @@ router.get('/bookpi/:userId', (req, res) => {
 
 router.get('/bookpi', (_req, res) => {
   return res.json({ latest: bookpiStore.latest() });
+});
+
+router.get('/readiness', async (req, res) => {
+  const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+  const report = await isabellaReadinessService.run(owner);
+  return res.json(report);
 });
 
 export default router;

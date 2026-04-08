@@ -40,6 +40,24 @@ export interface FusionSyncResult {
   edges: FusionEdge[];
 }
 
+export interface UnificationPlanPhase {
+  phase: string;
+  objective: string;
+  repos: FusionNode[];
+}
+
+export interface UnificationPlan {
+  owner: string;
+  targetRepo: string;
+  generatedAt: string;
+  scannedRepos: number;
+  selectedRepos: number;
+  estimatedBranches: number;
+  phases: UnificationPlanPhase[];
+  mergeSequence: string[];
+  bootstrapCommands: string[];
+}
+
 interface CacheEntry {
   expiresAt: number;
   payload: FusionSyncResult;
@@ -64,7 +82,7 @@ export class GitHubRepoFusionService {
 
   async syncRelatedRepos(options?: { owner?: string; limit?: number; forceRefresh?: boolean }): Promise<FusionSyncResult> {
     const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
-    const limit = Math.max(1, Math.min(options?.limit ?? 10, 50));
+    const limit = Math.max(1, Math.min(options?.limit ?? 10, 400));
 
     if (!options?.forceRefresh && this.cache && this.cache.expiresAt > Date.now()) {
       return {
@@ -108,6 +126,81 @@ export class GitHubRepoFusionService {
     };
 
     return payload;
+  }
+
+  async buildUnificationPlan(options?: {
+    owner?: string;
+    targetRepo?: string;
+    maxRepos?: number;
+    forceRefresh?: boolean;
+  }): Promise<UnificationPlan> {
+    const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
+    const targetRepo = options?.targetRepo ?? 'tamv-digital-nexus';
+    const maxRepos = Math.max(10, Math.min(options?.maxRepos ?? 177, 400));
+
+    const allRepos = await this.fetchAllRepos(owner);
+    const activeRepos = allRepos.filter((repo) => !repo.archived && !repo.disabled);
+    const selectedRepos = activeRepos
+      .filter((repo) => repo.name !== targetRepo)
+      .map((repo) => ({
+        repo: repo.name,
+        url: repo.html_url,
+        description: repo.description,
+        language: repo.language,
+        topics: repo.topics ?? [],
+        score: this.scoreRepo(repo),
+        updatedAt: repo.updated_at,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxRepos);
+
+    const tsAndJsRepos = selectedRepos.filter((repo) => ['TypeScript', 'JavaScript'].includes(repo.language ?? ''));
+    const infraAndGoRepos = selectedRepos.filter((repo) => ['Go', 'Shell', 'Dockerfile', 'HCL'].includes(repo.language ?? ''));
+    const remainingRepos = selectedRepos.filter(
+      (repo) => !tsAndJsRepos.includes(repo) && !infraAndGoRepos.includes(repo),
+    );
+
+    const phases: UnificationPlanPhase[] = [
+      {
+        phase: 'P0-foundation',
+        objective: 'Consolidar plataforma web + APIs principales en el hub',
+        repos: tsAndJsRepos,
+      },
+      {
+        phase: 'P1-runtime-infra',
+        objective: 'Integrar sovereign-proxy, runtime de agentes e infraestructura',
+        repos: infraAndGoRepos,
+      },
+      {
+        phase: 'P2-domain-extensions',
+        objective: 'Absorber módulos especializados, experimentales y de archivo',
+        repos: remainingRepos,
+      },
+    ];
+
+    const mergeSequence = selectedRepos
+      .slice()
+      .sort((a, b) => b.score - a.score)
+      .map((repo) => repo.repo);
+
+    const bootstrapCommands = [
+      `git clone https://github.com/${owner}/${targetRepo}.git`,
+      `cd ${targetRepo}`,
+      ...mergeSequence.slice(0, 10).map((repo) => `git remote add ${repo} https://github.com/${owner}/${repo}.git`),
+      '# repetir fetch/cherry-pick por lotes hasta cubrir toda la secuencia',
+    ];
+
+    return {
+      owner,
+      targetRepo,
+      generatedAt: new Date().toISOString(),
+      scannedRepos: allRepos.length,
+      selectedRepos: selectedRepos.length,
+      estimatedBranches: selectedRepos.length + 1,
+      phases,
+      mergeSequence,
+      bootstrapCommands,
+    };
   }
 
   private async fetchAllRepos(owner: string): Promise<GitHubRepo[]> {
