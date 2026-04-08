@@ -442,6 +442,28 @@ function MapaPageContent() {
                 )}
               </div>
 
+              {/* Turn-by-turn Navigation Panel */}
+              <AnimatePresence>
+                {route && activeStep && (
+                  <NavigationPanel
+                    route={route}
+                    activeStepIndex={activeStepIndex}
+                    activeStep={activeStep}
+                    loading={routeLoading}
+                    onCancel={() => { cancelRoute(); setNavigationTarget(null); }}
+                  />
+                )}
+                {routeError && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="glass-dark rounded-2xl border border-red-500/30 p-4 text-xs text-red-300"
+                  >
+                    {routeError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="glass-dark rounded-2xl border border-gold-500/30 p-4">
                 <h3 className="font-semibold text-gold-300">Exploración rápida</h3>
                 <p className="mt-1 text-xs text-silver-500">Atajos: R = centrar Real del Monte · M = mi ubicación.</p>
