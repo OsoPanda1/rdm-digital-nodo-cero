@@ -15,7 +15,8 @@ const processSchema = z.object({
 const federatedQuerySchema = z.object({
   owner: z.string().min(1).optional(),
   refresh: z.string().optional(),
-  maxContext: z.coerce.number().int().min(1).max(8).optional(),
+  maxContext: z.coerce.number().int().min(1).max(100).optional(),
+  maxRepos: z.coerce.number().int().min(5).max(400).optional(),
 });
 
 router.post('/process', (req, res) => {
@@ -35,9 +36,16 @@ router.post('/process-federated', async (req, res) => {
   }
 
   try {
+    const query = federatedQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      return res.status(400).json({ error: 'Parámetros inválidos', details: query.error.flatten() });
+    }
+
     const context = await isabellaFederatedContextService.buildContext(parsed.data.text, {
-      owner: typeof req.query.owner === 'string' ? req.query.owner : undefined,
-      forceRefresh: req.query.refresh === '1',
+      owner: query.data.owner,
+      forceRefresh: query.data.refresh === '1',
+      maxRepos: query.data.maxRepos,
+      maxSnippets: query.data.maxContext,
     });
 
     const result = isabellaRuntimeService.process({
@@ -59,12 +67,19 @@ router.post('/process-federated', async (req, res) => {
 });
 
 router.get('/context', async (req, res) => {
+  const parsedQuery = federatedQuerySchema.safeParse(req.query);
+  if (!parsedQuery.success) {
+    return res.status(400).json({ error: 'Parámetros inválidos', details: parsedQuery.error.flatten() });
+  }
+
   const q = typeof req.query.q === 'string' ? req.query.q : '';
 
   try {
     const context = await isabellaFederatedContextService.buildContext(q, {
-      owner: typeof req.query.owner === 'string' ? req.query.owner : undefined,
-      forceRefresh: req.query.refresh === '1',
+      owner: parsedQuery.data.owner,
+      forceRefresh: parsedQuery.data.refresh === '1',
+      maxRepos: parsedQuery.data.maxRepos,
+      maxSnippets: parsedQuery.data.maxContext,
     });
 
     return res.json(context);

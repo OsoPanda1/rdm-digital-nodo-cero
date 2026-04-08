@@ -53,9 +53,11 @@ export interface UnificationPlan {
   scannedRepos: number;
   selectedRepos: number;
   estimatedBranches: number;
+  externalSeeds: string[];
   phases: UnificationPlanPhase[];
   mergeSequence: string[];
   bootstrapCommands: string[];
+  bootstrapScript: string;
 }
 
 interface CacheEntry {
@@ -133,6 +135,7 @@ export class GitHubRepoFusionService {
     targetRepo?: string;
     maxRepos?: number;
     forceRefresh?: boolean;
+    externalRepoUrls?: string[];
   }): Promise<UnificationPlan> {
     const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
     const targetRepo = options?.targetRepo ?? 'tamv-digital-nexus';
@@ -183,12 +186,18 @@ export class GitHubRepoFusionService {
       .sort((a, b) => b.score - a.score)
       .map((repo) => repo.repo);
 
+    const externalSeeds = this.normalizeExternalRepoUrls(options?.externalRepoUrls);
+
     const bootstrapCommands = [
       `git clone https://github.com/${owner}/${targetRepo}.git`,
       `cd ${targetRepo}`,
-      ...mergeSequence.slice(0, 10).map((repo) => `git remote add ${repo} https://github.com/${owner}/${repo}.git`),
-      '# repetir fetch/cherry-pick por lotes hasta cubrir toda la secuencia',
+      ...externalSeeds.map((seed) => `git remote add ext-${seed.repo} https://github.com/${seed.owner}/${seed.repo}.git`),
+      ...mergeSequence.map((repo) => `git remote add ${repo} https://github.com/${owner}/${repo}.git || true`),
+      ...mergeSequence.map((repo) => `git fetch ${repo} --tags`),
+      '# aplicar integración por lote: git merge --allow-unrelated-histories <repo>/<branch>',
     ];
+
+    const bootstrapScript = bootstrapCommands.join('\n');
 
     return {
       owner,
@@ -197,10 +206,43 @@ export class GitHubRepoFusionService {
       scannedRepos: allRepos.length,
       selectedRepos: selectedRepos.length,
       estimatedBranches: selectedRepos.length + 1,
+      externalSeeds: externalSeeds.map((seed) => `https://github.com/${seed.owner}/${seed.repo}`),
       phases,
       mergeSequence,
       bootstrapCommands,
+      bootstrapScript,
     };
+  }
+
+  private normalizeExternalRepoUrls(urls?: string[]): Array<{ owner: string; repo: string }> {
+    if (!urls || urls.length === 0) {
+      return [];
+    }
+
+    const seeds = urls
+      .map((raw) => raw.trim())
+      .filter(Boolean)
+      .map((url) => {
+        const httpsMatch = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i);
+        if (httpsMatch) {
+          return { owner: httpsMatch[1], repo: httpsMatch[2] };
+        }
+
+        const shortMatch = url.match(/^([^/]+)\/([^/]+)$/);
+        if (shortMatch) {
+          return { owner: shortMatch[1], repo: shortMatch[2] };
+        }
+
+        return null;
+      })
+      .filter((seed): seed is { owner: string; repo: string } => Boolean(seed));
+
+    const uniqueMap = new Map<string, { owner: string; repo: string }>();
+    for (const seed of seeds) {
+      uniqueMap.set(`${seed.owner}/${seed.repo}`.toLowerCase(), seed);
+    }
+
+    return Array.from(uniqueMap.values());
   }
 
   private async fetchAllRepos(owner: string): Promise<GitHubRepo[]> {
