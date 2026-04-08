@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { quantumFederationService } from '../services/quantumFederationService';
 import { githubRepoFusionService } from '../services/githubRepoFusionService';
+import { repoChainService } from '../services/repoChainService';
 
 const router = Router();
 
@@ -68,6 +69,34 @@ router.get('/github/interconnect', async (req, res) => {
   } catch (error) {
     return res.status(502).json({
       error: 'No se pudo sincronizar la federación desde GitHub',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
+
+router.get('/github/chain-loop', async (req, res) => {
+  try {
+    const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+    const startRepo = typeof req.query.startRepo === 'string' ? req.query.startRepo : undefined;
+    const forceRefresh = req.query.refresh === '1';
+    const maxReposParam = Number(req.query.maxRepos);
+    const maxRepos = Number.isFinite(maxReposParam) ? maxReposParam : undefined;
+
+    const chain = await repoChainService.buildLoopChain({
+      owner,
+      forceRefresh,
+      startRepo,
+      maxRepos,
+    });
+
+    return res.json({
+      source: 'github-loop-chain',
+      ...chain,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo construir la cadena de interconexión GitHub',
       details: error instanceof Error ? error.message : 'error desconocido',
     });
   }

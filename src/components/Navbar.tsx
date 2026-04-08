@@ -30,6 +30,7 @@ const communityItems = [
   { label: "Comunidad", path: "/comunidad" },
   { label: "Negocios", path: "/negocios" },
   { label: "Validación", path: "/validacion-tecnica" },
+  { label: "NOTITAMV", path: "/notitamv" },
 ];
 
 const Navbar = () => {

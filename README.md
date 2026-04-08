@@ -43,10 +43,14 @@ Endpoints:
 - `GET /api/v1/federados/github/interconnect`
 - `POST /api/v1/federados/github/viable-update`
 
+- `GET /api/v1/federados/github/chain-loop`
+
 Capacidades:
 - Descubre y puntúa repos por relevancia (RDM/TAMV/federated-AI).
 - Construye grafo de interconexiones (`nodes`, `edges`, peso y razones).
 - Genera backlog técnico priorizado (`P0/P1/P2`) con módulo objetivo e impacto esperado.
+- Construye una cadena circular repo→repo para flujo continuo entre todos los repos activos de un owner, con loopback al origen.
+- Permite fijar `startRepo` para arrancar la cadena desde un repositorio concreto (ej. `tamv-digital-nexus`).
 
 ## 2) Isabella federada (IA funcional)
 
@@ -67,6 +71,20 @@ Capacidades:
 - Caché temporal para sincronizaciones GitHub.
 - Timeouts explícitos en llamadas remotas para evitar bloqueos de request.
 - Concurrencia controlada al leer README de múltiples repos para reducir cuellos de botella.
+
+
+## 4) NOTITAMV + DreamSpaces (nuevo módulo operativo)
+
+Endpoints:
+- `GET /api/v1/notitamv/health`
+- `POST /api/v1/notitamv/orchestrate`
+- `POST /api/v1/notitamv/dreamspace/texturize`
+
+Capacidades:
+- Orquestación contextual de notificaciones multicanal (push/webpush/iot/xr) con prioridad por urgencia/evento.
+- Selección de firma sonora “Alma TAMV” + efecto visual sugerido para microinteracciones.
+- Modo de privacidad por diseño con política de retención diferenciada.
+- Stub funcional para texturización DreamSpaces y retorno de artefactos XR (`texture_url`, `stylized_mesh_url`, `thumbnail_url`).
 
 ---
 
