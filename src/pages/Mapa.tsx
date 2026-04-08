@@ -76,6 +76,27 @@ function MapaPageContent() {
     centerOnUser,
   } = useRealtimeGeoAI({ markers: filtered, onViewportChange: syncFrom2D });
 
+  const {
+    route,
+    loading: routeLoading,
+    error: routeError,
+    activeStepIndex,
+    activeStep,
+    advanceStep,
+    cancelRoute,
+  } = useRouting({
+    origin: userPosition ? { lat: userPosition.lat, lng: userPosition.lng } : null,
+    destination: navigationTarget ? { lat: navigationTarget.lat, lng: navigationTarget.lng } : null,
+    enabled: !!navigationTarget && !!userPosition,
+  });
+
+  // Auto-advance routing steps when user moves
+  useEffect(() => {
+    if (userPosition && route) {
+      advanceStep(userPosition.lat, userPosition.lng);
+    }
+  }, [userPosition, route, advanceStep]);
+
   useEffect(() => {
     const controller = new AbortController();
 
