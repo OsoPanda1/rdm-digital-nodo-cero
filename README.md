@@ -69,27 +69,6 @@ Capacidades:
 - Genera un plan de consolidación multi-fase para unificar repositorios activos en un hub objetivo (`targetRepo`) con secuencia de merge y comandos bootstrap (hasta 400 repos).
 - Soporta `preset=quantum` para inyectar automáticamente repos base (Microsoft Quantum, TensorFlow Quantum, QuantumKatas, QuantumultX y PennyLane) al plan de bootstrap.
 - Acepta `seedRepo` (uno o varios) para anexar repos externos estratégicos al plan sin perder la priorización de los repos del owner.
-- Activa la subcapa **L6.Q – Quantum Integrity Layer** para validación de estados críticos con condición verificable `P(error) ≤ ε`.
-
-## 1.1) L6.Q – Quantum Integrity Layer (infraestructura crítica)
-
-Capacidades operativas:
-- Codificación de repetición + corrección por majority voting para resiliencia de estado.
-- Validación probabilística de integridad (`verified`) con umbral configurable `epsilon`.
-- Simulación de resiliencia por rondas para medir `passRate`, `maxResidualError` y `antifragilityIndex`.
-
-Operación API:
-- `GET /api/v1/quantum/architecture` devuelve metamodelo TAMV extendido `T = (I, M, G, E, C, S, Q)`.
-- `POST /api/v1/quantum/validate` ejecuta validación puntual de estado.
-- `POST /api/v1/quantum/resilience` ejecuta simulación de resiliencia multi-ronda.
-
-## 1.2) Identidad soberana + simulador de resiliencia
-
-Capacidades operativas:
-- Registro de identidad soberana con clave pública, roles y trust score.
-- Challenge/verify con firma criptográfica (`ed25519`) y sesión trazable.
-- Revocación de identidad con invalidez de sesiones activas.
-- Simulación de ataques sistémicos (`api_flood`, `quantum_error_burst`, `session_hijack`, etc.) con score final de resiliencia.
 
 ## 2) Isabella federada (IA funcional)
 
