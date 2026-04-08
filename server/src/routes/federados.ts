@@ -127,4 +127,35 @@ router.get('/github/unification-plan', async (req, res) => {
   }
 });
 
+router.get('/github/unification-script', async (req, res) => {
+  try {
+    const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+    const targetRepo = typeof req.query.targetRepo === 'string' ? req.query.targetRepo : undefined;
+    const maxReposParam = Number(req.query.maxRepos);
+    const maxRepos = Number.isFinite(maxReposParam) ? maxReposParam : 194;
+
+    const plan = await githubRepoFusionService.buildUnificationPlan({
+      owner,
+      targetRepo,
+      maxRepos,
+      forceRefresh: req.query.refresh === '1',
+    });
+
+    return res.json({
+      source: 'github-unification-script',
+      owner: plan.owner,
+      targetRepo: plan.targetRepo,
+      selectedRepos: plan.selectedRepos,
+      estimatedBranches: plan.estimatedBranches,
+      scriptLines: plan.bootstrapCommands.length,
+      script: plan.bootstrapScript,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo generar el script de unificación',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
 export default router;

@@ -57,6 +57,7 @@ export interface UnificationPlan {
   phases: UnificationPlanPhase[];
   mergeSequence: string[];
   bootstrapCommands: string[];
+  bootstrapScript: string;
 }
 
 interface CacheEntry {
@@ -195,6 +196,8 @@ export class GitHubRepoFusionService {
       '# repetir fetch/cherry-pick por lotes hasta cubrir toda la secuencia',
     ];
 
+    const bootstrapScript = bootstrapCommands.join('\n');
+
     return {
       owner,
       targetRepo,
@@ -206,6 +209,7 @@ export class GitHubRepoFusionService {
       phases,
       mergeSequence,
       bootstrapCommands,
+      bootstrapScript,
     };
   }
 

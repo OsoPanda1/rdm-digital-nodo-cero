@@ -29,6 +29,7 @@ export interface IsabellaFederatedContext {
 interface CacheEntry {
   expiresAt: number;
   payload: IsabellaFederatedContext;
+  owner: string;
 }
 
 const CONTEXT_KEYWORDS = [
@@ -49,15 +50,22 @@ const CONTEXT_KEYWORDS = [
 export class IsabellaFederatedContextService {
   private cache: CacheEntry | null = null;
   private readonly cacheTtlMs = 5 * 60 * 1000;
+  private readonly maxReadmeConcurrency = 8;
 
-  async buildContext(query: string, options?: { owner?: string; maxRepos?: number; forceRefresh?: boolean }): Promise<IsabellaFederatedContext> {
+  async buildContext(query: string, options?: {
+    owner?: string;
+    maxRepos?: number;
+    maxSnippets?: number;
+    forceRefresh?: boolean;
+  }): Promise<IsabellaFederatedContext> {
     const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
-    const maxRepos = Math.max(5, Math.min(options?.maxRepos ?? 20, 50));
+    const maxRepos = Math.max(5, Math.min(options?.maxRepos ?? 194, 400));
+    const maxSnippets = Math.max(3, Math.min(options?.maxSnippets ?? 20, 100));
 
-    if (!options?.forceRefresh && this.cache && this.cache.expiresAt > Date.now()) {
+    if (!options?.forceRefresh && this.cache && this.cache.owner === owner && this.cache.expiresAt > Date.now()) {
       return {
         ...this.cache.payload,
-        snippets: this.rankByQuery(this.cache.payload.snippets, query).slice(0, 8),
+        snippets: this.rankByQuery(this.cache.payload.snippets, query).slice(0, maxSnippets),
       };
     }
 
@@ -68,11 +76,12 @@ export class IsabellaFederatedContextService {
       owner,
       generatedAt: new Date().toISOString(),
       scannedRepos: repos.length,
-      snippets: snippets.slice(0, 8),
+      snippets: snippets.slice(0, maxSnippets),
     };
 
     this.cache = {
       payload,
+      owner,
       expiresAt: Date.now() + this.cacheTtlMs,
     };
 
@@ -80,29 +89,48 @@ export class IsabellaFederatedContextService {
   }
 
   private async fetchOwnerRepos(owner: string, maxRepos: number): Promise<GitHubRepoSummary[]> {
-    const endpoint = `https://api.github.com/users/${owner}/repos?per_page=${maxRepos}&sort=updated`;
-    const repos = await this.fetchGitHubJson<GitHubRepoSummary[]>(endpoint);
+    const repos: GitHubRepoSummary[] = [];
+
+    for (let page = 1; page <= 4; page += 1) {
+      const endpoint = `https://api.github.com/users/${owner}/repos?per_page=100&page=${page}&sort=updated`;
+      const pageRepos = await this.fetchGitHubJson<GitHubRepoSummary[]>(endpoint);
+      repos.push(...pageRepos);
+
+      if (pageRepos.length < 100 || repos.length >= maxRepos) {
+        break;
+      }
+    }
+
     return repos.slice(0, maxRepos);
   }
 
   private async fetchRepoSnippets(repos: GitHubRepoSummary[], query: string): Promise<IsabellaContextSnippet[]> {
     const snippets: IsabellaContextSnippet[] = [];
 
-    for (const repo of repos) {
-      const readme = await this.fetchReadme(repo.full_name);
-      const decodedReadme = this.decodeReadme(readme?.content, readme?.encoding);
-      const baseSummary = `${repo.description ?? ''} ${decodedReadme}`.trim();
-      const score = this.computeScore(baseSummary, query);
+    for (let index = 0; index < repos.length; index += this.maxReadmeConcurrency) {
+      const chunk = repos.slice(index, index + this.maxReadmeConcurrency);
+      const chunkResults = await Promise.all(
+        chunk.map(async (repo) => {
+          const readme = await this.fetchReadme(repo.full_name);
+          const decodedReadme = this.decodeReadme(readme?.content, readme?.encoding);
+          const baseSummary = `${repo.description ?? ''} ${decodedReadme}`.trim();
+          const score = this.computeScore(baseSummary, query);
 
-      if (score > 0) {
-        snippets.push({
-          repo: repo.full_name,
-          repoUrl: repo.html_url,
-          score,
-          summary: this.summarize(baseSummary),
-          updatedAt: repo.updated_at,
-        });
-      }
+          if (score <= 0) {
+            return null;
+          }
+
+          return {
+            repo: repo.full_name,
+            repoUrl: repo.html_url,
+            score,
+            summary: this.summarize(baseSummary),
+            updatedAt: repo.updated_at,
+          } satisfies IsabellaContextSnippet;
+        }),
+      );
+
+      snippets.push(...chunkResults.filter((item): item is IsabellaContextSnippet => Boolean(item)));
     }
 
     return this.rankByQuery(snippets, query);

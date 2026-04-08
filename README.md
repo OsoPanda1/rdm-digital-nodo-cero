@@ -45,6 +45,20 @@ Endpoints:
 
 - `GET /api/v1/federados/github/chain-loop`
 - `GET /api/v1/federados/github/unification-plan`
+- `GET /api/v1/quantum/architecture`
+- `GET /api/v1/quantum/status`
+- `POST /api/v1/quantum/validate`
+- `POST /api/v1/quantum/resilience`
+- `GET /api/v1/territory/map-state`
+- `POST /api/v1/identity/register`
+- `POST /api/v1/identity/challenge`
+- `POST /api/v1/identity/verify`
+- `GET /api/v1/identity/session`
+- `GET /api/v1/identity/me`
+- `POST /api/v1/identity/revoke`
+- `GET /api/v1/identity/audit`
+- `GET /api/v1/simulation/scenarios`
+- `POST /api/v1/simulation/run`
 
 Capacidades:
 - Descubre y puntúa repos por relevancia (RDM/TAMV/federated-AI).
