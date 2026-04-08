@@ -140,15 +140,16 @@ const RelatosPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
             onClick={() => setShowVideo(false)}
           >
-            <div className="relative w-full max-w-3xl mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="relative flex flex-col items-center justify-center w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setShowVideo(false)}
-                className="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors"
+                className="mb-4 self-end flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm hover:bg-white/20 transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
+                Cerrar
               </button>
               <video
                 ref={videoRef}
