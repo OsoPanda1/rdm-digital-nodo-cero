@@ -11,15 +11,6 @@ type EventType = 'celebration' | 'alert' | 'community' | 'reminder';
 type Urgency = 'low' | 'medium' | 'high' | 'critical';
 
 
-interface ChainLoopResponse {
-  source: string;
-  owner: string;
-  totalRepos: number;
-  startRepo: string;
-  nodes: Array<{ repo: string; order: number }>;
-  edges: Array<{ from: string; to: string; mode: string }>;
-}
-
 interface OrchestrationResponse {
   success: boolean;
   data: {
@@ -44,7 +35,6 @@ const NotitamvPage = () => {
   const [urgency, setUrgency] = useState<Urgency>('medium');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrchestrationResponse['data'] | null>(null);
-  const [chainResult, setChainResult] = useState<ChainLoopResponse | null>(null);
 
   const gradient = useMemo(() => {
     if (urgency === 'critical') return 'from-rose-500/50 via-orange-500/40 to-amber-500/50';
@@ -71,14 +61,7 @@ const NotitamvPage = () => {
   };
 
 
-  const loadRepoChain = async () => {
-    const chain = await apiClient.get<ChainLoopResponse>('/federados/github/chain-loop', {
-      owner: 'OsoPanda1',
-      startRepo: 'tamv-digital-nexus',
-      maxRepos: 177,
-    });
-    setChainResult(chain);
-  };
+  // Repo chain loading removed - internal admin function only
   return (
     <PageTransition>
       <SEOMeta
@@ -155,13 +138,6 @@ const NotitamvPage = () => {
                 {loading ? 'Orquestando...' : 'Probar NOTITAMV'}
               </button>
 
-              <button
-                type='button'
-                onClick={loadRepoChain}
-                className='w-full rounded-xl border border-fuchsia-400/60 text-fuchsia-100 font-semibold px-4 py-2'
-              >
-                Interconectar repos OsoPanda1 en cadena
-              </button>
             </article>
 
             <article className='rounded-2xl border border-cyan-400/30 bg-slate-900/70 p-6'>
@@ -188,19 +164,6 @@ const NotitamvPage = () => {
               </div>
             </article>
 
-          {chainResult && (
-            <article className='lg:col-span-2 rounded-2xl border border-fuchsia-400/30 bg-slate-900/70 p-6'>
-              <h3 className='text-lg font-semibold mb-3'>Cadena federada repo→repo (loop cerrado)</h3>
-              <p className='text-sm text-slate-300 mb-3'>Owner: {chainResult.owner} · Repos en cadena: {chainResult.totalRepos} · Inicio: {chainResult.startRepo}</p>
-              <div className='grid md:grid-cols-2 gap-2 text-xs'>
-                {chainResult.edges.slice(0, 24).map((edge) => (
-                  <div key={`${edge.from}-${edge.to}`} className='rounded-lg bg-slate-800/80 px-3 py-2 border border-slate-700'>
-                    <span className='text-cyan-200'>{edge.from}</span> → <span className='text-fuchsia-200'>{edge.to}</span> <span className='text-slate-400'>({edge.mode})</span>
-                  </div>
-                ))}
-              </div>
-            </article>
-          )}
 
           </section>
         </main>
