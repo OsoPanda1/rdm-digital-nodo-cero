@@ -102,4 +102,31 @@ router.get('/github/chain-loop', async (req, res) => {
   }
 });
 
+router.get('/github/unification-plan', async (req, res) => {
+  try {
+    const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+    const targetRepo = typeof req.query.targetRepo === 'string' ? req.query.targetRepo : undefined;
+    const forceRefresh = req.query.refresh === '1';
+    const maxReposParam = Number(req.query.maxRepos);
+    const maxRepos = Number.isFinite(maxReposParam) ? maxReposParam : undefined;
+
+    const plan = await githubRepoFusionService.buildUnificationPlan({
+      owner,
+      targetRepo,
+      forceRefresh,
+      maxRepos,
+    });
+
+    return res.json({
+      source: 'github-unification-plan',
+      ...plan,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo construir el plan de unificación de repositorios',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
 export default router;

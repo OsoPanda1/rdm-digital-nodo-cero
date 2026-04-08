@@ -44,6 +44,7 @@ Endpoints:
 - `POST /api/v1/federados/github/viable-update`
 
 - `GET /api/v1/federados/github/chain-loop`
+- `GET /api/v1/federados/github/unification-plan`
 
 Capacidades:
 - Descubre y puntúa repos por relevancia (RDM/TAMV/federated-AI).
@@ -51,6 +52,7 @@ Capacidades:
 - Genera backlog técnico priorizado (`P0/P1/P2`) con módulo objetivo e impacto esperado.
 - Construye una cadena circular repo→repo para flujo continuo entre todos los repos activos de un owner, con loopback al origen.
 - Permite fijar `startRepo` para arrancar la cadena desde un repositorio concreto (ej. `tamv-digital-nexus`).
+- Genera un plan de consolidación multi-fase para unificar repositorios activos en un hub objetivo (`targetRepo`) con secuencia de merge y comandos bootstrap (hasta 400 repos).
 
 ## 2) Isabella federada (IA funcional)
 
@@ -150,4 +152,3 @@ En términos de producto, combina un stack utilitario de ciudad/pueblo turístic
 3. Métricas SLO para endpoints de federación/IA.
 4. Integración de embeddings/vector store para contexto Isabella semántico.
 5. Orquestación multi-repo hacia `tamv-digital-nexus` como hub principal.
-

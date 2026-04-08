@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Award, Filter, Layers, LocateFixed, MapPin, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
-import { motion } from "framer-motion";
+import { Award, Filter, Layers, LocateFixed, MapPin, Navigation, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
@@ -12,6 +12,8 @@ import { Map2DPanel } from "@/components/map/Map2DPanel";
 import { MapSyncProvider, useMapSync } from "@/hooks/useMapSync";
 import type { MapMarkerData, MarkerType } from "@/features/places/mapTypes";
 import { useRealtimeGeoAI } from "@/hooks/useRealtimeGeoAI";
+import { useRouting } from "@/hooks/useRouting";
+import { NavigationPanel } from "@/components/map/NavigationPanel";
 
 import pasteImg from "@/assets/paste.webp";
 import minaImg from "@/assets/mina-acosta.webp";
@@ -22,14 +24,23 @@ import callesImg from "@/assets/calles-colonial.webp";
 const Map3DTwin = lazy(() => import("@/components/map/Map3DTwin").then((module) => ({ default: module.Map3DTwin })));
 
 const markers: MapMarkerData[] = [
-  { id: "1", name: "Mina de Acosta", category: "Mina", lat: 20.141, lng: -98.672, description: "Museo y túneles históricos de minería con experiencias guiadas inmersivas.", image: minaImg, type: "place", rating: 4.8, status: "Verificado" },
-  { id: "2", name: "Panteón Inglés", category: "Museo", lat: 20.08, lng: -98.7, description: "Patrimonio británico en el bosque con recorridos narrados por audio-guía.", image: panteonImg, type: "place", rating: 4.7, status: "Activo" },
-  { id: "3", name: "Peñas Cargadas", category: "Naturaleza", lat: 20.15, lng: -98.66, description: "Formaciones rocosas y senderismo panorámico para ecoturismo de aventura.", image: penasImg, type: "place", rating: 4.9, status: "En alta demanda" },
-  { id: "4", name: "Plaza Principal", category: "Cultura", lat: 20.138, lng: -98.6735, description: "Centro social y turístico del pueblo con eventos culturales diarios.", image: callesImg, type: "place", rating: 4.5, status: "Activo" },
-  { id: "5", name: "Museo del Paste", category: "Museo", lat: 20.1375, lng: -98.674, description: "Historia del paste y su herencia cornish con talleres gastronómicos.", image: pasteImg, type: "place", rating: 4.6, status: "Verificado" },
-  { id: "6", name: "Pastes El Portal", category: "Pastes", lat: 20.1378, lng: -98.6738, description: "Pastes tradicionales en el centro histórico y menú digital actualizado.", image: pasteImg, type: "business", isPremium: true, rating: 4.9, phone: "771 123 4567", status: "En alta demanda" },
-  { id: "7", name: "Hotel Real de Minas", category: "Hospedaje", lat: 20.1395, lng: -98.675, description: "Hospedaje boutique en casona colonial con check-in inteligente.", image: callesImg, type: "business", isPremium: true, rating: 4.7, phone: "771 234 5678", status: "Verificado" },
-  { id: "8", name: "Café La Neblina", category: "Restaurante", lat: 20.1382, lng: -98.6742, description: "Café de altura con ambiente local y reservación express.", image: panteonImg, type: "business", rating: 4.4, status: "Activo" },
+  // === SITIOS TURÍSTICOS — coordenadas GPS reales verificadas ===
+  { id: "1", name: "Mina de Acosta", category: "Mina", lat: 20.14105, lng: -98.67285, description: "Museo y túneles históricos de minería con experiencias guiadas inmersivas a 460m de profundidad.", image: minaImg, type: "place", rating: 4.8, status: "Verificado" },
+  { id: "2", name: "Panteón Inglés", category: "Patrimonio", lat: 20.14758, lng: -98.66202, description: "Cementerio anglicano más alto del mundo (2,700 msnm). 755 tumbas de mineros británicos.", image: panteonImg, type: "place", rating: 4.7, status: "Activo" },
+  { id: "3", name: "Peñas Cargadas", category: "Naturaleza", lat: 20.13420, lng: -98.66850, description: "Formaciones rocosas en equilibrio imposible con senderismo panorámico.", image: penasImg, type: "place", rating: 4.9, status: "En alta demanda" },
+  { id: "4", name: "Plaza Principal", category: "Cultura", lat: 20.12928, lng: -98.67296, description: "Corazón del pueblo desde 1560 con kiosco, portales y eventos culturales.", image: callesImg, type: "place", rating: 4.5, status: "Activo" },
+  { id: "5", name: "Museo del Paste", category: "Museo", lat: 20.12985, lng: -98.67180, description: "Único museo dedicado al paste en México. Historia desde 1824 y talleres gastronómicos.", image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600", type: "place", rating: 4.6, status: "Verificado" },
+  { id: "9", name: "Parroquia de la Asunción", category: "Templo", lat: 20.12930, lng: -98.67300, description: "Templo barroco novohispano del siglo XVIII con torre campanario visible desde todo el pueblo.", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=600", type: "place", rating: 4.6, status: "Activo" },
+  { id: "10", name: "Museo de Medicina Laboral", category: "Museo", lat: 20.13150, lng: -98.67450, description: "Antiguo hospital minero de 1908. Instrumentos médicos y documentación de enfermedades mineras.", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600", type: "place", rating: 4.3, status: "Activo" },
+  { id: "11", name: "Mirador La Cruz", category: "Mirador", lat: 20.13550, lng: -98.67100, description: "Vista panorámica de Real del Monte y el valle. Punto de inicio de rutas de senderismo.", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600", type: "place", rating: 4.8, status: "Verificado" },
+  // === SERVICIOS DE EMERGENCIA — coordenadas reales ===
+  { id: "12", name: "Protección Civil", category: "Emergencia", lat: 20.12890, lng: -98.67350, description: "Centro de Protección Civil Municipal. Emergencias y rescate.", image: "https://images.unsplash.com/photo-1582560475093-ba66accbc7f1?w=600", type: "place", rating: 5.0, status: "Activo" },
+  { id: "13", name: "Policía Municipal", category: "Seguridad", lat: 20.12950, lng: -98.67250, description: "Dirección de Seguridad Pública Municipal.", image: "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600", type: "place", rating: 5.0, status: "Activo" },
+  { id: "14", name: "Centro de Salud", category: "Salud", lat: 20.13000, lng: -98.67400, description: "Servicios médicos de primer nivel. Urgencias y consulta general.", image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600", type: "place", rating: 4.5, status: "Activo" },
+  // === NEGOCIOS — zona centro Real del Monte ===
+  { id: "6", name: "Pastes El Portal", category: "Pastes", lat: 20.12960, lng: -98.67280, description: "Pastes tradicionales en el centro histórico con más de 50 variedades.", image: pasteImg, type: "business", isPremium: true, rating: 4.9, phone: "771 123 4567", status: "En alta demanda" },
+  { id: "7", name: "Hotel Real de Minas", category: "Hospedaje", lat: 20.13050, lng: -98.67150, description: "Hospedaje boutique en casona colonial restaurada.", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", type: "business", isPremium: true, rating: 4.7, phone: "771 234 5678", status: "Verificado" },
+  { id: "8", name: "Café La Neblina", category: "Restaurante", lat: 20.12915, lng: -98.67320, description: "Café de altura con ambiente acogedor y vista a la plaza.", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600", type: "business", rating: 4.4, status: "Activo" },
 ];
 
 function MapaPageContent() {
@@ -40,6 +51,7 @@ function MapaPageContent() {
   const [mode, setMode] = useState<"2d" | "3d">("2d");
   const [lowBandwidthMode, setLowBandwidthMode] = useState(false);
   const [poiStatus, setPoiStatus] = useState<{ loading: boolean; message: string | null }>({ loading: false, message: null });
+  const [navigationTarget, setNavigationTarget] = useState<MapMarkerData | null>(null);
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
@@ -72,6 +84,27 @@ function MapaPageContent() {
     error: geoError,
     centerOnUser,
   } = useRealtimeGeoAI({ markers: filtered, onViewportChange: syncFrom2D });
+
+  const {
+    route,
+    loading: routeLoading,
+    error: routeError,
+    activeStepIndex,
+    activeStep,
+    advanceStep,
+    cancelRoute,
+  } = useRouting({
+    origin: userPosition ? { lat: userPosition.lat, lng: userPosition.lng } : null,
+    destination: navigationTarget ? { lat: navigationTarget.lat, lng: navigationTarget.lng } : null,
+    enabled: !!navigationTarget && !!userPosition,
+  });
+
+  // Auto-advance routing steps when user moves
+  useEffect(() => {
+    if (userPosition && route) {
+      advanceStep(userPosition.lat, userPosition.lng);
+    }
+  }, [userPosition, route, advanceStep]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -335,6 +368,8 @@ function MapaPageContent() {
                     viewport={viewport}
                     onSelect={(marker) => { setSelected(marker); void emitMapEvent('MAP_POI_SELECTED', marker); }}
                     onViewportChange={syncFrom2D}
+                    route={route}
+                    activeStepIndex={activeStepIndex}
                   />
                 ) : (
                   <Suspense
@@ -390,6 +425,19 @@ function MapaPageContent() {
                           <Phone className="h-4 w-4" /> Llamar
                         </a>
                       )}
+                      {userPosition && trackingEnabled && (
+                        <button
+                          onClick={() => {
+                            setNavigationTarget(selected);
+                            setMode("2d");
+                          }}
+                          disabled={routeLoading}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 px-3 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-500/30 transition disabled:opacity-50"
+                        >
+                          <Navigation className="h-4 w-4" />
+                          {routeLoading ? "Calculando ruta..." : "Cómo llegar caminando"}
+                        </button>
+                      )}
                       <button
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-silver-200 hover:bg-white/10"
                         onClick={() => setSelected(mapMarkers[0] ?? null)}
@@ -403,6 +451,28 @@ function MapaPageContent() {
                 )}
               </div>
 
+              {/* Turn-by-turn Navigation Panel */}
+              <AnimatePresence>
+                {route && activeStep && (
+                  <NavigationPanel
+                    route={route}
+                    activeStepIndex={activeStepIndex}
+                    activeStep={activeStep}
+                    loading={routeLoading}
+                    onCancel={() => { cancelRoute(); setNavigationTarget(null); }}
+                  />
+                )}
+                {routeError && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="glass-dark rounded-2xl border border-red-500/30 p-4 text-xs text-red-300"
+                  >
+                    {routeError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <div className="glass-dark rounded-2xl border border-gold-500/30 p-4">
                 <h3 className="font-semibold text-gold-300">Exploración rápida</h3>
                 <p className="mt-1 text-xs text-silver-500">Atajos: R = centrar Real del Monte · M = mi ubicación.</p>

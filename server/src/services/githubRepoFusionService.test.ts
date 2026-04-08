@@ -54,4 +54,78 @@ describe('GitHubRepoFusionService', () => {
     expect(result.edges.length).toBeGreaterThan(0);
     expect(result.edges[0].reasons.some((item) => item.startsWith('same-language:'))).toBe(true);
   });
+
+  it('genera plan de unificación hacia tamv-digital-nexus', async () => {
+    const repos = Array.from({ length: 12 }).map((_, index) => ({
+      id: index + 1,
+      name: index === 0 ? 'tamv-digital-nexus' : `tamv-module-${index}`,
+      full_name: `OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-module-${index}`}`,
+      html_url: `https://github.com/OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-module-${index}`}`,
+      description: 'tamv digital module',
+      homepage: null,
+      language: index % 2 === 0 ? 'TypeScript' : 'Go',
+      topics: ['tamv', 'digital', 'nexus'],
+      stargazers_count: 1,
+      forks_count: 1,
+      updated_at: new Date().toISOString(),
+      archived: false,
+      disabled: false,
+    }));
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => repos,
+      } as Response),
+    );
+
+    const service = new GitHubRepoFusionService();
+    const plan = await service.buildUnificationPlan({
+      owner: 'OsoPanda1',
+      targetRepo: 'tamv-digital-nexus',
+      maxRepos: 177,
+      forceRefresh: true,
+    });
+
+    expect(plan.targetRepo).toBe('tamv-digital-nexus');
+    expect(plan.selectedRepos).toBe(11);
+    expect(plan.phases.length).toBe(3);
+    expect(plan.bootstrapCommands[0]).toContain('tamv-digital-nexus');
+  });
+
+  it('permite sincronizar más de 50 repos cuando se solicita un límite alto', async () => {
+    const repos = Array.from({ length: 80 }).map((_, index) => ({
+      id: index + 1,
+      name: `tamv-node-${index}`,
+      full_name: `OsoPanda1/tamv-node-${index}`,
+      html_url: `https://github.com/OsoPanda1/tamv-node-${index}`,
+      description: 'tamv rdm digital repo',
+      homepage: null,
+      language: 'TypeScript',
+      topics: ['tamv', 'digital'],
+      stargazers_count: 0,
+      forks_count: 0,
+      updated_at: new Date().toISOString(),
+      archived: false,
+      disabled: false,
+    }));
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => repos,
+      } as Response),
+    );
+
+    const service = new GitHubRepoFusionService();
+    const result = await service.syncRelatedRepos({
+      owner: 'OsoPanda1',
+      forceRefresh: true,
+      limit: 177,
+    });
+
+    expect(result.relatedRepos).toBe(80);
+  });
 });
