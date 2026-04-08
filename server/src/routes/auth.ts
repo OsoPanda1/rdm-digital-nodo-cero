@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import prisma from '../lib/prisma';
 import { requireAuth, optionalAuth, AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { signFederationPayload } from '../lib/federationSignature';
 
 const router = Router();
 
@@ -37,8 +38,9 @@ const resetPasswordSchema = z.object({
 
 // Generate JWT token
 const generateToken = (userId: string, email: string, role: string) => {
+  const federationSig = signFederationPayload({ id: userId, email, role });
   return jwt.sign(
-    { id: userId, email, role },
+    { id: userId, email, role, federationSig },
     process.env.JWT_SECRET || 'default-secret-key',
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );

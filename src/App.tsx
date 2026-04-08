@@ -37,6 +37,7 @@ const NegociosPortal = lazy(() => import("./pages/NegociosPortal"));
 const ValidacionTecnica = lazy(() => import("./pages/ValidacionTecnica"));
 const Musica = lazy(() => import("./pages/Musica"));
 const Notitamv = lazy(() => import("./pages/Notitamv"));
+const SovereignOps = lazy(() => import("./pages/SovereignOps"));
 
 const RouteFallback = () => (
   <div className="min-h-screen w-full animate-pulse bg-background" aria-label="Cargando contenido" />
@@ -73,6 +74,7 @@ const AnimatedRoutes = () => {
           <Route path="/validacion-tecnica" element={<ValidacionTecnica />} />
           <Route path="/musica" element={<Musica />} />
           <Route path="/notitamv" element={<Notitamv />} />
+          <Route path="/soberano" element={<SovereignOps />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

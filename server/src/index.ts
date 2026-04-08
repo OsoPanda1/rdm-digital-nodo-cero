@@ -29,6 +29,10 @@ import isabellaRoutes from "./routes/isabella";
 import musicRoutes from "./routes/music";
 import poisRoutes from "./routes/pois";
 import notitamvRoutes from "./routes/notitamv";
+import quantumRoutes from "./routes/quantum";
+import identityRoutes from "./routes/identity";
+import territoryRoutes from "./routes/territory";
+import simulationRoutes from "./routes/simulation";
 
 dotenv.config();
 
@@ -100,6 +104,10 @@ app.use("/api/v1/isabella", sensitiveLimiter, isabellaRoutes);
 app.use("/api/v1/music", musicRoutes);
 app.use("/api/v1/pois", poisRoutes);
 app.use("/api/v1/notitamv", sensitiveLimiter, notitamvRoutes);
+app.use("/api/v1/quantum", sensitiveLimiter, quantumRoutes);
+app.use("/api/v1/identity", sensitiveLimiter, identityRoutes);
+app.use("/api/v1/territory", territoryRoutes);
+app.use("/api/v1/simulation", sensitiveLimiter, simulationRoutes);
 
 // Legacy routes for backwards compatibility
 app.use("/api/auth", authLimiter, authRoutes);
@@ -122,6 +130,10 @@ app.use("/api/isabella", sensitiveLimiter, isabellaRoutes);
 app.use("/api/music", musicRoutes);
 app.use("/api/pois", poisRoutes);
 app.use("/api/notitamv", sensitiveLimiter, notitamvRoutes);
+app.use("/api/quantum", sensitiveLimiter, quantumRoutes);
+app.use("/api/identity", sensitiveLimiter, identityRoutes);
+app.use("/api/territory", territoryRoutes);
+app.use("/api/simulation", sensitiveLimiter, simulationRoutes);
 
 // Error handling
 app.use(errorHandler);
