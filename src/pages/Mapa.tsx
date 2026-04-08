@@ -42,6 +42,7 @@ function MapaPageContent() {
   const [mode, setMode] = useState<"2d" | "3d">("2d");
   const [lowBandwidthMode, setLowBandwidthMode] = useState(false);
   const [poiStatus, setPoiStatus] = useState<{ loading: boolean; message: string | null }>({ loading: false, message: null });
+  const [navigationTarget, setNavigationTarget] = useState<MapMarkerData | null>(null);
   const { viewport, syncFrom2D, syncFrom3D } = useMapSync();
 
   const handleFilterChange = (nextFilter: MarkerType | "all") => {
