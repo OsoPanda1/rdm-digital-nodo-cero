@@ -53,6 +53,8 @@ Capacidades:
 - Construye una cadena circular repo→repo para flujo continuo entre todos los repos activos de un owner, con loopback al origen.
 - Permite fijar `startRepo` para arrancar la cadena desde un repositorio concreto (ej. `tamv-digital-nexus`).
 - Genera un plan de consolidación multi-fase para unificar repositorios activos en un hub objetivo (`targetRepo`) con secuencia de merge y comandos bootstrap (hasta 400 repos).
+- Soporta `preset=quantum` para inyectar automáticamente repos base (Microsoft Quantum, TensorFlow Quantum, QuantumKatas, QuantumultX y PennyLane) al plan de bootstrap.
+- Acepta `seedRepo` (uno o varios) para anexar repos externos estratégicos al plan sin perder la priorización de los repos del owner.
 
 ## 2) Isabella federada (IA funcional)
 

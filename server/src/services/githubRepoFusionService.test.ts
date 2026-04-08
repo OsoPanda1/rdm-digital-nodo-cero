@@ -94,6 +94,50 @@ describe('GitHubRepoFusionService', () => {
     expect(plan.bootstrapCommands[0]).toContain('tamv-digital-nexus');
   });
 
+  it('inyecta repos externos de referencia cuántica al plan de bootstrap', async () => {
+    const repos = Array.from({ length: 11 }).map((_, index) => ({
+      id: index + 1,
+      name: index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`,
+      full_name: `OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`}`,
+      html_url: `https://github.com/OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`}`,
+      description: 'tamv digital module',
+      homepage: null,
+      language: 'TypeScript',
+      topics: ['tamv', 'digital', 'nexus'],
+      stargazers_count: 1,
+      forks_count: 0,
+      updated_at: new Date().toISOString(),
+      archived: false,
+      disabled: false,
+    }));
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => repos,
+      } as Response),
+    );
+
+    const service = new GitHubRepoFusionService();
+    const plan = await service.buildUnificationPlan({
+      owner: 'OsoPanda1',
+      targetRepo: 'tamv-digital-nexus',
+      externalRepoUrls: [
+        'https://github.com/microsoft/Quantum.git',
+        'PennyLaneAI/pennylane',
+      ],
+      forceRefresh: true,
+    });
+
+    expect(plan.externalSeeds).toEqual([
+      'https://github.com/microsoft/Quantum',
+      'https://github.com/PennyLaneAI/pennylane',
+    ]);
+    expect(plan.bootstrapCommands.some((cmd) => cmd.includes('ext-Quantum'))).toBe(true);
+    expect(plan.bootstrapCommands.some((cmd) => cmd.includes('ext-pennylane'))).toBe(true);
+  });
+
   it('permite sincronizar más de 50 repos cuando se solicita un límite alto', async () => {
     const repos = Array.from({ length: 80 }).map((_, index) => ({
       id: index + 1,
