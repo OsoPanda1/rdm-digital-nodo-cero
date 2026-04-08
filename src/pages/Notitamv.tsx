@@ -11,15 +11,6 @@ type EventType = 'celebration' | 'alert' | 'community' | 'reminder';
 type Urgency = 'low' | 'medium' | 'high' | 'critical';
 
 
-interface ChainLoopResponse {
-  source: string;
-  owner: string;
-  totalRepos: number;
-  startRepo: string;
-  nodes: Array<{ repo: string; order: number }>;
-  edges: Array<{ from: string; to: string; mode: string }>;
-}
-
 interface OrchestrationResponse {
   success: boolean;
   data: {
@@ -44,7 +35,6 @@ const NotitamvPage = () => {
   const [urgency, setUrgency] = useState<Urgency>('medium');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrchestrationResponse['data'] | null>(null);
-  const [chainResult, setChainResult] = useState<ChainLoopResponse | null>(null);
 
   const gradient = useMemo(() => {
     if (urgency === 'critical') return 'from-rose-500/50 via-orange-500/40 to-amber-500/50';
