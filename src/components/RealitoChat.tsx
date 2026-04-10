@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, Send, Sparkles, X } from "lucide-react";
 import logoRdm from "@/assets/logo-rdm.png";
-import { supabase } from "@/integrations/supabase/client";
+
+const REALITO_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/realito-chat`;
 
 interface Message {
   id: string;
@@ -48,28 +49,41 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
       try {
         const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
-        const { data, error } = await supabase.functions.invoke("realito-chat", {
-          body: { messages: apiMessages },
+        const resp = await fetch(REALITO_CHAT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: apiMessages }),
         });
 
-        if (error) throw error;
+        if (!resp.ok) {
+          const errBody = await resp.text();
+          throw new Error(errBody || `Error ${resp.status}`);
+        }
 
-        // Handle streaming SSE response
-        if (data instanceof ReadableStream) {
-          const reader = data.getReader();
+        // Stream SSE response
+        if (resp.body) {
+          const reader = resp.body.getReader();
           const decoder = new TextDecoder();
           let assistantContent = "";
           const assistantId = `${Date.now()}-a`;
           setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
 
+          let textBuffer = "";
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
+            textBuffer += decoder.decode(value, { stream: true });
 
-            for (const line of lines) {
+            let newlineIndex: number;
+            while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+              let line = textBuffer.slice(0, newlineIndex);
+              textBuffer = textBuffer.slice(newlineIndex + 1);
+
+              if (line.endsWith("\r")) line = line.slice(0, -1);
               if (!line.startsWith("data: ")) continue;
               const payload = line.slice(6).trim();
               if (payload === "[DONE]") continue;
@@ -90,16 +104,6 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
               }
             }
           }
-        } else if (typeof data === "object" && data !== null) {
-          // Non-streaming fallback
-          const reply =
-            data.choices?.[0]?.message?.content ||
-            data.error ||
-            "No pude procesar tu mensaje. Intenta de nuevo.";
-          setMessages((prev) => [
-            ...prev,
-            { id: `${Date.now()}-a`, role: "assistant", content: reply },
-          ]);
         }
       } catch (err) {
         console.error("RealitoChat error", err);
