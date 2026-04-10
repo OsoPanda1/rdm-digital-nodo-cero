@@ -7,37 +7,32 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   DOCKER_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # Lint and test frontend
   frontend-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: bun install --frozen-lockfile
 
       - name: Run linter
-        run: npm run lint
+        run: bun run lint
 
       - name: Run tests
-        run: npm run test --if-present
+        run: bun run test
 
       - name: Build frontend
-        run: npm run build
+        run: bun run build
 
-  # Lint and test backend
   backend-test:
     runs-on: ubuntu-latest
     services:
@@ -87,7 +82,6 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
           JWT_SECRET: test-secret
 
-  # Build and push Docker images
   docker-build:
     needs: [frontend-test, backend-test]
     runs-on: ubuntu-latest
@@ -133,9 +127,7 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-        working-directory: ./server
 
-  # Deploy to production (manual trigger)
   deploy:
     needs: [docker-build]
     runs-on: ubuntu-latest
@@ -153,11 +145,7 @@ jobs:
         run: |
           echo "Deploying to production..."
           # Add your deployment commands here
-          # Examples:
-          # - kubectl apply -f k8s/
-          # - docker-compose -f docker-compose.production.yml up -d
-          # - terraform apply
-          
+
       - name: Notify deployment
         if: always()
         run: |

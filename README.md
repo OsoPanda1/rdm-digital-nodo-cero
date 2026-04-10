@@ -6,7 +6,7 @@ Plataforma full-stack para operación turística/cultural de Real del Monte con 
 
 ## Estado actual (abril 2026)
 
-- Frontend React + Vite en producción local (`npm run dev`, `npm run build`).
+- Frontend React + Vite (Bun) en producción local (`bun run dev`, `bun run build`).
 - Backend Express + TypeScript con rutas versionadas (`/api/v1`) y rutas legacy (`/api`).
 - Integración federada de repositorios GitHub (owner configurable).
 - Pipeline CI para ejecutar unificación por lotes (remote/fetch/merge opcional) con reporte de conflictos.
@@ -146,27 +146,47 @@ Ejecutor: `tools/ci/unification-executor.mjs`
 ## Quickstart
 
 ### Frontend
+
+> Vite está configurado para correr en el puerto **8080**.
+
 ```bash
-npm ci
-npm run dev
+bun install --frozen-lockfile
+bun run dev
+```
+
+Opcional (variables de entorno frontend):
+
+```bash
+cp .env.example .env.local
 ```
 
 ### Backend
+
 ```bash
+cp server/.env.example server/.env
 npm --prefix server ci
 npm --prefix server run dev
 ```
 
 ### Checks recomendados
+
 ```bash
+bun run lint
+bun run test
+bun run build
+
 npm --prefix server run lint
-npm --prefix server test -- --run
-npm run build
+npm --prefix server run test -- --run
+npm --prefix server run build
 ```
 
 ---
 
 ## Variables de entorno
+
+Archivos recomendados:
+- Frontend: copia `.env.example` → `.env.local`
+- Backend: copia `server/.env.example` → `server/.env`
 
 ### Backend mínimas
 - `PORT` (default 3001)
