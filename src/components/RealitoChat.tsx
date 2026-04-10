@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, Send, Sparkles, X } from "lucide-react";
 import logoRdm from "@/assets/logo-rdm.png";
-import { supabase } from "@/integrations/supabase/client";
+
+const REALITO_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/realito-chat`;
 
 interface Message {
   id: string;
