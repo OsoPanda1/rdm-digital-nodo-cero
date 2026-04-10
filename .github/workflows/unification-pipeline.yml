@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: read
     env:
-      NODE_VERSION: "20"
+      NODE_VERSION: "22"
       PORT: "3001"
       DATABASE_URL: postgresql://test:test@localhost:5432/test
       JWT_SECRET: ci-unification-secret
@@ -50,12 +50,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            server/package-lock.json
+          cache-dependency-path: server/package-lock.json
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install root dependencies
-        run: npm ci --legacy-peer-deps
+        run: bun install --frozen-lockfile
 
       - name: Install server dependencies
         run: npm --prefix server ci --legacy-peer-deps
