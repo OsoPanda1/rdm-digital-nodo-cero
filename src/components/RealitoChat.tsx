@@ -49,11 +49,19 @@ export default function RealitoChat({ initialOpen = false }: RealitoChatProps) {
       try {
         const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
-        const { data, error } = await supabase.functions.invoke("realito-chat", {
-          body: { messages: apiMessages },
+        const resp = await fetch(REALITO_CHAT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: apiMessages }),
         });
 
-        if (error) throw error;
+        if (!resp.ok) {
+          const errBody = await resp.text();
+          throw new Error(errBody || `Error ${resp.status}`);
+        }
 
         // Handle streaming SSE response
         if (data instanceof ReadableStream) {
