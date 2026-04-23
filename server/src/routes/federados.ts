@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { quantumFederationService } from '../services/quantumFederationService';
 import { githubRepoFusionService } from '../services/githubRepoFusionService';
 import { repoChainService } from '../services/repoChainService';
+import { federatedPoiService } from '../services/federatedPoiService';
 
 const router = Router();
 
@@ -153,6 +154,23 @@ router.get('/github/unification-script', async (req, res) => {
   } catch (error) {
     return res.status(502).json({
       error: 'No se pudo generar el script de unificación',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
+router.get('/live-map-sync', async (_req, res) => {
+  try {
+    const records = await federatedPoiService.fetchFederationPois({ timeoutMs: 2000 });
+    return res.json({
+      source: 'federation-live-map-sync',
+      syncedAt: new Date().toISOString(),
+      records: records.length,
+      status: records.length > 0 ? 'connected' : 'degraded',
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo sincronizar mapa con federaciones',
       details: error instanceof Error ? error.message : 'error desconocido',
     });
   }
