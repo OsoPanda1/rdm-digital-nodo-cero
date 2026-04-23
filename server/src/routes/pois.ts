@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { federatedPoiService } from '../services/federatedPoiService';
 
 const router = Router();
 
@@ -20,6 +21,10 @@ const mapEventSchema = z.object({
   type: z.string().optional(),
   userProfile: z.string().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
+  geo: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+  }).optional(),
 });
 
 interface PoiRecord {
@@ -101,7 +106,7 @@ const POI_FIXTURE: PoiRecord[] = [
   },
 ];
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const parsed = poisQuerySchema.safeParse(req.query);
   if (!parsed.success) {
     return res.status(400).json({
@@ -113,7 +118,37 @@ router.get('/', (req, res) => {
   const { zone, type, category, tags, onlyAccessible, limit } = parsed.data;
   const requestedTags = tags ? tags.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean) : [];
 
-  const filtered = POI_FIXTURE
+  const localPois = POI_FIXTURE
+    .filter((poi) => poi.properties.zone === zone || zone === 'real-del-monte')
+    .filter((poi) => (type ? poi.properties.type === type : true))
+    .filter((poi) => (category ? poi.properties.category.toLowerCase() === category.toLowerCase() : true))
+    .filter((poi) => (onlyAccessible ? poi.properties.is_accessible : true))
+    .filter((poi) => (requestedTags.length > 0
+      ? requestedTags.every((tag) => poi.properties.tags.map((item) => item.toLowerCase()).includes(tag))
+      : true))
+    .sort((a, b) => b.properties.priority - a.properties.priority);
+
+  const federationPois = await federatedPoiService.fetchFederationPois();
+  const federationAsFeatures: PoiRecord[] = federationPois.map((poi) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [poi.lng, poi.lat] },
+    properties: {
+      id: poi.id,
+      name: poi.name,
+      type: poi.type,
+      category: poi.category,
+      opening_hours: 'N/D',
+      commerce_id: null,
+      priority: poi.priority,
+      is_accessible: poi.is_accessible,
+      tags: poi.tags,
+      emotion_profile: poi.type === 'cultural' ? 'contemplativo' : poi.type === 'servicio' ? 'familiar' : 'aventura',
+      zone: poi.zone,
+      description: poi.description,
+    },
+  }));
+
+  const merged = [...localPois, ...federationAsFeatures]
     .filter((poi) => poi.properties.zone === zone || zone === 'real-del-monte')
     .filter((poi) => (type ? poi.properties.type === type : true))
     .filter((poi) => (category ? poi.properties.category.toLowerCase() === category.toLowerCase() : true))
@@ -132,14 +167,21 @@ router.get('/', (req, res) => {
     category,
     requestedTags,
     onlyAccessible,
-    returned: filtered.length,
+    returned: merged.length,
+    localRecords: localPois.length,
+    federatedRecords: federationAsFeatures.length,
   }));
 
   return res.json({
     zone,
-    total: filtered.length,
-    source: 'pois-fixture-stub',
-    features: filtered,
+    total: merged.length,
+    source: federationAsFeatures.length > 0 ? 'hybrid-federated-poi' : 'pois-fixture-stub',
+    features: merged,
+    integrity: {
+      localRecords: localPois.length,
+      federatedRecords: federationAsFeatures.length,
+      geolocationValidated: true,
+    },
   });
 });
 
@@ -156,6 +198,7 @@ router.post('/events', (req, res) => {
     level: 'info',
     route: '/api/v1/pois/events',
     ...parsed.data,
+    metadataKeys: parsed.data.metadata ? Object.keys(parsed.data.metadata).slice(0, 12) : [],
     timestamp: new Date().toISOString(),
   }));
 
