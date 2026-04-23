@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Award, Filter, Layers, LocateFixed, MapPin, Navigation, Phone, Radar, Search, Star, Zap, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -43,7 +43,12 @@ const markers: MapMarkerData[] = [
   { id: "8", name: "Café La Neblina", category: "Restaurante", lat: 20.12915, lng: -98.67320, description: "Café de altura con ambiente acogedor y vista a la plaza.", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600", type: "business", rating: 4.4, status: "Activo" },
 ];
 
+function isMarkerWithinRdmBounds(lat: number, lng: number) {
+  return lat >= 20.06 && lat <= 20.22 && lng >= -98.76 && lng <= -98.58;
+}
+
 function MapaPageContent() {
+  const mapViewEventSentRef = useRef(false);
   const [filter, setFilter] = useState<"all" | MarkerType>("all");
   const [mapMarkers, setMapMarkers] = useState<MapMarkerData[]>(markers);
   const [selected, setSelected] = useState<MapMarkerData | null>(markers[0]);
@@ -112,41 +117,51 @@ function MapaPageContent() {
     const loadPois = async () => {
       setPoiStatus({ loading: true, message: null });
       try {
-        const response = await fetch('/api/v1/pois?zone=real-del-monte&limit=80', { signal: controller.signal });
+        const response = await fetch('/api/v1/pois?zone=real-del-monte&limit=120&onlyAccessible=true', { signal: controller.signal });
         if (!response.ok) throw new Error('No se pudieron cargar POIs');
-        const payload = await response.json();
+        const payload = await response.json() as {
+          source?: string;
+          integrity?: { federatedRecords?: number };
+          features?: Array<{
+            geometry: { coordinates: [number, number] };
+            properties: {
+              id: string;
+              name: string;
+              category: string;
+              description: string;
+              type: string;
+              priority: number;
+            };
+          }>;
+        };
 
-        const fromApi: MapMarkerData[] = (payload.features ?? []).map((feature: {
-          geometry: { coordinates: [number, number] };
-          properties: {
-            id: string;
-            name: string;
-            category: string;
-            description: string;
-            type: string;
-            priority: number;
-          };
-        }) => ({
-          id: feature.properties.id,
-          name: feature.properties.name,
-          category: feature.properties.category,
-          lat: feature.geometry.coordinates[1],
-          lng: feature.geometry.coordinates[0],
-          description: feature.properties.description,
-          image: callesImg,
-          type: feature.properties.type === 'servicio' ? 'business' : 'place',
-          isPremium: feature.properties.priority >= 9,
-          status: feature.properties.priority >= 9 ? 'En alta demanda' : 'Activo',
-          rating: 4.5,
-          phone: undefined,
-        }));
+        const fromApi: MapMarkerData[] = (payload.features ?? [])
+          .map((feature) => ({
+            id: feature.properties.id,
+            name: feature.properties.name,
+            category: feature.properties.category,
+            lat: feature.geometry.coordinates[1],
+            lng: feature.geometry.coordinates[0],
+            description: feature.properties.description,
+            image: callesImg,
+            type: feature.properties.type === 'servicio' ? 'business' : 'place',
+            isPremium: feature.properties.priority >= 9,
+            status: feature.properties.priority >= 9 ? 'En alta demanda' : 'Activo',
+            rating: 4.5,
+            phone: undefined,
+          }))
+          .filter((marker) => isMarkerWithinRdmBounds(marker.lat, marker.lng));
 
         if (fromApi.length > 0) {
           setMapMarkers(fromApi);
           setSelected((current) => current ?? fromApi[0]);
         }
 
-        setPoiStatus({ loading: false, message: null });
+        const fedRecords = payload.integrity?.federatedRecords ?? 0;
+        const statusMessage = payload.source === 'hybrid-federated-poi'
+          ? `Sincronización híbrida activa (${fedRecords} registros federados).`
+          : 'Fuente local activa. Sin conexión federada.';
+        setPoiStatus({ loading: false, message: statusMessage });
       } catch {
         setPoiStatus({ loading: false, message: 'Usando datos locales por conectividad limitada.' });
       }
@@ -180,6 +195,7 @@ function MapaPageContent() {
           poiId: poi?.id,
           type: poi?.category,
           userProfile: 'guest',
+          geo: userPosition ? { lat: userPosition.lat, lng: userPosition.lng } : undefined,
         }),
       });
     } catch {
@@ -188,8 +204,10 @@ function MapaPageContent() {
   };
 
   useEffect(() => {
+    if (mapViewEventSentRef.current) return;
+    mapViewEventSentRef.current = true;
     void emitMapEvent('MAP_PAGE_VIEW');
-  }, []);
+  }, [userPosition]);
 
   const stats = useMemo(
     () => [
