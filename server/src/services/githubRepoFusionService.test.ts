@@ -139,50 +139,6 @@ describe('GitHubRepoFusionService', () => {
     expect(plan.bootstrapCommands.some((cmd) => cmd.includes('ext-pennylane'))).toBe(true);
   });
 
-  it('inyecta repos externos de referencia cuántica al plan de bootstrap', async () => {
-    const repos = Array.from({ length: 11 }).map((_, index) => ({
-      id: index + 1,
-      name: index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`,
-      full_name: `OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`}`,
-      html_url: `https://github.com/OsoPanda1/${index === 0 ? 'tamv-digital-nexus' : `tamv-node-${index}`}`,
-      description: 'tamv digital module',
-      homepage: null,
-      language: 'TypeScript',
-      topics: ['tamv', 'digital', 'nexus'],
-      stargazers_count: 1,
-      forks_count: 0,
-      updated_at: new Date().toISOString(),
-      archived: false,
-      disabled: false,
-    }));
-
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => repos,
-      } as Response),
-    );
-
-    const service = new GitHubRepoFusionService();
-    const plan = await service.buildUnificationPlan({
-      owner: 'OsoPanda1',
-      targetRepo: 'tamv-digital-nexus',
-      externalRepoUrls: [
-        'https://github.com/microsoft/Quantum.git',
-        'PennyLaneAI/pennylane',
-      ],
-      forceRefresh: true,
-    });
-
-    expect(plan.externalSeeds).toEqual([
-      'https://github.com/microsoft/Quantum',
-      'https://github.com/PennyLaneAI/pennylane',
-    ]);
-    expect(plan.bootstrapCommands.some((cmd) => cmd.includes('ext-Quantum'))).toBe(true);
-    expect(plan.bootstrapCommands.some((cmd) => cmd.includes('ext-pennylane'))).toBe(true);
-  });
-
   it('permite sincronizar más de 50 repos cuando se solicita un límite alto', async () => {
     const repos = Array.from({ length: 80 }).map((_, index) => ({
       id: index + 1,
@@ -216,5 +172,136 @@ describe('GitHubRepoFusionService', () => {
     });
 
     expect(result.relatedRepos).toBe(80);
+  });
+
+  it('no reutiliza caché entre owners distintos', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
+      const url = input.toString();
+      if (url.includes('/users/owner-a/')) {
+        return {
+          ok: true,
+          json: async () => [
+            {
+              id: 1,
+              name: 'repo-a',
+              full_name: 'owner-a/repo-a',
+              html_url: 'https://github.com/owner-a/repo-a',
+              description: 'repo a',
+              homepage: null,
+              language: 'TypeScript',
+              topics: ['tamv'],
+              stargazers_count: 0,
+              forks_count: 0,
+              updated_at: new Date().toISOString(),
+              archived: false,
+              disabled: false,
+            },
+          ],
+        } as Response;
+      }
+
+      return {
+        ok: true,
+        json: async () => [
+          {
+            id: 2,
+            name: 'repo-b',
+            full_name: 'owner-b/repo-b',
+            html_url: 'https://github.com/owner-b/repo-b',
+            description: 'repo b',
+            homepage: null,
+            language: 'Go',
+            topics: ['digital'],
+            stargazers_count: 0,
+            forks_count: 0,
+            updated_at: new Date().toISOString(),
+            archived: false,
+            disabled: false,
+          },
+        ],
+      } as Response;
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const service = new GitHubRepoFusionService();
+    const first = await service.syncRelatedRepos({ owner: 'owner-a', forceRefresh: true });
+    const second = await service.syncRelatedRepos({ owner: 'owner-b', forceRefresh: false });
+
+    expect(first.owner).toBe('owner-a');
+    expect(second.owner).toBe('owner-b');
+    expect(second.nodes[0].repo).toBe('repo-b');
+  });
+
+  it('construye base de conocimiento continua con bloqueadores y resumen', async () => {
+    const oldDate = new Date(Date.now() - 220 * 24 * 60 * 60 * 1000).toISOString();
+    const readmeContent = Buffer.from('# tamv repo\ncontenido base', 'utf8').toString('base64');
+
+    const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
+      const url = input.toString();
+      if (url.includes('/users/OsoPanda1/repos')) {
+        return {
+          ok: true,
+          json: async () => [
+            {
+              id: 1,
+              name: 'tamv-active',
+              full_name: 'OsoPanda1/tamv-active',
+              html_url: 'https://github.com/OsoPanda1/tamv-active',
+              description: 'tamv active',
+              homepage: null,
+              language: 'TypeScript',
+              topics: ['tamv', 'nexus'],
+              stargazers_count: 1,
+              forks_count: 0,
+              updated_at: new Date().toISOString(),
+              archived: false,
+              disabled: false,
+            },
+            {
+              id: 2,
+              name: 'legacy-module',
+              full_name: 'OsoPanda1/legacy-module',
+              html_url: 'https://github.com/OsoPanda1/legacy-module',
+              description: '',
+              homepage: null,
+              language: null,
+              topics: [],
+              stargazers_count: 0,
+              forks_count: 0,
+              updated_at: oldDate,
+              archived: false,
+              disabled: false,
+            },
+          ],
+        } as Response;
+      }
+
+      if (url.includes('/repos/OsoPanda1/tamv-active/readme')) {
+        return {
+          ok: true,
+          json: async () => ({ content: readmeContent, encoding: 'base64' }),
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        json: async () => ({}),
+      } as Response;
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const service = new GitHubRepoFusionService();
+    const result = await service.buildRepositoryKnowledgeBase({
+      owner: 'OsoPanda1',
+      maxRepos: 177,
+      includeReadme: true,
+    });
+
+    expect(result.analyzedRepos).toBe(2);
+    expect(result.summary.critical).toBe(1);
+    expect(result.repos.find((repo) => repo.repo === 'legacy-module')?.blockers).toContain('missing-readme');
+    expect(result.repos.find((repo) => repo.repo === 'tamv-active')?.hasReadme).toBe(true);
   });
 });

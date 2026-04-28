@@ -62,7 +62,36 @@ export interface UnificationPlan {
 
 interface CacheEntry {
   expiresAt: number;
+  owner: string;
   payload: FusionSyncResult;
+}
+
+export interface RepositoryDiagnostic {
+  repo: string;
+  url: string;
+  language: string | null;
+  topics: string[];
+  updatedAt: string;
+  score: number;
+  staleDays: number;
+  hasReadme: boolean;
+  readmeExcerpt: string | null;
+  blockers: string[];
+  suggestedActions: string[];
+}
+
+export interface RepositoryKnowledgeBase {
+  owner: string;
+  generatedAt: string;
+  scannedRepos: number;
+  analyzedRepos: number;
+  targetHub: string;
+  repos: RepositoryDiagnostic[];
+  summary: {
+    ready: number;
+    needsWork: number;
+    critical: number;
+  };
 }
 
 const RDM_KEYWORDS = [
@@ -86,10 +115,9 @@ export class GitHubRepoFusionService {
     const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
     const limit = Math.max(1, Math.min(options?.limit ?? 10, 400));
 
-    if (!options?.forceRefresh && this.cache && this.cache.expiresAt > Date.now()) {
+    if (!options?.forceRefresh && this.cache && this.cache.expiresAt > Date.now() && this.cache.owner === owner) {
       return {
         ...this.cache.payload,
-        owner,
         nodes: this.cache.payload.nodes.slice(0, limit),
       };
     }
@@ -123,11 +151,103 @@ export class GitHubRepoFusionService {
     };
 
     this.cache = {
+      owner,
       payload,
       expiresAt: Date.now() + this.cacheTtlMs,
     };
 
     return payload;
+  }
+
+  async buildRepositoryKnowledgeBase(options?: {
+    owner?: string;
+    maxRepos?: number;
+    forceRefresh?: boolean;
+    targetHub?: string;
+    includeReadme?: boolean;
+  }): Promise<RepositoryKnowledgeBase> {
+    const owner = options?.owner ?? process.env.GITHUB_FEDERATION_OWNER ?? 'OsoPanda1';
+    const targetHub = options?.targetHub ?? 'tamv-digital-nexus';
+    const maxRepos = Math.max(1, Math.min(options?.maxRepos ?? 177, 400));
+    const includeReadme = options?.includeReadme ?? false;
+
+    const allRepos = await this.fetchAllRepos(owner);
+    const activeRepos = allRepos
+      .filter((repo) => !repo.archived && !repo.disabled)
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, maxRepos);
+
+    const repos = await Promise.all(
+      activeRepos.map(async (repo) => {
+        const staleDays = Math.max(
+          0,
+          Math.floor((Date.now() - new Date(repo.updated_at).getTime()) / (24 * 60 * 60 * 1000)),
+        );
+        const blockers: string[] = [];
+        const suggestedActions: string[] = [];
+
+        if (!repo.description?.trim()) {
+          blockers.push('missing-description');
+          suggestedActions.push('Agregar descripción técnica del módulo y su rol en el hub.');
+        }
+        if (!repo.topics || repo.topics.length === 0) {
+          blockers.push('missing-topics');
+          suggestedActions.push('Definir topics (tamv, rdm, nexus, module) para trazabilidad.');
+        }
+        if (staleDays > 180) {
+          blockers.push('stale-over-180-days');
+          suggestedActions.push('Programar actualización mínima de salud (README/changelog/tests).');
+        }
+        if (!repo.language) {
+          blockers.push('unknown-language');
+          suggestedActions.push('Declarar stack principal para facilitar estrategia de merge.');
+        }
+
+        const readme = includeReadme ? await this.fetchReadme(owner, repo.name) : null;
+        if (includeReadme && !readme) {
+          blockers.push('missing-readme');
+          suggestedActions.push('Crear README con instrucciones de build e integración federada.');
+        }
+
+        return {
+          repo: repo.name,
+          url: repo.html_url,
+          language: repo.language,
+          topics: repo.topics ?? [],
+          updatedAt: repo.updated_at,
+          score: this.scoreRepo(repo),
+          staleDays,
+          hasReadme: Boolean(readme),
+          readmeExcerpt: readme,
+          blockers,
+          suggestedActions,
+        } satisfies RepositoryDiagnostic;
+      }),
+    );
+
+    const summary = repos.reduce(
+      (acc, repo) => {
+        if (repo.blockers.length === 0) {
+          acc.ready += 1;
+        } else if (repo.blockers.some((item) => item.includes('stale') || item.includes('missing-readme'))) {
+          acc.critical += 1;
+        } else {
+          acc.needsWork += 1;
+        }
+        return acc;
+      },
+      { ready: 0, needsWork: 0, critical: 0 },
+    );
+
+    return {
+      owner,
+      generatedAt: new Date().toISOString(),
+      scannedRepos: allRepos.length,
+      analyzedRepos: repos.length,
+      targetHub,
+      repos,
+      summary,
+    };
   }
 
   async buildUnificationPlan(options?: {
@@ -270,6 +390,33 @@ export class GitHubRepoFusionService {
     }
 
     return repos;
+  }
+
+  private async fetchReadme(owner: string, repo: string): Promise<string | null> {
+    const token = process.env.GITHUB_TOKEN;
+    const endpoint = `https://api.github.com/repos/${owner}/${repo}/readme`;
+    const response = await fetch(endpoint, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as { content?: string; encoding?: string };
+    if (!payload.content || payload.encoding !== 'base64') {
+      return null;
+    }
+
+    try {
+      const decoded = Buffer.from(payload.content, 'base64').toString('utf8').trim();
+      return decoded.length > 500 ? `${decoded.slice(0, 500)}…` : decoded;
+    } catch {
+      return null;
+    }
   }
 
   private isRdmRelated(repo: GitHubRepo): boolean {
