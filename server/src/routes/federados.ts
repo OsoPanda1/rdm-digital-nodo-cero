@@ -159,6 +159,35 @@ router.get('/github/unification-script', async (req, res) => {
   }
 });
 
+router.get('/github/knowledge-base', async (req, res) => {
+  try {
+    const owner = typeof req.query.owner === 'string' ? req.query.owner : undefined;
+    const targetHub = typeof req.query.targetHub === 'string' ? req.query.targetHub : undefined;
+    const forceRefresh = req.query.refresh === '1';
+    const includeReadme = req.query.includeReadme === '1';
+    const maxReposParam = Number(req.query.maxRepos);
+    const maxRepos = Number.isFinite(maxReposParam) ? maxReposParam : undefined;
+
+    const knowledgeBase = await githubRepoFusionService.buildRepositoryKnowledgeBase({
+      owner,
+      targetHub,
+      maxRepos,
+      includeReadme,
+      forceRefresh,
+    });
+
+    return res.json({
+      source: 'github-continuous-knowledge-base',
+      ...knowledgeBase,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'No se pudo construir la base de conocimiento continua',
+      details: error instanceof Error ? error.message : 'error desconocido',
+    });
+  }
+});
+
 router.get('/live-map-sync', async (_req, res) => {
   try {
     const records = await federatedPoiService.fetchFederationPois({ timeoutMs: 2000 });
