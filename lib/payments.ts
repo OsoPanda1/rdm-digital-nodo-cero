@@ -1,13 +1,19 @@
 import Stripe from "stripe";
 
-export function getStripeClient() {
-  const stripeSecret = process.env.STRIPE_SECRET;
+const STRIPE_API_VERSION: Stripe.StripeConfig["apiVersion"] = "2025-03-31.basil";
 
-  if (!stripeSecret) {
-    throw new Error("STRIPE_SECRET no está definida");
+function resolveStripeSecret() {
+  const secret = process.env.STRIPE_SECRET ?? process.env.STRIPE_SECRET_KEY;
+
+  if (!secret) {
+    throw new Error("Falta STRIPE_SECRET (o STRIPE_SECRET_KEY) en variables de entorno");
   }
 
-  return new Stripe(stripeSecret, {
-    apiVersion: "2025-03-31.basil",
+  return secret;
+}
+
+export function getStripeClient() {
+  return new Stripe(resolveStripeSecret(), {
+    apiVersion: STRIPE_API_VERSION,
   });
 }
