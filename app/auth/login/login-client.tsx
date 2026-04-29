@@ -24,8 +24,14 @@ export default function LoginClient() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    let error: { message: string } | null = null
+    try {
+      const supabase = createClient()
+      const response = await supabase.auth.signInWithPassword({ email, password })
+      error = response.error
+    } catch (e) {
+      error = { message: e instanceof Error ? e.message : "No se pudo inicializar autenticación." }
+    }
     setLoading(false)
     if (error) {
       setError(error.message.includes("Invalid login credentials") ? "Credenciales inválidas. Revisa correo y contraseña." : error.message)
