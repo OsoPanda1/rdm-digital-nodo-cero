@@ -8,6 +8,7 @@ const links = [
   { href: "/manuscrito", label: "Manuscrito" },
   { href: "/repositorio", label: "Repositorio" },
   { href: "/mercado", label: "Mercado" },
+  { href: "/turismo", label: "Turismo" },
 ]
 
 export async function Nav() {
