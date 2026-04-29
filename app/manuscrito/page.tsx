@@ -10,11 +10,25 @@ export const metadata = {
   description: "Tomos del Compendio TAMV / Libro Génesis. Edwin Oswaldo Castillo Trejo (Anubis Villaseñor).",
 }
 
-export default async function ManuscritoPage() {
+const PAGE_SIZE = 6
+
+export default async function ManuscritoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const { page: rawPage } = await searchParams
+  const page = Math.max(1, Number.parseInt(rawPage ?? "1", 10) || 1)
+  const offset = (page - 1) * PAGE_SIZE
   const supabase = await createClient()
-  const { data } = await supabase.from("manuscripts").select("*").order("tomo_number")
+  const { data, count } = await supabase
+    .from("manuscripts")
+    .select("*", { count: "exact" })
+    .order("tomo_number")
+    .range(offset, offset + PAGE_SIZE - 1)
   const tomos = (data ?? []) as Manuscript[]
   const total = tomos.reduce((s, t) => s + (t.word_count ?? 0), 0)
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
 
   return (
     <>
@@ -32,8 +46,8 @@ export default async function ManuscritoPage() {
             </p>
             <div className="flex gap-12 font-mono text-sm">
               <div>
-                <p className="text-3xl text-accent">{tomos.length}</p>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Tomos</p>
+                <p className="text-3xl text-accent">{count ?? tomos.length}</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Tomos totales</p>
               </div>
               <div>
                 <p className="text-3xl text-accent">{total.toLocaleString("es-MX")}</p>
@@ -48,6 +62,12 @@ export default async function ManuscritoPage() {
         </section>
 
         <section className="max-w-4xl mx-auto px-6 py-16">
+          <div className="mb-6 flex items-center justify-between font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <span>
+              Página {page} / {totalPages}
+            </span>
+            <span>{tomos.length} tomos en esta vista</span>
+          </div>
           <div className="space-y-px bg-border/40 border border-border/40">
             {tomos.map((t) => (
               <Link
@@ -80,6 +100,30 @@ export default async function ManuscritoPage() {
                 </div>
               </Link>
             ))}
+          </div>
+          <div className="mt-8 flex items-center justify-between gap-3">
+            <Link
+              href={page > 1 ? `/manuscrito?page=${page - 1}` : "#"}
+              aria-disabled={page <= 1}
+              className={`rounded-md border px-4 py-2 text-sm ${
+                page <= 1
+                  ? "pointer-events-none border-border/40 text-muted-foreground/50"
+                  : "border-accent/40 text-accent hover:bg-accent/10"
+              }`}
+            >
+              ← Anterior
+            </Link>
+            <Link
+              href={page < totalPages ? `/manuscrito?page=${page + 1}` : "#"}
+              aria-disabled={page >= totalPages}
+              className={`rounded-md border px-4 py-2 text-sm ${
+                page >= totalPages
+                  ? "pointer-events-none border-border/40 text-muted-foreground/50"
+                  : "border-accent/40 text-accent hover:bg-accent/10"
+              }`}
+            >
+              Siguiente →
+            </Link>
           </div>
         </section>
       </main>
