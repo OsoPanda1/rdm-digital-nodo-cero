@@ -1,7 +1,6 @@
 import { db } from "@/lib/db"
 
 export async function POST(req: Request) {
-  const dbAny = db as any
   const body = (await req.json()) as {
     userId?: string
     lat?: number
@@ -13,10 +12,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Telemetry payload inválido." }, { status: 400 })
   }
 
-  if (!dbAny.locationRecord) {
-    return Response.json({ error: "LocationRecord no está habilitado en el schema actual." }, { status: 501 })
-  }
-  const saved = await dbAny.locationRecord.create({
+  const saved = await db.locationRecord.create({
     data: {
       userId: body.userId,
       lat: body.lat,

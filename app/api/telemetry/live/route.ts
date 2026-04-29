@@ -1,13 +1,10 @@
 import { db } from "@/lib/db"
 
 export async function GET() {
-  const dbAny = db as any
-  const latest = dbAny.locationRecord
-    ? await dbAny.locationRecord.findMany({
-        orderBy: { timestamp: "desc" },
-        take: 50,
-      })
-    : []
+  const latest = await db.locationRecord.findMany({
+    orderBy: { timestamp: "desc" },
+    take: 50,
+  })
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
