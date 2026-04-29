@@ -1,39 +1,43 @@
-import { TopBar } from "@/components/rdm/top-bar"
-import { Nav } from "@/components/rdm/nav"
-import { Hero } from "@/components/rdm/hero"
-import { LiveStatus } from "@/components/rdm/live-status"
-import { Architect } from "@/components/rdm/architect"
-import { Geopolitics } from "@/components/rdm/geopolitics"
-import { Federations } from "@/components/rdm/federations"
-import { Kernel } from "@/components/rdm/kernel"
-import { Territory } from "@/components/rdm/territory"
-import { CITEMESH } from "@/components/rdm/citemesh"
-import { Isabella } from "@/components/rdm/isabella"
-import { Tomos } from "@/components/rdm/tomos"
-import { Evidence } from "@/components/rdm/evidence"
-import { Layers } from "@/components/rdm/layers"
-import { ClosingCTA } from "@/components/rdm/closing-cta"
-import { Footer } from "@/components/rdm/footer"
+"use client";
 
-export default async function Page() {
+import { useState } from "react";
+
+export default function Home() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const register = async () => {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (res.ok) {
+      setMessage("Registro creado en el SOT ✅");
+      setEmail("");
+      return;
+    }
+
+    const data = await res.json();
+    setMessage(data.error ?? "No se pudo registrar");
+  };
+
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <TopBar />
-      <Nav />
-      <Hero />
-      <LiveStatus />
-      <Architect />
-      <Geopolitics />
-      <Federations />
-      <Kernel />
-      <Territory />
-      <CITEMESH />
-      <Isabella />
-      <Layers />
-      <Evidence />
-      <Tomos />
-      <ClosingCTA />
-      <Footer />
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center gap-4 px-6">
+      <h1 className="text-3xl font-bold">RDM DIGITAL — Sistema Operativo Territorial</h1>
+      <p className="text-sm text-neutral-600">Registro inicial Vercel-ready con APIs serverless y motor económico.</p>
+      <input
+        className="rounded border p-3"
+        type="email"
+        value={email}
+        placeholder="correo@dominio.com"
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button className="rounded bg-black px-4 py-3 text-white" onClick={register}>
+        Entrar
+      </button>
+      {message ? <p className="text-sm">{message}</p> : null}
     </main>
-  )
+  );
 }
