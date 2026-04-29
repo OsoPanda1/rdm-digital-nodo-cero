@@ -1,11 +1,19 @@
-export async function POST(req: Request) {
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+
+export async function POST(req: NextRequest) {
   const body = await req.text();
 
-  const event = JSON.parse(body);
+  const forwarded = await fetch(new URL("/api/stripe/webhook", req.url), {
+    method: "POST",
+    headers: {
+      "content-type": req.headers.get("content-type") ?? "application/json",
+      "stripe-signature": req.headers.get("stripe-signature") ?? "",
+    },
+    body,
+  });
 
-  if (event.type === "payment_intent.succeeded") {
-    console.log("Pago exitoso", event.data?.object?.id);
-  }
-
-  return new Response("ok");
+  const responseText = await forwarded.text();
+  return new NextResponse(responseText, { status: forwarded.status });
 }
