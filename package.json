@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "prisma db push",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "audit:searchparams": "node scripts/check-searchparams.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
