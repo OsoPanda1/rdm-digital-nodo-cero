@@ -11,8 +11,11 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   role      String
+  password  String?
   wallet    Wallet?
   createdAt DateTime @default(now())
+  locationRecords LocationRecord[]
+  merchantLinks MerchantUser[]
 }
 
 model Wallet {
@@ -36,12 +39,98 @@ model Place {
   type String
   lat  Float
   lng  Float
+  address String?
+  city String?
+  state String?
+  twinId String? @unique
+  twin DigitalTwin? @relation(fields: [twinId], references: [id])
 }
 
 model Commerce {
   id       String @id @default(uuid())
   name     String
   category String
+}
+
+model Merchant {
+  id                 String   @id @default(uuid())
+  name               String
+  category           String
+  address            String
+  subscriptionStatus String   @default("inactive")
+  stripeCustomerId   String?
+  planCode           String?
+  twinId             String?  @unique
+  twin               DigitalTwin? @relation(fields: [twinId], references: [id])
+  users              MerchantUser[]
+  paymentSubscriptions PaymentSubscription[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model MerchantUser {
+  id         String   @id @default(uuid())
+  userId     String
+  merchantId String
+  user       User     @relation(fields: [userId], references: [id])
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+}
+
+model DigitalTwin {
+  id        String     @id @default(uuid())
+  code      String     @unique
+  name      String
+  type      TwinType
+  status    TwinStatus @default(ACTIVE)
+  lat       Float
+  lng       Float
+  tags      String[]
+  narrative String
+  place     Place?
+  merchant  Merchant?
+  verifications Verification[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LocationRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  lat       Float
+  lng       Float
+  timestamp DateTime
+  source    String   @default("gps")
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  twinId     String
+  verifiedAt DateTime @default(now())
+  result     Boolean
+  confidence Float
+  twin       DigitalTwin @relation(fields: [twinId], references: [id])
+}
+
+model PaymentSubscription {
+  id                 String   @id @default(uuid())
+  merchantId         String
+  stripeSubscription String
+  status             String
+  startDate          DateTime
+  endDate            DateTime?
+  merchant           Merchant @relation(fields: [merchantId], references: [id])
+}
+
+enum TwinType {
+  PLACE
+  EVENT
+  MERCHANT
+}
+
+enum TwinStatus {
+  ACTIVE
+  INACTIVE
 }
 
 model PaymentIntent {
