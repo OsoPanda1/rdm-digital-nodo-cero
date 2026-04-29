@@ -23,23 +23,17 @@ export default function SignUpPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    let error: { message: string } | null = null
-    try {
-      const supabase = createClient()
-      const callbackUrl = new URL("/auth/callback", window.location.origin)
-      callbackUrl.searchParams.set("next", "/panel")
-      const response = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: callbackUrl.toString(),
-          data: { display_name: displayName, role },
-        },
-      })
-      error = response.error
-    } catch (e) {
-      error = { message: e instanceof Error ? e.message : "No se pudo inicializar autenticación." }
-    }
+    const supabase = createClient()
+    const callbackUrl = new URL("/auth/callback", window.location.origin)
+    callbackUrl.searchParams.set("next", "/panel")
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: callbackUrl.toString(),
+        data: { display_name: displayName, role },
+      },
+    })
     setLoading(false)
     if (error) {
       setError(error.message)
