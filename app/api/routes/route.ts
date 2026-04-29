@@ -10,6 +10,13 @@ export async function GET() {
       "/api/payments/create",
       "/api/webhooks/stripe",
       "/api/dashboard/summary",
+      "/api/protocols/execute",
+      "/api/places/register",
+      "/api/places/:id",
+      "/api/telemetry/ingest",
+      "/api/telemetry/live",
+      "/api/realito/isabella/chat",
+      "/api/github/repos",
     ],
   });
 }

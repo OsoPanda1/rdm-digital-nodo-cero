@@ -17,7 +17,8 @@ export default function LoginClient() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const params = useSearchParams()
-  const next = params.get("next") ?? "/panel"
+  const rawNext = params.get("next") ?? "/panel"
+  const next = rawNext.startsWith("/") ? rawNext : "/panel"
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,7 +28,13 @@ export default function LoginClient() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) {
-      setError(error.message)
+      if (error.message.includes("Email not confirmed")) {
+        setError("Debes confirmar tu correo antes de entrar. Revisa tu bandeja y spam.")
+      } else if (error.message.includes("Invalid login credentials")) {
+        setError("Credenciales inválidas. Revisa correo y contraseña.")
+      } else {
+        setError(error.message)
+      }
       return
     }
     router.push(next)
