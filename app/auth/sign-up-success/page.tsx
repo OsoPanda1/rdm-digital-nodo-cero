@@ -1,6 +1,7 @@
-import Link from "next/link"
+import { Suspense } from "react"
+import SignUpSuccessClient from "./sign-up-success-client"
 
-export default function SignUpSuccess() {
+export default function SignUpSuccessPage() {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-6 py-16">
       <div className="max-w-md text-center">
