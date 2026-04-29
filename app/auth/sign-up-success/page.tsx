@@ -10,9 +10,14 @@ export default function SignUpSuccess() {
           Te enviamos un enlace de verificación. Una vez confirmado, tu ciudadanía digital quedará activa en el log
           EOCT del Nodo Cero y podrás entrar al panel federado.
         </p>
-        <Link href="/" className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          ← Volver al territorio
-        </Link>
+        <div className="flex items-center justify-center gap-5">
+          <Link href="/auth/login" className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
+            Ir al login
+          </Link>
+          <Link href="/" className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Volver al territorio
+          </Link>
+        </div>
       </div>
     </main>
   )

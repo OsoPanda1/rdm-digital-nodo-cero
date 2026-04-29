@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 
 export default function Home() {
@@ -47,8 +48,25 @@ export default function Home() {
           </div>
 
           <aside className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-cyan-500/10 backdrop-blur-xl">
-            <h2 className="mb-2 text-xl font-semibold">Activar acceso ciudadano</h2>
-            <p className="mb-5 text-sm text-slate-300">Registro inicial Vercel-ready con backend serverless y wallet automática.</p>
+            <h2 className="mb-2 text-xl font-semibold">ID-NVIDA · acceso ciudadano</h2>
+            <p className="mb-5 text-sm text-slate-300">
+              Si ya tienes cuenta, entra directo al panel. Si no, crea tu perfil y valida tu identidad digital.
+            </p>
+            <div className="mb-6 grid gap-3 sm:grid-cols-2">
+              <Link
+                href="/auth/login"
+                className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 text-center text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/20"
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                href="/auth/sign-up"
+                className="rounded-xl border border-violet-300/30 bg-violet-400/10 px-4 py-3 text-center text-sm font-semibold text-violet-200 transition hover:bg-violet-400/20"
+              >
+                Crear cuenta
+              </Link>
+            </div>
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">Modo rápido (beta)</p>
             <div className="space-y-3">
               <input
                 className="w-full rounded-xl border border-white/15 bg-slate-900/80 p-3 text-sm outline-none ring-cyan-300/30 transition focus:ring"
@@ -61,7 +79,7 @@ export default function Home() {
                 className="w-full rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-95"
                 onClick={register}
               >
-                Entrar al Sistema
+                Registro exprés
               </button>
             </div>
             {message ? <p className="mt-4 text-sm text-cyan-200">{message}</p> : null}

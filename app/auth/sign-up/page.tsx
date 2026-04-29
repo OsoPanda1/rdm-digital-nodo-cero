@@ -24,12 +24,13 @@ export default function SignUpPage() {
     setLoading(true)
     setError(null)
     const supabase = createClient()
+    const callbackUrl = new URL("/auth/callback", window.location.origin)
+    callbackUrl.searchParams.set("next", "/panel")
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo:
-          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callbackUrl.toString(),
         data: { display_name: displayName, role },
       },
     })
