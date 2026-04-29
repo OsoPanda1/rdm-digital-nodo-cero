@@ -13,7 +13,10 @@ Plataforma civilizatoria digital para Real del Monte: identidad, turismo intelig
 - No es un stack “demo-only” sin trazabilidad.
 - No es un sistema de vigilancia encubierta ni gamificación opaca de poder.
 
----
+**Qué no es**
+- No es solo landing estática.
+- No es un stack “demo-only” sin trazabilidad.
+- No es un sistema de vigilancia encubierta ni gamificación opaca de poder.
 
 ## 2) Diagnóstico técnico profundo del repositorio (actualizado)
 
