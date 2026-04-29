@@ -1,90 +1,106 @@
-# RDM DIGITAL — Sistema Operativo Territorial (SOT)
+# TAMV / RDM Digital MD‑X5
 
-RDM Digital es una plataforma **Next.js + Prisma + Supabase + Stripe** que integra identidad, economía, IA contextual y operación territorial bajo un mismo runtime.
+Plataforma civilizatoria digital para Real del Monte: identidad, turismo inteligente, geolocalización operativa, protocolos auditables, economía creativa y capa de IA contextual.
 
-## Estado actual
+## 1) Qué es y qué no es
 
-- ✅ App Router operativo con rutas API serverless.
-- ✅ Dominio base SOT implementado (registro, wallet, recompensas, comercio, pagos).
-- ✅ Endurecimiento inicial para Next 16 (`useSearchParams` aislado en client subtree + Suspense).
-- ✅ Auditoría automática de usos de `useSearchParams`.
+**Qué es**
+- Un sistema territorial unificado con capas de identidad, datos, protocolos, visualización y servicios para ciudadanía, comercio e instituciones.
+- Una base para social + turismo + geointeligencia + economía + gobernanza trazable.
 
----
-
-## Arquitectura funcional
-
-```txt
-Sistema Operativo Territorial = Infraestructura + Identidad + Economía + IA + Gobernanza + Experiencia
-```
-
-Flujo operativo principal:
-
-```txt
-Usuario → Registro → Wallet → Acción → Recompensa → Pago → Comercio → Datos → IA → Optimización → Gobernanza
-```
-
-## Mapa de módulos
-
-- `app/`: interfaz principal y rutas App Router.
-- `app/api/`: identidad, economía, comercio, IA, pagos y webhooks.
-- `lib/`: conectores de infraestructura (`db`, `ai`, `ledger`, `payments`).
-- `prisma/`: modelo de datos y generación del cliente Prisma.
-- `core/` e `infra/`: evolución de orquestación/eventos/seguridad/tracing.
+**Qué no es**
+- No es solo landing estática.
+- No es un stack “demo-only” sin trazabilidad.
+- No es un sistema de vigilancia encubierta ni gamificación opaca de poder.
 
 ---
 
-## Stack técnico
+## 2) Diagnóstico técnico profundo del repositorio (actualizado)
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS.
-- **Datos**: PostgreSQL + Prisma ORM.
-- **Identidad sesión**: Supabase Auth.
-- **Pagos**: Stripe API + webhook.
-- **Observabilidad/seguridad**: módulos de tracing y rate-limit en `infra/`.
+### Fortalezas
+- App Next.js moderna con App Router y segmentación por rutas funcionales.
+- Integración Supabase Auth + Prisma + Stripe + endpoints de IA.
+- Nuevas rutas de geolocalización y Digital Twin ya operativas (`places`, `telemetry`, `realito`).
+- Cursor pagination incorporada para listas dinámicas (`/api/github/repos`).
 
----
+### Debilidades detectadas
+- **Inconsistencia de fuentes de verdad** entre Supabase Auth y Prisma User (identidad híbrida no completamente orquestada).
+- **Type safety rota en build TS** por versión Stripe (`lib/payments.ts`).
+- **Observabilidad parcial**: faltan métricas unificadas por dominio (auth/turismo/telemetry/protocols).
+- **Riesgo de deuda UX**: aún conviven pantallas avanzadas con páginas “en construcción”.
 
-## Modelo de datos base (Prisma)
+### Cuellos de botella
+- Dependencia de APIs externas sin capa fuerte de resiliencia/circuit breaker.
+- Falta de un bus/event layer explícito entre EOCT/MSR/BookPI y servicios de dominio.
+- Ausencia de estrategia de “live updates” persistentes (SSE existe, pero aún no hay pipeline continuo multi-consumer).
 
-`prisma/schema.prisma` define:
-
-- `User`
-- `Wallet`
-- `Transaction`
-- `Place`
-- `Commerce`
-- `PaymentIntent`
-
-Relaciones clave:
-
-- `User` 1:1 `Wallet`
-- Registro económico por `Transaction` (recompensas y movimientos)
+### Sesgos/inconsistencias funcionales corregidas recientemente
+- Redirecciones de autenticación frágiles (signup/login/callback) reforzadas.
+- Mensajería opaca en login corregida para casos de correo no confirmado.
+- Paginación estructurada para absorción incremental de repos GitHub.
 
 ---
 
-## Endpoints principales
+## 3) Arquitectura federada TAMV (L0–L7)
 
-- `POST /api/auth/register`: alta de usuario y wallet.
-- `POST /api/economy/reward`: incrementa saldo y registra transacción.
-- `POST /api/commerce/create`: alta de comercios.
-- `POST /api/ai/ask`: consulta IA contextual sobre territorio.
-- `POST /api/payments/create`: crea `payment_intent` en Stripe.
-- `POST /api/webhooks/stripe`: recepción de eventos de pago.
-
----
-
-## Blindaje antifrágil aplicado
-
-1. **Aislamiento client/server en login**
-   - `useSearchParams` se mantiene en componente cliente aislado.
-   - `page.tsx` queda como server component con límite de `Suspense`.
-2. **Auditoría reutilizable**
-   - Script `audit:searchparams` para detectar patrones riesgosos en App Router.
-3. **UI de carga dedicada**
-   - `app/auth/login/loading.tsx` mejora UX y desacople de hidratación.
+- **L0 Doctrina/Ética**: reglas explícitas anti-daño, anti-opacidad y trazabilidad.
+- **L1 Memoria/Registro**: eventos MSR + narrativa BookPI.
+- **L2 Protocolos controlados**: EOCT + Protocol Engine + lifecycle de decisión.
+- **L3 Guardianía**: monitoreo, alertas, umbrales y observabilidad operacional.
+- **L4 XR/Visual**: representación territorial y DreamSpaces.
+- **L5 Servicios de dominio**: identidad, turismo, telemetría, economía, social.
+- **L6 Shell UX**: flujos web de uso ciudadano/comercial/institucional.
+- **L7 Quant-inspired**: desacople de definición de decisión vs. resolución futura híbrida.
 
 ---
 
-## Instalación y ejecución
+## 4) Endpoints clave (actual)
+
+### Identidad
+- `POST /api/auth/register`
+- `GET /auth/callback`
+- `/auth/login`, `/auth/sign-up`
+
+### Protocolos y narrativa
+- `POST /api/protocols/execute`
+
+### Geolocalización / Digital Twin
+- `POST /api/places/register`
+- `GET /api/places/:id`
+- `POST /api/telemetry/ingest`
+- `GET /api/telemetry/live` (SSE)
+
+### IA
+- `POST /api/realito/isabella/chat`
+- `POST /api/ai/ask`
+
+### Absorción GitHub (OsoPanda1)
+- `GET /api/github/repos?cursor=<opaque>&limit=20`
+- Respuesta: `{ items, nextCursor }`
+
+---
+
+## 5) UX y estilo visual (estado)
+
+- Home rediseñada con enfoque visual operativo + acceso ID‑NVIDA + KPIs rápidos.
+- Turismo con tarjetas visuales, categorías y asistente IA.
+- Navegación principal ampliada a rutas estratégicas.
+
+---
+
+## 6) Seguridad y cumplimiento (mínimo aplicable)
+
+- Saneamiento de `next` en auth callbacks/login.
+- Validaciones de payload en rutas críticas.
+- Recomendado inmediato:
+  1. Rate limiting por endpoint crítico.
+  2. Firma/verificación estricta de webhooks.
+  3. RLS end-to-end en tablas sensibles.
+  4. Rotación de secretos + auditoría periódica.
+
+---
+
+## 7) Instalación
 
 ```bash
 pnpm install
@@ -93,47 +109,35 @@ pnpm prisma:push
 pnpm dev
 ```
 
-Build de producción:
-
+Build:
 ```bash
 pnpm build
 ```
 
-Auditoría de rutas con query params client-side:
-
+Type-check:
 ```bash
-pnpm run audit:searchparams
+npx tsc --noEmit
 ```
 
 ---
 
-## Variables de entorno
+## 8) Estado de calidad conocido
 
-```bash
-DATABASE_URL=postgresql://...
-STRIPE_SECRET=sk_live_...
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_SUPABASE_URL=...
-SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-SSE_BEARER_TOKEN=...
-REDIS_URL=...
-```
+- Si `npx tsc --noEmit` falla por Stripe API version typing en `lib/payments.ts`, actualizar `apiVersion` al valor esperado por el SDK instalado.
+- Si `next build` falla por descarga de Google Fonts en entornos cerrados, usar fallback local de fuentes o pipeline con egress habilitado.
 
 ---
 
-## Roadmap de evolución (siguiente nivel)
+## 9) Roadmap prioritario
 
-- Hardening de producción y seguridad bancaria (idempotencia, firma webhook estricta, reconciliación).
-- Geo-replicación multi-región con consistencia eventual por dominio.
-- Motor IA multi-agente con evaluación online.
-- Gemelo digital territorial (XR + telemetría espacial).
-- Federación TAMV completa con gobernanza programable.
+1. Unificar identidad Supabase ↔ Prisma (ID‑NVIDA service).
+2. Consolidar Social Layer (feed real + comments + channels + DM).
+3. Live map continuo (telemetry stream + heat/radar layer).
+4. Motor de membresías/economía con ledger interno auditable.
+5. Panel de guardianía (latencia, errores, riesgo EOCT, salud de servicios).
 
 ---
 
-## Notas de implementación
+## 10) Posicionamiento tecnológico
 
-- Para Next 16+, evitar `useSearchParams` en `page.tsx` salvo patrón client + `Suspense`.
-- Para despliegue Vercel, validar acceso externo a binarios Prisma y fuentes tipográficas durante build.
+TAMV se posiciona como una **infraestructura territorial de nueva generación** (social + XR + economía + protocolos auditables), diferenciada por su enfoque civilizatorio, trazabilidad ética y arquitectura modular para escalar a operaciones institucionales.
