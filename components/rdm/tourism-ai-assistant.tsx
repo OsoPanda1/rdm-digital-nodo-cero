@@ -10,13 +10,13 @@ export function TourismAIAssistant() {
 
   async function ask() {
     setLoading(true)
-    const res = await fetch("/api/realito/isabella/chat", {
+    const res = await fetch("/api/ai/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
     })
     const data = await res.json()
-    setAnswer(data.reply ?? data.error ?? "Sin respuesta")
+    setAnswer(data.response ?? data.error ?? "Sin respuesta")
     setLoading(false)
   }
 

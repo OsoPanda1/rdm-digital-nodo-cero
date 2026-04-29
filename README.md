@@ -13,7 +13,10 @@ Plataforma civilizatoria digital para Real del Monte: identidad, turismo intelig
 - No es un stack “demo-only” sin trazabilidad.
 - No es un sistema de vigilancia encubierta ni gamificación opaca de poder.
 
----
+**Qué no es**
+- No es solo landing estática.
+- No es un stack “demo-only” sin trazabilidad.
+- No es un sistema de vigilancia encubierta ni gamificación opaca de poder.
 
 ## 2) Diagnóstico técnico profundo del repositorio (actualizado)
 
@@ -141,31 +144,3 @@ npx tsc --noEmit
 ## 10) Posicionamiento tecnológico
 
 TAMV se posiciona como una **infraestructura territorial de nueva generación** (social + XR + economía + protocolos auditables), diferenciada por su enfoque civilizatorio, trazabilidad ética y arquitectura modular para escalar a operaciones institucionales.
-
----
-
-## 11) Formalización de especificaciones (RFCs)
-
-Para escalar equipo y evitar ambigüedad, el repositorio ya define RFCs iniciales:
-
-- `docs/rfcs/RFC-001-event-fabric.md`
-- `docs/rfcs/RFC-002-bookpi.md`
-- `docs/rfcs/RFC-003-isabella-protocol.md`
-
-Estos documentos fijan contratos mínimos, riesgos, mitigaciones y criterios de trazabilidad por dominio.
-
----
-
-## 12) Doble nomenclatura (simbólica + técnica)
-
-Para auditoría institucional y operación empresarial, TAMV usa doble nomenclatura:
-
-- capa simbólica (interna cultural)
-- capa técnica (externa profesional)
-
-Endpoint de consulta:
-
-- `GET /api/system/terminology`
-
-Ejemplo:
-- `DEKATEOTL` → `Security Resilience Layer 11` → `Policy & Resilience Engine`.
