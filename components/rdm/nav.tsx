@@ -9,6 +9,7 @@ const links = [
   { href: "/repositorio", label: "Repositorio" },
   { href: "/mercado", label: "Mercado" },
   { href: "/turismo", label: "Turismo" },
+  { href: "/isabella", label: "Isabella AI" },
 ]
 
 export async function Nav() {
